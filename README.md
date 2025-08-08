@@ -20,7 +20,7 @@ Slotify is an AI-powered platform that makes scheduling appointments easier and 
 
 <br><br>
 
-<!-- Project Highlights -->
+<!--- Project Highlights --->
 <img src="./readme/title4.svg"/>
 
 ### Add Title Here
