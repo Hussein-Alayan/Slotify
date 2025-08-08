@@ -1,19 +1,76 @@
-# Slotify
+<img src="./readme/title1.svg"/>
 
-## Title Designs
+<br><br>
 
-<div align="center">
-  <img src="title1.svg" alt="Title 1" width="300"/>
-  <img src="title2.svg" alt="Title 2" width="300"/>
-  <img src="title3.svg" alt="Title 3" width="300"/>
-</div>
+<!-- project overview -->
+<img src="./readme/title2.svg"/>
 
-<div align="center">
-  <img src="title4.svg" alt="Title 4" width="300"/>
-  <img src="title5.svg" alt="Title 5" width="300"/>
-  <img src="title6.svg" alt="Title 6" width="300"/>
-</div>
+> Description here.
+>
+> Description here.
 
-<div align="center">
-  <img src="title7.svg" alt="Title 7" width="300"/>
-</div>
+<br><br>
+
+<!-- System Design -->
+<img src="./readme/title3.svg"/>
+
+### Add Title Here
+
+- To be decided on later on.
+
+<br><br>
+
+<!-- Project Highlights -->
+<img src="./readme/title4.svg"/>
+
+### Add Title Here
+
+- List the sexy features.
+
+<br><br>
+
+<!-- Demo -->
+<img src="./readme/title5.svg"/>
+
+### User Screens (Mobile)
+
+| Login screen                            | Register screen                       | Register screen                       |
+| --------------------------------------- | ------------------------------------- | ------------------------------------- |
+| ![Landing](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
+
+
+### Admin Screens (Web)
+
+| Login screen                            | Register screen                       |
+| --------------------------------------- | ------------------------------------- |
+| ![Landing](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
+
+
+<br><br>
+
+<!-- Development & Testing -->
+<img src="./readme/title6.svg"/>
+
+### Add Title Here
+
+
+| Services                            | Validation                       | Testing                        |
+| --------------------------------------- | ------------------------------------- | ------------------------------------- |
+| ![Landing](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
+
+
+<br><br>
+
+<!-- Deployment -->
+<img src="./readme/title7.svg"/>
+
+### Add Title Here
+
+- Description here.
+
+
+| Postman API 1                            | Postman API 2                       | Postman API 3                        |
+| --------------------------------------- | ------------------------------------- | ------------------------------------- |
+| ![Landing](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
+
+<br><br>
