@@ -1,13 +1,13 @@
-<img src="./readme/title1.svg"/>
+<div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333; font-weight: 500;">
 
+<!-- Header -->
+
+<img src="./readme/title1.svg"/>
 <br><br>
 
 <!-- project overview -->
 <img src="./readme/title2.svg"/>
-
-> Description here.
->
-> Description here.
+Slotify is an AI-powered platform that makes scheduling appointments easier and smarter. It automates bookings, manages staff/resources, predicts no-shows, and handles client communication through chatbots and social media integration, all in one place.
 
 <br><br>
 
@@ -74,3 +74,5 @@
 | ![Landing](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) | ![fsdaf](./readme/demo/1440x1024.png) |
 
 <br><br>
+
+</div>
