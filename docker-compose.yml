@@ -2,10 +2,10 @@ version: '3.9'
 
 services:
   backend:
-    build: ./backend
+    build: ./server
     container_name: slotify-backend
     volumes:
-      - ./backend:/var/www/html   # Mount code for live reload
+      - ./server:/var/www/html   # Mount code for live reload
     ports:
       - "8000:8000"               # Laravel dev server port
     depends_on:
@@ -19,10 +19,10 @@ services:
       DB_PASSWORD: yourpassword
 
   frontend:
-    build: ./frontend
+    build: ./client
     container_name: slotify-frontend
     volumes:
-      - ./frontend:/app           # Mount code for live reload
+      - ./client:/app           # Mount code for live reload
     ports:
       - "3000:3000"               # Next.js dev server port
     environment:
