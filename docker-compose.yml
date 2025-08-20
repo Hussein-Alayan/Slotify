@@ -22,7 +22,8 @@ services:
     build: ./client
     container_name: slotify-frontend
     volumes:
-      - ./client:/app           # Mount code for live reload
+      - ./client:/app            # Mount project files
+      - /app/node_modules        # Keep container's node_modules
     ports:
       - "3000:3000"               # Next.js dev server port
     environment:

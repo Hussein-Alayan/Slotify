@@ -5,10 +5,13 @@ FROM node:20
 WORKDIR /app
 
 # Copy package.json and package-lock.json
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install && npm rebuild lightningcss
+
+# Debug: List node_modules/.bin and installed packages
+RUN ls -l node_modules/.bin && npm list --depth=0
 
 # Copy the rest of the app code
 COPY . .
