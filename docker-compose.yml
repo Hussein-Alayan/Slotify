@@ -1,5 +1,4 @@
 version: '3.9'
-
 services:
   backend:
     build: ./server
@@ -25,7 +24,7 @@ services:
       - ./client:/app            # Mount project files
       - /app/node_modules        # Keep container's node_modules
     ports:
-      - "3000:3000"               # Next.js dev server port
+      - "3000:3000"              # Next.js dev server port
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
 
@@ -41,5 +40,17 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    env_file:
+      - .env
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  n8n_data:
