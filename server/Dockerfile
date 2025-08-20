@@ -14,13 +14,14 @@ RUN apt-get update && apt-get install -y \
 # Set working directory inside container
 WORKDIR /var/www/html
 
-# Copy composer files and install dependencies
+# Copy composer files
 COPY composer.json composer.lock ./
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install
-
 # Copy the rest of your Laravel app
 COPY . .
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Install dependencies and run artisan commands now that artisan exists
+RUN composer install && php artisan config:clear
 
 # Expose port for Laravel dev server
 EXPOSE 8000
