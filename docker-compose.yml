@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./backend
+    container_name: slotify-backend
+    volumes:
+      - ./backend:/var/www/html   # Mount code for live reload
+    ports:
+      - "8000:8000"               # Laravel dev server port
+    depends_on:
+      - db
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: slotify
+      DB_USERNAME: postgres
+      DB_PASSWORD: yourpassword
+
+  frontend:
+    build: ./frontend
+    container_name: slotify-frontend
+    volumes:
+      - ./frontend:/app           # Mount code for live reload
+    ports:
+      - "3000:3000"               # Next.js dev server port
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  db:
+    image: postgres:17
+    container_name: slotify-db
+    environment:
+      POSTGRES_DB: slotify
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
