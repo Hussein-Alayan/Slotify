@@ -13,7 +13,7 @@ class AuthTest extends TestCase
 
     public function test_user_can_register()
     {
-        $response = $this->postJson('/api/register', [
+    $response = $this->postJson('/api/v1/register', [
             'name' => 'Test User',
             'email' => 'test' . Str::random(5) . '@example.com',
             'password' => 'password123',
@@ -30,7 +30,7 @@ class AuthTest extends TestCase
             'password' => bcrypt('password123'),
         ]);
 
-        $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
             'email' => $user->email,
             'password' => 'password123',
         ]);
@@ -45,7 +45,7 @@ class AuthTest extends TestCase
         $token = $user->createToken('test')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/me');
+            ->getJson('/api/v1/me');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['id', 'name', 'email', 'created_at', 'updated_at']);
@@ -57,7 +57,7 @@ class AuthTest extends TestCase
             'password' => bcrypt('password123'),
         ]);
 
-        $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
             'email' => $user->email,
             'password' => 'wrongpassword',
         ]);
