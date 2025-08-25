@@ -1,6 +1,11 @@
 import React from "react";
+
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import Checkbox from "@/components/Checkbox";
+import Divider from "@/components/Divider";
+import ForgotPasswordLink from "@/components/ForgotPasswordLink";
+import GoogleButton from "@/components/GoogleButton";
 import Image from "next/image";
 
 export default function SignInPage() {
@@ -24,35 +29,22 @@ export default function SignInPage() {
         <h2 className="text-center text-lg font-medium mb-2">
           Welcome back! Please sign in to your account
         </h2>
-        <form className="w-full max-w-sm space-y-4">
+        <form className="w-full max-w-sm space-y-6">
           <Input label="Email" type="email" placeholder="Enter your email" />
           <Input
             label="Password"
             type="password"
             placeholder="Enter your Password"
           />
-          <Button type="button">Sign In</Button>
+          <div className="mt-6">
+            <Button type="button">Sign In</Button>
+          </div>
         </form>
-        <div className="flex items-center w-full max-w-sm my-6">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="mx-2 text-gray-400 text-sm">Or continue with</span>
-          <div className="flex-1 h-px bg-gray-200" />
-        </div>
-        <button className="w-full max-w-sm border border-[var(--color-primary)] rounded py-2 flex items-center justify-center font-semibold text-[var(--color-primary)] mb-4">
-          <span className="mr-2 bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center text-sm">
-            G
-          </span>
-        </button>
-        <div className="flex items-center justify-between w-full max-w-sm mb-4">
-          <label className="flex items-center text-sm">
-            <input type="checkbox" className="mr-2" /> Remember me
-          </label>
-          <a
-            href="#"
-            className="text-sm text-[var(--color-primary)] font-medium"
-          >
-            Forgot password?
-          </a>
+        <Divider>Or continue with</Divider>
+        <GoogleButton />
+        <div className="flex items-center justify-between w-full max-w-sm mb-8 gap-4">
+          <Checkbox label="Remember me" />
+          <ForgotPasswordLink />
         </div>
         <div className="text-center text-sm">
           Don&apos;t have an account?{" "}
