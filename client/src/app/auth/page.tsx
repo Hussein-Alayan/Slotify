@@ -1,6 +1,7 @@
 import React from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import Image from "next/image";
 
 export default function SignInPage() {
   return (
@@ -8,9 +9,13 @@ export default function SignInPage() {
       {/* Left Side - Auth Form */}
       <div className="flex-1 flex flex-col justify-center items-center bg-white p-8">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-24 h-24 rounded-full bg-[var(--color-primary)] flex items-center justify-center mb-4">
-            {/* Replace with your logo SVG or image */}
-            <span className="text-white text-4xl">📅</span>
+          <div className="w-24 h-24 rounded-full bg-[var(--color-primary)] flex items-center justify-center mb-4 overflow-hidden">
+            <Image
+              src="/logos/Dark-noText.svg"
+              alt="Slotify Logo"
+              width={70}
+              height={70}
+            />
           </div>
           <span className="font-bold text-[var(--color-primary)] text-lg tracking-wide">
             SLOTIFY
@@ -50,7 +55,7 @@ export default function SignInPage() {
           </a>
         </div>
         <div className="text-center text-sm">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a href="#" className="font-semibold text-[var(--color-primary)]">
             Sign up
           </a>
@@ -58,10 +63,15 @@ export default function SignInPage() {
       </div>
       {/* Right Side - Illustration & Text */}
       <div className="hidden md:flex flex-1 flex-col justify-center items-center bg-[var(--color-primary)] text-white p-8">
-        <div className="mb-8">
-          {/* Replace with your calendar SVG or image */}
-          <span className="text-7xl">📅</span>
+        <div>
+          <Image
+            src="/icons/calender.svg"
+            alt="Calendar Icon"
+            width={120}
+            height={120}
+          />
         </div>
+        <div className="h-24" />
         <h2 className="text-2xl font-semibold mb-2">
           Streamline Your Scheduling
         </h2>
