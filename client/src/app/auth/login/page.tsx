@@ -1,18 +1,49 @@
 import Image from "next/image";
+
+import React, { useState } from "react";
 import Input from "@/components/shared/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/shared/Checkbox";
 import Divider from "@/components/shared/Divider";
+import styles from "./page.module.css";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    // Simple validation
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+    setLoading(true);
+    // Simulate async login (replace with real API call)
+    setTimeout(() => {
+      setLoading(false);
+      if (email !== "test@example.com" || password !== "password") {
+        setError("Invalid credentials. Please try again.");
+      } else {
+        setError("");
+        // Redirect or do something on success
+        alert("Login successful!");
+      }
+    }, 1000);
+  };
+
   return (
-    <div className="w-screen h-screen flex bg-[#232323]">
-      <div className="flex flex-1 bg-white rounded-none overflow-hidden shadow-lg">
+    <div className={styles.loginPage}>
+      <div className={styles.loginCard}>
         {/* Left Side - Form */}
-        <div className="flex flex-col flex-1 items-center justify-center px-12 py-8">
+        <div className={styles.leftCol}>
           {/* Logo */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-28 h-28 rounded-full bg-[var(--color-primary)] flex items-center justify-center mb-4">
+          <div className={styles.logoContainer}>
+            <div className={styles.logoCircle}>
               <Image
                 src="/logos/Dark-noText.svg"
                 alt="Slotify Logo"
@@ -20,9 +51,7 @@ export default function LoginPage() {
                 height={80}
               />
             </div>
-            <span className="text-xs font-semibold tracking-widest text-[var(--color-primary)]">
-              SLOTIFY
-            </span>
+            <span className={styles.slotifyText}>SLOTIFY</span>
           </div>
           {/* Welcome Text */}
           <div className="mb-6 text-center">
@@ -31,42 +60,65 @@ export default function LoginPage() {
             </p>
           </div>
           {/* Form */}
-          <form className="w-full max-w-md flex flex-col gap-4">
+          <form
+            className="w-full max-w-md flex flex-col gap-4"
+            onSubmit={handleSubmit}
+          >
             <Input
               label="Email"
               placeholder="Enter your email"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
             <Input
               label="Password"
               placeholder="Enter your Password"
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <Button type="submit">Sign In</Button>
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
+            <Button type="submit" disabled={loading}>
+              {loading ? "Signing In..." : "Sign In"}
+            </Button>
           </form>
           {/* Divider */}
           <Divider>Or continue with</Divider>
           {/* Google Button */}
-          <button className="w-full max-w-md border border-[var(--color-primary)] rounded-lg px-4 py-2 flex items-center justify-center font-bold text-[var(--color-primary)] text-base mb-2">
-            <span className="mr-2 text-lg">G</span>
+          <button
+            className={styles.googleBtn}
+            style={{ marginTop: "1.25rem", marginBottom: "1.5rem" }}
+          >
+            <span className={styles.googleIcon}>G</span>
           </button>
           {/* Options Row */}
-          <div className="w-full max-w-md flex items-center justify-between mt-2 mb-4">
-            <Checkbox label="Remember me" />
-            <a href="#" className="text-sm text-gray-500 hover:underline">
-              Forgot password?
-            </a>
-          </div>
-          {/* Sign up link */}
-          <div className="w-full max-w-md text-center mt-2">
-            <span className="text-sm text-gray-700">
-              Don't have an account?{" "}
-              <a href="#" className="font-bold text-black hover:underline">
-                Sign up
+          <div className="w-full max-w-md flex flex-col items-center gap-4 mb-4">
+            <div className="w-full flex items-center justify-between">
+              <Checkbox
+                label="Remember me"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
+              <a
+                href="#"
+                className="text-sm font-medium text-[var(--color-primary)] hover:underline"
+              >
+                Forgot password?
               </a>
-            </span>
+            </div>
+            <div className="w-full text-center">
+              <span className="text-base text-[var(--color-primary)]">
+                Don't have an account?{" "}
+                <a href="#" className="font-bold hover:underline">
+                  Sign up
+                </a>
+              </span>
+            </div>
           </div>
         </div>
         {/* Right Side - Illustration */}
@@ -76,7 +128,7 @@ export default function LoginPage() {
             alt="Calendar Icon"
             width={120}
             height={120}
-            className="mb-8"
+            className={styles.calendarIcon}
           />
           <h2 className="text-2xl font-bold mb-4 text-center">
             Streamline Your Scheduling

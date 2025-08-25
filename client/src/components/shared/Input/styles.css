@@ -11,7 +11,8 @@
   transition: border-color 0.2s;
 }
 .slotify-input:focus {
-  border-color: #1e4d6b; /* secondary blue or accent */
+  border-color: var(--color-secondary) !important;
+  box-shadow: 0 0 0 2px rgba(30,77,107,0.15);
 }
 .slotify-input::placeholder {
   color: #0a2940;

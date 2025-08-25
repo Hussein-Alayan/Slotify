@@ -1,0 +1,68 @@
+.googleBtn {
+  width: 100%;
+  max-width: 28rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.125rem;
+  color: var(--color-primary);
+  background: var(--color-white);
+  margin-bottom: 0.5rem;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+.googleBtn:hover {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: var(--color-primary);
+}
+.googleIcon {
+  margin-right: 0.5rem;
+  font-size: 1.25rem;
+}
+.calendarIcon {
+  margin-bottom: 3.5rem;
+}
+.loginPage {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  background: var(--color-secondary);
+}
+.loginCard {
+  display: flex;
+  flex: 1;
+  background: var(--color-white);
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 4px 24px 0 rgb(16 24 40 / 10%);
+}
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 3rem;
+}
+.logoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  margin-top: 2.5rem;
+}
+.logoCircle {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}

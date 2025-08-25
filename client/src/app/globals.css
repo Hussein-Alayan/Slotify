@@ -9,11 +9,13 @@ html, body {
   height: 100%;
 }
 
+
 body {
   min-height: 100vh;
   line-height: 1.5;
   background: var(--color-white);
   color: var(--color-black);
+  font-family: 'Poppins', sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -52,12 +54,7 @@ button {
 
 
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+
 
 @media (prefers-color-scheme: dark) {
   :root {
