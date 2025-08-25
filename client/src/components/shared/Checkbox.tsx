@@ -6,10 +6,10 @@ type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement> & {
 
 export default function Checkbox({ label, ...props }: CheckboxProps) {
   return (
-    <label className="flex items-center text-sm cursor-pointer select-none">
+    <label className="flex items-center text-sm cursor-pointer select-none font-normal">
       <input
         type="checkbox"
-        className="mr-2 accent-[var(--color-primary)]"
+        className="mr-2 accent-[var(--color-primary)] rounded"
         {...props}
       />
       {label}
