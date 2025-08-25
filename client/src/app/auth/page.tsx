@@ -1,4 +1,6 @@
 import React from "react";
+import Input from "@/components/Input";
+import Button from "@/components/Button";
 
 export default function SignInPage() {
   return (
@@ -18,28 +20,13 @@ export default function SignInPage() {
           Welcome back! Please sign in to your account
         </h2>
         <form className="w-full max-w-sm space-y-4">
-          <div>
-            <label className="block text-sm font-semibold mb-1">Email</label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="w-full border border-[var(--color-primary)] rounded px-3 py-2 outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold mb-1">Password</label>
-            <input
-              type="password"
-              placeholder="Enter your Password"
-              className="w-full border border-[var(--color-primary)] rounded px-3 py-2 outline-none"
-            />
-          </div>
-          <button
-            type="button"
-            className="w-full bg-[var(--color-primary)] text-white py-2 rounded font-semibold"
-          >
-            Sign In
-          </button>
+          <Input label="Email" type="email" placeholder="Enter your email" />
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Enter your Password"
+          />
+          <Button type="button">Sign In</Button>
         </form>
         <div className="flex items-center w-full max-w-sm my-6">
           <div className="flex-1 h-px bg-gray-200" />
