@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 
 import Input from "@/components/Input";
@@ -9,6 +10,44 @@ import GoogleButton from "@/components/GoogleButton";
 import Image from "next/image";
 
 export default function SignInPage() {
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [remember, setRemember] = React.useState(false);
+  const [errors, setErrors] = React.useState<{
+    email?: string;
+    password?: string;
+  }>({});
+  const [submitting, setSubmitting] = React.useState(false);
+
+  function validate() {
+    const newErrors: { email?: string; password?: string } = {};
+    if (!email) {
+      newErrors.email = "Email is required.";
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      newErrors.email = "Invalid email address.";
+    }
+    if (!password) {
+      newErrors.password = "Password is required.";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters.";
+    }
+    return newErrors;
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const validationErrors = validate();
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length === 0) {
+      setSubmitting(true);
+      // TODO: Add actual sign-in logic here
+      setTimeout(() => {
+        setSubmitting(false);
+        alert("Signed in successfully (demo)");
+      }, 1000);
+    }
+  }
+
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Auth Form */}
@@ -29,21 +68,50 @@ export default function SignInPage() {
         <h2 className="text-center text-lg font-medium mb-2">
           Welcome back! Please sign in to your account
         </h2>
-        <form className="w-full max-w-sm space-y-6">
-          <Input label="Email" type="email" placeholder="Enter your email" />
+        <form
+          className="w-full max-w-sm space-y-6"
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          <Input
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            disabled={submitting}
+          />
+          {errors.email && (
+            <div className="text-red-500 text-xs mb-2">{errors.email}</div>
+          )}
           <Input
             label="Password"
             type="password"
             placeholder="Enter your Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            disabled={submitting}
           />
+          {errors.password && (
+            <div className="text-red-500 text-xs mb-2">{errors.password}</div>
+          )}
           <div className="mt-6">
-            <Button type="button">Sign In</Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Signing In..." : "Sign In"}
+            </Button>
           </div>
         </form>
         <Divider>Or continue with</Divider>
         <GoogleButton />
         <div className="flex items-center justify-between w-full max-w-sm mb-8 gap-4">
-          <Checkbox label="Remember me" />
+          <Checkbox
+            label="Remember me"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            disabled={submitting}
+          />
           <ForgotPasswordLink />
         </div>
         <div className="text-center text-sm">
