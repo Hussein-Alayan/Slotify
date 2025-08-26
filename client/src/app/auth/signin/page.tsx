@@ -9,7 +9,7 @@ import Checkbox from "@/components/shared/Checkbox";
 import Divider from "@/components/shared/Divider";
 import styles from "./page.module.css";
 
-export default function LoginPage() {
+export default function SigninPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -113,7 +113,7 @@ export default function LoginPage() {
                 Forgot password?
               </Link>
             </div>
-            <div className="w-full text-center">
+            <div className={styles.loginFooter}>
               <span className="text-base text-[var(--color-primary)]">
                 Don&apos;t have an account?{" "}
                 <Link href="/auth/signup" className="font-bold hover:underline">
