@@ -59,15 +59,10 @@ class AuthController extends Controller
     public function handleGoogleCallback()
     {
         $googleUser = Socialite::driver('google')->user();
-        $user = User::firstOrCreate(
-            ['email' => $googleUser->getEmail()],
-            ['name' => $googleUser->getName()]
-        );
-        // Issue Sanctum token
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $result = $this->authService->loginWithGoogle($googleUser);
         return response()->json([
-            'user' => new UserResource($user),
-            'token' => $token,
+            'user' => new UserResource($result['user']),
+            'token' => $result['token'],
         ]);
     }
 }
