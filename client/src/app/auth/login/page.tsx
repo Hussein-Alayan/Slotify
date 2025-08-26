@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 
 import React, { useState } from "react";
 import Input from "@/components/shared/Input";
@@ -115,9 +116,9 @@ export default function LoginPage() {
             <div className="w-full text-center">
               <span className="text-base text-[var(--color-primary)]">
                 Don&apos;t have an account?{" "}
-                <a href="#" className="font-bold hover:underline">
+                <Link href="/auth/signup" className="font-bold hover:underline">
                   Sign up
-                </a>
+                </Link>
               </span>
             </div>
           </div>
