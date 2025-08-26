@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 
 import React, { useState } from "react";
@@ -113,7 +114,7 @@ export default function LoginPage() {
             </div>
             <div className="w-full text-center">
               <span className="text-base text-[var(--color-primary)]">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <a href="#" className="font-bold hover:underline">
                   Sign up
                 </a>
