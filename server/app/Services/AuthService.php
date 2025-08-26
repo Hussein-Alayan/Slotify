@@ -7,6 +7,15 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 class AuthService {
+	public function loginWithGoogle($googleUser)
+	{
+		$user = User::firstOrCreate(
+			['email' => $googleUser->getEmail()],
+			['name' => $googleUser->getName()]
+		);
+		$token = $user->createToken('auth_token')->plainTextToken;
+		return compact('user', 'token');
+	}
 	public function register(array $data)
 	{
 		$user = User::create([
