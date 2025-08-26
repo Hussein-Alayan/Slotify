@@ -58,7 +58,16 @@ class AuthController extends Controller
 
     public function handleGoogleCallback()
     {
-        $googleUser = Socialite::driver('google')->user();
+        try {
+            $googleUser = Socialite::driver('google')->user();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Google authentication failed.'], 401);
+        }
+
+        if (! $googleUser || ! $googleUser->getEmail()) {
+            return response()->json(['error' => 'No email returned from Google.'], 422);
+        }
+
         $result = $this->authService->loginWithGoogle($googleUser);
         return response()->json([
             'user' => new UserResource($result['user']),
