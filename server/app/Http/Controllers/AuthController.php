@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
@@ -9,10 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
-use function PHPSTORM_META\map;
-
 use App\Services\AuthService;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -53,5 +49,25 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return new UserResource($this->authService->me($request->user()));
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        $googleUser = Socialite::driver('google')->user();
+        $user = User::firstOrCreate(
+            ['email' => $googleUser->getEmail()],
+            ['name' => $googleUser->getName()]
+        );
+        // Issue Sanctum token
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return response()->json([
+            'user' => new UserResource($user),
+            'token' => $token,
+        ]);
     }
 }
