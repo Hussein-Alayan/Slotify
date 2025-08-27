@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import React, { useState } from "react";
+import api, { csrf } from "@/lib/api";
 import Input from "@/components/shared/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/shared/Checkbox";
@@ -19,23 +20,21 @@ export default function SigninPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    // Simple validation
     if (!email || !password) {
       setError("Please enter both email and password.");
       return;
     }
     setLoading(true);
-    // Simulate async login (replace with real API call)
-    setTimeout(() => {
+    try {
+      await csrf();
+      await api.post("/v1/login", { email, password });
       setLoading(false);
-      if (email !== "test@example.com" || password !== "password") {
-        setError("Invalid credentials. Please try again.");
-      } else {
-        setError("");
-        // Redirect or do something on success
-        alert("Login successful!");
-      }
-    }, 1000);
+      alert("Login successful!");
+      // Optionally redirect to dashboard
+    } catch (err: any) {
+      setLoading(false);
+      setError(err?.response?.data?.message || "Login failed.");
+    }
   };
 
   return (

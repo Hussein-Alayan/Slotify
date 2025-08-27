@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import api, { csrf } from "@/lib/api";
 import Input from "@/components/shared/Input";
 import Checkbox from "@/components/shared/Checkbox";
 import Button from "@/components/Button";
@@ -17,7 +18,7 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!fullName || !email || !businessName || !password || !confirmPassword) {
@@ -33,10 +34,22 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await csrf();
+      await api.post("/v1/register", {
+        name: fullName,
+        email,
+        business_name: businessName,
+        password,
+        password_confirmation: confirmPassword,
+      });
       setLoading(false);
       alert("Account created!");
-    }, 1000);
+      // Optionally redirect to signin or dashboard
+    } catch (err: any) {
+      setLoading(false);
+      setError(err?.response?.data?.message || "Registration failed.");
+    }
   };
 
   return (
