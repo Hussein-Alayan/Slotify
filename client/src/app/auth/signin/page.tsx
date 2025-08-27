@@ -95,6 +95,13 @@ export default function SigninPage() {
           <button
             className={styles.googleBtn}
             style={{ marginTop: "1.25rem", marginBottom: "1.5rem" }}
+            type="button"
+            onClick={() => {
+              // Redirect to backend Google OAuth endpoint
+              window.location.href = `${
+                process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
+              }/api/v1/auth/google`;
+            }}
           >
             <span className={styles.googleIcon}>G</span>
           </button>
