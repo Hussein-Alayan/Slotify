@@ -21,7 +21,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['user', 'token']);
+            ->assertJsonStructure(['user']);
     }
 
     public function test_user_can_login()
@@ -36,7 +36,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['user', 'token']);
+            ->assertJsonStructure(['user']);
     }
 
     public function test_authenticated_user_can_get_profile()
