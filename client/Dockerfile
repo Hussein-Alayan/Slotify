@@ -8,13 +8,14 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm install && npm rebuild lightningcss
 
-# Debug: List node_modules/.bin and installed packages
-RUN ls -l node_modules/.bin && npm list --depth=0
+RUN npm install
 
 # Copy the rest of the app code
 COPY . .
+
+# Rebuild lightningcss native binary for container platform
+RUN npm rebuild lightningcss --force
 
 # Expose Next.js dev port
 EXPOSE 3000
