@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import api, { csrf } from "@/lib/api";
+import { getErrorMessage } from "@/utils/errorMessage";
 import SigninForm from "../components/SigninForm";
 import Link from "next/link";
 import Image from "next/image";
@@ -27,9 +28,9 @@ const SigninContainer: React.FC = () => {
       setLoading(false);
       alert("Login successful!");
       // Optionally redirect to dashboard
-    } catch (err: any) {
+    } catch (err: unknown) {
       setLoading(false);
-      setError(err?.response?.data?.message || "Login failed.");
+      setError(getErrorMessage(err, "Login failed."));
     }
   };
 

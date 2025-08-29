@@ -3,7 +3,6 @@ import Input from "@/components/shared/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/shared/Checkbox";
 import Divider from "@/components/shared/Divider";
-import styles from "../signin/page.module.css";
 
 interface SigninFormProps {
   email: string;

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import api, { csrf } from "@/lib/api";
+import { getErrorMessage } from "@/utils/errorMessage";
 import SignupForm from "../components/SignupForm";
 import Link from "next/link";
 import Image from "next/image";
@@ -44,9 +45,9 @@ const SignupContainer: React.FC = () => {
       setLoading(false);
       alert("Account created!");
       // Optionally redirect to signin or dashboard
-    } catch (err: any) {
+    } catch (err: unknown) {
       setLoading(false);
-      setError(err?.response?.data?.message || "Registration failed.");
+      setError(getErrorMessage(err, "Registration failed."));
     }
   };
 
