@@ -1,0 +1,69 @@
+/* Signup Page Custom Styles */
+.signupPage {
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+.signupLeft {
+  flex: 1;
+  background: #0a2940;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.signupRight {
+  flex: 1;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.signupLogo {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.signupTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.signupDesc {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 400px;
+  font-size: 1.15rem;
+  margin-bottom: 2.5rem;
+}
+.signupForm {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.signupError {
+  color: #e53e3e;
+  text-align: center;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+.signupFooter {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+}
+.signupLink {
+  font-weight: bold;
+  color: #0a2940;
+  text-decoration: underline;
+  cursor: pointer;
+}

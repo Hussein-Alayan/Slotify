@@ -1,3 +1,6 @@
+"use client";
+import SigninContainer from "../containers/SigninContainer";
+
 export default function SigninPage() {
-  return <div>Sign In Page</div>;
+  return <SigninContainer />;
 }

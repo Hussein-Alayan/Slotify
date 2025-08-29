@@ -1,0 +1,20 @@
+/* Custom input style for login form */
+.slotify-input {
+  width: 100%;
+  border: 2px solid #0a2940; /* dark blue */
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.92rem;
+  color: #0a2940;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.slotify-input:focus {
+  border-color: var(--color-secondary) !important;
+  box-shadow: 0 0 0 2px rgba(30,77,107,0.15);
+}
+.slotify-input::placeholder {
+  color: #0a2940;
+  opacity: 1;
+}

@@ -1,3 +1,5 @@
+import SignupContainer from "../containers/SignupContainer";
+
 export default function SignupPage() {
-  return <div>Sign Up Page</div>;
+  return <SignupContainer />;
 }
