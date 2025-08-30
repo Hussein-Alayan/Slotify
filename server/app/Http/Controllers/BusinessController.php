@@ -19,6 +19,10 @@ class BusinessController extends Controller
         $validated = $request->validated();
         $user = $request->user();
         $business = $this->businessService->storeOrUpdate($user, $validated);
-        return response()->json(['success' => true, 'business' => $business->load(['bookingRules', 'services', 'resources'])]);
+        if ($business) {
+            return response()->json(['success' => true, 'business' => $business->load(['bookingRules', 'services', 'resources'])]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Business not found or could not be created.'], 404);
+        }
     }
 }
