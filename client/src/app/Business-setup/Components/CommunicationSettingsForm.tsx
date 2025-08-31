@@ -17,7 +17,7 @@ type Notifications = {
   reminder: boolean;
 };
 
-type CommunicationSettings = {
+export type CommunicationSettings = {
   whatsappApiKey: string;
   autoReplyEnabled: boolean;
   responseStyle: string;

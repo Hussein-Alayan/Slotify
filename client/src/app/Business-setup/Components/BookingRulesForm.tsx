@@ -2,7 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React from "react";
 
-type BookingRules = {
+export type BookingRules = {
   leadTime: number;
   cancellationPolicy: number;
   bufferTime: number;

@@ -1,9 +1,9 @@
-import { BusinessSetup } from "@/app/Business-setup/containers/business-setup"
+import BusinessSetupContainer from "@/app/Business-setup/containers/business-setup"
 
 export default function SetupPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <BusinessSetup />
+  <BusinessSetupContainer />
     </div>
   )
 }

@@ -7,8 +7,13 @@ import { Plus, Trash2, Clock } from "lucide-react";
 import React from "react";
 
 type DayOfWeek = { key: string; label: string };
-type Availability = { start: string; end: string; closed: boolean };
-type StaffMember = {
+import type { CheckedState } from "@radix-ui/react-checkbox";
+type Availability = {
+  start: string;
+  end: string;
+  closed: boolean | CheckedState;
+};
+export type StaffMember = {
   id: string;
   name: string;
   role: string;
@@ -22,7 +27,11 @@ interface StaffFormProps {
   daysOfWeek: DayOfWeek[];
   addStaff: () => void;
   removeStaff: (id: string) => void;
-  updateStaff: (id: string, field: string, value: any) => void;
+  updateStaff: (
+    id: string,
+    field: keyof StaffMember,
+    value: string | number | { [key: string]: Availability }
+  ) => void;
 }
 
 export function StaffForm({
@@ -175,15 +184,16 @@ export function StaffForm({
                       )}
                       <div className="flex items-center gap-2">
                         <Checkbox
-                          checked={
-                            member.availability[day.key]?.closed || false
-                          }
-                          onCheckedChange={(checked) => {
+                          checked={Boolean(
+                            member.availability[day.key]?.closed
+                          )}
+                          onCheckedChange={(checked: CheckedState) => {
                             const updatedAvailability = {
                               ...member.availability,
                               [day.key]: {
                                 ...member.availability[day.key],
-                                closed: checked,
+                                closed:
+                                  checked === "indeterminate" ? false : checked,
                               },
                             };
                             updateStaff(

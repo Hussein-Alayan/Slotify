@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
 import React from "react";
 
-type Service = {
+export type Service = {
   id: number;
   name: string;
   description: string;

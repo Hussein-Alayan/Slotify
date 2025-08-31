@@ -12,7 +12,7 @@ import { Clock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import React from "react";
 
-type BusinessData = {
+export type BusinessData = {
   businessName: string;
   industry: string;
   contactEmail: string;
@@ -22,17 +22,17 @@ type BusinessData = {
   timezone: string;
 };
 
-type WorkingHour = {
+export type WorkingHour = {
   start: string;
   end: string;
   closed: boolean;
 };
 
-type WorkingHours = {
+export type WorkingHours = {
   [key: string]: WorkingHour;
 };
 
-type DayOfWeek = {
+export type DayOfWeek = {
   key: string;
   label: string;
 };
