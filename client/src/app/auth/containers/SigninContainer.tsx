@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import api, { csrf } from "@/lib/api";
 import { getErrorMessage } from "@/utils/errorMessage";
-import SigninForm from "../components/SigninForm";
+import SigninForm from "../_components/SigninForm";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "../signin/page.module.css";
