@@ -1,6 +1,8 @@
 "use client";
 
 import { useBusinessSetup, setupSteps, daysOfWeek } from "./useBusinessSetup";
+import { saveBusinessProfile } from "./businessSetupApi";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { SetupSidebar } from "../Components/SetupSidebar";
 import { SetupProgress } from "../Components/SetupProgress";
@@ -34,6 +36,33 @@ export default function BusinessSetupContainer() {
     prevStep,
     nextStep,
   } = useBusinessSetup();
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  async function handleSave() {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      await saveBusinessProfile({
+        businessData,
+        workingHours,
+        services,
+        staff,
+      });
+      setSuccess(true);
+    } catch (e: any) {
+      setError(
+        e?.response?.data?.message ||
+          e.message ||
+          "Failed to save business profile"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -89,6 +118,24 @@ export default function BusinessSetupContainer() {
                     communicationSettings={communicationSettings}
                     setCommunicationSettings={setCommunicationSettings}
                   />
+                )}
+                {/* Show Save/Finish button on last step */}
+                {currentStep === setupSteps.length && (
+                  <div className="mt-6 flex flex-col gap-2">
+                    <button
+                      className="bg-primary text-white px-6 py-2 rounded disabled:opacity-50"
+                      onClick={handleSave}
+                      disabled={loading}
+                    >
+                      {loading ? "Saving..." : "Finish Setup"}
+                    </button>
+                    {error && <div className="text-red-500">{error}</div>}
+                    {success && (
+                      <div className="text-green-600">
+                        Business profile saved!
+                      </div>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>
