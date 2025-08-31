@@ -56,6 +56,12 @@ const daysOfWeek = [
   { key: "sat", label: "Sat" },
   { key: "sun", label: "Sun" },
 ];
+type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+
+type WorkingHours = Record<
+  DayKey,
+  { start: string; end: string; closed: boolean }
+>;
 
 const defaultWorkingHours = {
   mon: { start: "09:00", end: "17:00", closed: false },
@@ -65,7 +71,7 @@ const defaultWorkingHours = {
   fri: { start: "09:00", end: "17:00", closed: false },
   sat: { start: "09:00", end: "15:00", closed: false },
   sun: { start: "", end: "", closed: true },
-};
+} as WorkingHours;
 
 export function BusinessSetup() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -80,7 +86,8 @@ export function BusinessSetup() {
     timezone: "",
   });
 
-  const [workingHours, setWorkingHours] = useState(defaultWorkingHours);
+  const [workingHours, setWorkingHours] =
+    useState<WorkingHours>(defaultWorkingHours);
 
   const [services, setServices] = useState([
     {
@@ -129,7 +136,7 @@ export function BusinessSetup() {
   };
 
   const handleWorkingHoursChange = (
-    day: string,
+    day: DayKey,
     field: string,
     value: string | boolean
   ) => {
@@ -156,7 +163,7 @@ export function BusinessSetup() {
     setServices(services.filter((service) => service.id !== id));
   };
 
-  const updateService = (id: number, field: string, value: any) => {
+  const updateService = (id: number, field: string, value: string | number) => {
     setServices(
       services.map((service) =>
         service.id === id ? { ...service, [field]: value } : service
@@ -180,7 +187,14 @@ export function BusinessSetup() {
     setStaff(staff.filter((member) => member.id !== id));
   };
 
-  const updateStaff = (id: number, field: string, value: any) => {
+  const updateStaff = (
+    id: number,
+    field: string,
+    value:
+      | string
+      | number
+      | Record<DayKey, { start: string; end: string; closed: boolean }>
+  ) => {
     setStaff(
       staff.map((member) =>
         member.id === id ? { ...member, [field]: value } : member
@@ -464,7 +478,7 @@ export function BusinessSetup() {
                             <div className="font-medium text-gray-700">
                               {day.label}
                             </div>
-                            {workingHours[day.key].closed ? (
+                            {workingHours[day.key as DayKey].closed ? (
                               <div className="col-span-2 text-gray-500">
                                 Closed
                               </div>
@@ -472,10 +486,10 @@ export function BusinessSetup() {
                               <>
                                 <Input
                                   type="time"
-                                  value={workingHours[day.key].start}
+                                  value={workingHours[day.key as DayKey].start}
                                   onChange={(e) =>
                                     handleWorkingHoursChange(
-                                      day.key,
+                                      day.key as DayKey,
                                       "start",
                                       e.target.value
                                     )
@@ -483,10 +497,10 @@ export function BusinessSetup() {
                                 />
                                 <Input
                                   type="time"
-                                  value={workingHours[day.key].end}
+                                  value={workingHours[day.key as DayKey].end}
                                   onChange={(e) =>
                                     handleWorkingHoursChange(
-                                      day.key,
+                                      day.key as DayKey,
                                       "end",
                                       e.target.value
                                     )
@@ -496,10 +510,10 @@ export function BusinessSetup() {
                             )}
                             <div className="flex items-center gap-2">
                               <Checkbox
-                                checked={workingHours[day.key].closed}
+                                checked={workingHours[day.key as DayKey].closed}
                                 onCheckedChange={(checked) =>
                                   handleWorkingHoursChange(
-                                    day.key,
+                                    day.key as DayKey,
                                     "closed",
                                     checked
                                   )
@@ -787,7 +801,8 @@ export function BusinessSetup() {
                                     <div className="font-medium text-gray-700">
                                       {day.label}
                                     </div>
-                                    {member.availability[day.key].closed ? (
+                                    {member.availability[day.key as DayKey]
+                                      .closed ? (
                                       <div className="col-span-2 text-gray-500">
                                         Not Available
                                       </div>
@@ -796,13 +811,17 @@ export function BusinessSetup() {
                                         <Input
                                           type="time"
                                           value={
-                                            member.availability[day.key].start
+                                            member.availability[
+                                              day.key as DayKey
+                                            ].start
                                           }
                                           onChange={(e) => {
                                             const updatedAvailability = {
                                               ...member.availability,
-                                              [day.key]: {
-                                                ...member.availability[day.key],
+                                              [day.key as DayKey]: {
+                                                ...member.availability[
+                                                  day.key as DayKey
+                                                ],
                                                 start: e.target.value,
                                               },
                                             };
@@ -816,13 +835,17 @@ export function BusinessSetup() {
                                         <Input
                                           type="time"
                                           value={
-                                            member.availability[day.key].end
+                                            member.availability[
+                                              day.key as DayKey
+                                            ].end
                                           }
                                           onChange={(e) => {
                                             const updatedAvailability = {
                                               ...member.availability,
-                                              [day.key]: {
-                                                ...member.availability[day.key],
+                                              [day.key as DayKey]: {
+                                                ...member.availability[
+                                                  day.key as DayKey
+                                                ],
                                                 end: e.target.value,
                                               },
                                             };
@@ -838,13 +861,16 @@ export function BusinessSetup() {
                                     <div className="flex items-center gap-2">
                                       <Checkbox
                                         checked={
-                                          member.availability[day.key].closed
+                                          member.availability[day.key as DayKey]
+                                            .closed
                                         }
                                         onCheckedChange={(checked) => {
                                           const updatedAvailability = {
                                             ...member.availability,
-                                            [day.key]: {
-                                              ...member.availability[day.key],
+                                            [day.key as DayKey]: {
+                                              ...member.availability[
+                                                day.key as DayKey
+                                              ],
                                               closed: checked,
                                             },
                                           };
