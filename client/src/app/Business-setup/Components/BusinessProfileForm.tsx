@@ -12,13 +12,50 @@ import { Clock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import React from "react";
 
+type BusinessData = {
+  businessName: string;
+  industry: string;
+  contactEmail: string;
+  contactPhone: string;
+  businessAddress: string;
+  brandVoice: string;
+  timezone: string;
+};
+
+type WorkingHour = {
+  start: string;
+  end: string;
+  closed: boolean;
+};
+
+type WorkingHours = {
+  [key: string]: WorkingHour;
+};
+
+type DayOfWeek = {
+  key: string;
+  label: string;
+};
+
+interface BusinessProfileFormProps {
+  businessData: BusinessData;
+  workingHours: WorkingHours;
+  daysOfWeek: DayOfWeek[];
+  handleInputChange: (field: keyof BusinessData, value: string) => void;
+  handleWorkingHoursChange: (
+    dayKey: string,
+    field: keyof WorkingHour,
+    value: string | boolean
+  ) => void;
+}
+
 export function BusinessProfileForm({
   businessData,
   workingHours,
   daysOfWeek,
   handleInputChange,
   handleWorkingHoursChange,
-}) {
+}: BusinessProfileFormProps) {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
