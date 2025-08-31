@@ -53,12 +53,17 @@ export default function BusinessSetupContainer() {
         staff,
       });
       setSuccess(true);
-    } catch (e: any) {
-      setError(
-        e?.response?.data?.message ||
-          e.message ||
-          "Failed to save business profile"
-      );
+    } catch (e: unknown) {
+      if (typeof e === "object" && e !== null) {
+        const err = e as { response?: { data?: { message?: string } }; message?: string };
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "Failed to save business profile"
+        );
+      } else {
+        setError("Failed to save business profile");
+      }
     } finally {
       setLoading(false);
     }
