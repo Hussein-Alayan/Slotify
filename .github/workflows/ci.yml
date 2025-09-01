@@ -6,10 +6,12 @@ on:
       - main
       - dev
       - feature/**
+      - slo-*
   pull_request:
     branches:
       - main
       - dev
+      - slo-*
 
 jobs:
   changes:
