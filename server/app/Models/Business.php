@@ -13,6 +13,7 @@ class Business extends Model
         'contact_phone',
         'address',
         'brand_voice',
+        'workflow',
     ];
 
     public function services()
