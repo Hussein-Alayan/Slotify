@@ -17,8 +17,8 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend || 'true' }}
+      frontend: ${{ steps.filter.outputs.frontend || 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
