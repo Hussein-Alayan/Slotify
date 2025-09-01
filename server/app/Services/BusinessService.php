@@ -49,6 +49,18 @@ class BusinessService
                     );
                 }
             }
+
+            // Generate workflow JSON
+            $workflow = [
+                'business' => $business->toArray(),
+                'services' => $business->services()->get()->toArray(),
+                'resources' => $business->resources()->get()->toArray(),
+                'booking_rules' => $business->bookingRules()->first(),
+                'communication_channels' => $business->communicationChannels()->get()->toArray(),
+                'clients' => $business->clients()->get()->toArray(),
+            ];
+            $business->workflow = json_encode($workflow);
+            $business->save();
         });
         return $business;
     }
