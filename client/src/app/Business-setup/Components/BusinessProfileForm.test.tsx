@@ -49,7 +49,9 @@ describe("BusinessProfileForm", () => {
       />
     );
     expect(screen.getByLabelText(/Business Name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Industry/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: /Industry/i })
+    ).toBeInTheDocument();
     expect(screen.getByLabelText(/Contact Email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Contact Phone/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Business Address/i)).toBeInTheDocument();

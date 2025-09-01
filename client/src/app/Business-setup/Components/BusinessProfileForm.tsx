@@ -84,7 +84,7 @@ export function BusinessProfileForm({
             value={businessData.industry}
             onValueChange={(value) => handleInputChange("industry", value)}
           >
-            <SelectTrigger className="mt-1">
+            <SelectTrigger className="mt-1" aria-label="Industry">
               <SelectValue placeholder="Select industry" />
             </SelectTrigger>
             <SelectContent>
@@ -142,7 +142,7 @@ export function BusinessProfileForm({
             value={businessData.brandVoice}
             onValueChange={(value) => handleInputChange("brandVoice", value)}
           >
-            <SelectTrigger className="mt-1">
+            <SelectTrigger className="mt-1" aria-label="Brand Voice">
               <SelectValue placeholder="Select brand voice" />
             </SelectTrigger>
             <SelectContent>
@@ -158,7 +158,7 @@ export function BusinessProfileForm({
             value={businessData.timezone}
             onValueChange={(value) => handleInputChange("timezone", value)}
           >
-            <SelectTrigger className="mt-1">
+            <SelectTrigger className="mt-1" aria-label="Timezone">
               <SelectValue placeholder="Select timezone" />
             </SelectTrigger>
             <SelectContent>
