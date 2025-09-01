@@ -82,6 +82,8 @@ jobs:
         run: npm install
       - name: Run lint
         run: npm run lint --if-present
+      - name: Clear Jest cache
+        run: npx jest --clearCache
       - name: Run tests
         run: npm test -- --watchAll=false
       - name: Build project

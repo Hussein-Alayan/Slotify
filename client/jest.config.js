@@ -1,5 +1,4 @@
 module.exports = {
-  preset: 'ts-jest',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
   moduleNameMapper: {
@@ -7,10 +6,6 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx|js|jsx)$': 'babel-jest',
   },
-  transformIgnorePatterns: [
-    '/node_modules/(?!@radix-ui|lucide-react).+\\.js$'
-  ],
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
 };
