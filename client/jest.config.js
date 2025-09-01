@@ -7,7 +7,10 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx|js|jsx)$': 'ts-jest',
   },
+  transformIgnorePatterns: [
+    '/node_modules/(?!@radix-ui|lucide-react).+\\.js$'
+  ],
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
 };
