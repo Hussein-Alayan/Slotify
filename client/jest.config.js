@@ -6,5 +6,8 @@ module.exports = {
     // Support for @ alias
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest',
+  },
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
 };

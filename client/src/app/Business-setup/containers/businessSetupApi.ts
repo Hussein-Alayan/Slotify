@@ -1,7 +1,7 @@
 import api from '@/lib/api';
-import type { BusinessData, WorkingHours } from '../Components/BusinessProfileForm';
-import type { Service } from '../Components/ServicesForm';
-import type { StaffMember } from '../Components/StaffForm';
+import type { BusinessData, WorkingHours } from '../components/BusinessProfileForm';
+import type { Service } from '../components/ServicesForm';
+import type { StaffMember } from '../components/StaffForm';
 
 // Map frontend state to backend payload
 function mapBusinessSetupToPayload({

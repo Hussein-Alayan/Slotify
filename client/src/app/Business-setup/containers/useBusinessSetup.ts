@@ -4,11 +4,11 @@ import type {
   WorkingHour,
   WorkingHours,
   DayOfWeek,
-} from "../Components/BusinessProfileForm";
-import type { Service } from "../Components/ServicesForm";
-import type { StaffMember } from "../Components/StaffForm";
-import type { BookingRules } from "../Components/BookingRulesForm";
-import type { CommunicationSettings } from "../Components/CommunicationSettingsForm";
+} from "../components/BusinessProfileForm";
+import type { Service } from "../components/ServicesForm";
+import type { StaffMember } from "../components/StaffForm";
+import type { BookingRules } from "../components/BookingRulesForm";
+import type { CommunicationSettings } from "../components/CommunicationSettingsForm";
 import { User, Plus, Users, Settings, MessageCircle } from "lucide-react";
 
 export const setupSteps = [

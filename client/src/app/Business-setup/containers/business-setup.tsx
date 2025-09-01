@@ -4,14 +4,14 @@ import { useBusinessSetup, setupSteps, daysOfWeek } from "./useBusinessSetup";
 import { saveBusinessProfile } from "./businessSetupApi";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { SetupSidebar } from "../Components/SetupSidebar";
-import { SetupProgress } from "../Components/SetupProgress";
-import { SetupNavigation } from "../Components/SetupNavigation";
-import { BusinessProfileForm } from "../Components/BusinessProfileForm";
-import { ServicesForm } from "../Components/ServicesForm";
-import { StaffForm } from "../Components/StaffForm";
-import { BookingRulesForm } from "../Components/BookingRulesForm";
-import { CommunicationSettingsForm } from "../Components/CommunicationSettingsForm";
+import { SetupSidebar } from "../components/SetupSidebar";
+import { SetupProgress } from "../components/SetupProgress";
+import { SetupNavigation } from "../components/SetupNavigation";
+import { BusinessProfileForm } from "../components/BusinessProfileForm";
+import { ServicesForm } from "../components/ServicesForm";
+import { StaffForm } from "../components/StaffForm";
+import { BookingRulesForm } from "../components/BookingRulesForm";
+import { CommunicationSettingsForm } from "../components/CommunicationSettingsForm";
 
 export default function BusinessSetupContainer() {
   const {
@@ -55,7 +55,10 @@ export default function BusinessSetupContainer() {
       setSuccess(true);
     } catch (e: unknown) {
       if (typeof e === "object" && e !== null) {
-        const err = e as { response?: { data?: { message?: string } }; message?: string };
+        const err = e as {
+          response?: { data?: { message?: string } };
+          message?: string;
+        };
         setError(
           err.response?.data?.message ||
             err.message ||
