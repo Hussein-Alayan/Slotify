@@ -11,6 +11,7 @@ class TestClientSeeder extends Seeder
     public function run(): void
     {
         DB::table('clients')->insert([
+            'business_id' => 1, // assumes TestBusinessSeeder runs first
             'name' => 'Test Client',
             'email' => 'testclient@example.com',
             'phone' => '1234567890',
