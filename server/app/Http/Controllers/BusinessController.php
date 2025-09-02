@@ -1,12 +1,16 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBusinessProfileRequest;
 use App\Services\BusinessService;
+use App\Traits\ApiResponseTrait;
 
 class BusinessController extends Controller
 {
+    use ApiResponseTrait;
+
     protected $businessService;
 
     public function __construct(BusinessService $businessService)
@@ -20,9 +24,9 @@ class BusinessController extends Controller
         $user = $request->user();
         $business = $this->businessService->storeOrUpdate($user, $validated);
         if ($business) {
-            return response()->json(['success' => true, 'business' => $business->load(['bookingRules', 'services', 'resources'])]);
+            return $this->successResponse($business->load(['bookingRules', 'services', 'resources']));
         } else {
-            return response()->json(['success' => false, 'message' => 'Business not found or could not be created.'], 404);
+            return $this->errorResponse('Business not found or could not be created.', 404);
         }
     }
 }
