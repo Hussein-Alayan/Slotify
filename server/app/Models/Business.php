@@ -45,4 +45,14 @@ class Business extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
+
+    public function conversationMessages()
+    {
+        return $this->hasMany(ConversationMessage::class);
+    }
 }

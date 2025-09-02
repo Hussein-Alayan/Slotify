@@ -15,6 +15,7 @@ class StoreConversationRequest extends FormRequest
     {
         return [
             'client_id' => 'required|exists:clients,id',
+            'business_id' => 'required|exists:businesses,id',
             'agent_id' => 'nullable', // optional AI agent, no table check
         ];
     }

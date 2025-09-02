@@ -26,7 +26,8 @@ class ConversationController extends Controller
     {
         $conversation = $this->conversationService->startConversation(
             $request->validated()['client_id'],
-            $request->validated()['agent_id'] ?? null // optional AI agent
+            $request->validated()['agent_id'] ?? null, // optional AI agent
+            $request->validated()['business_id']
         );
         return $this->successResponse(new ConversationResource($conversation));
     }
@@ -41,9 +42,10 @@ class ConversationController extends Controller
     // Store a new message in a conversation
     public function sendMessage(SendMessageRequest $request, $conversationId)
     {
-        // You may need to fetch client_id and business_id from the conversation
+        // Fetch conversation to get client_id and business_id
         $conversation = \App\Models\Conversation::findOrFail($conversationId);
         $message = $this->conversationService->sendMessage(
+            $conversationId,
             $conversation->client_id,
             $conversation->business_id,
             $request->validated()['sender'],

@@ -8,11 +8,12 @@ use App\Models\Message;
 class ConversationService
 {
     // Start a conversation
-    public function startConversation(int $clientId, ?int $agentId = null): Conversation
+    public function startConversation(int $clientId, ?int $agentId = null, int $businessId = null): Conversation
     {
         return Conversation::create([
             'client_id' => $clientId,
             'agent_id' => $agentId,
+            'business_id' => $businessId,
         ]);
     }
 
@@ -23,10 +24,11 @@ class ConversationService
     }
 
     // Store a message
-    public function sendMessage(int $clientId, int $businessId, string $sender, string $message, $metadata = null): Message
+    public function sendMessage(int $conversationId, int $clientId, int $businessId, string $sender, string $message, $metadata = null): Message
     {
         // sender: 'user' or 'ai'
         return Message::create([
+            'conversation_id' => $conversationId,
             'client_id' => $clientId,
             'business_id' => $businessId,
             'sender' => $sender,
