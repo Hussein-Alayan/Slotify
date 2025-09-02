@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers;
-use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\LoginRequest;
+use App\Http\Requests\AuthRequests\RegisterRequest;
+use App\Http\Requests\AuthRequests\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -34,11 +34,10 @@ class AuthController extends Controller
         if (! $result) {
             return response()->json(['message' => 'Invalid Credentials'], 422);
         }
-        // Log the user in using session/cookie
         Auth::login($result['user']);
-        // Redirect to frontend dashboard or return success
         return response()->json([
-            'user' => new UserResource($result['user'])
+            'user' => new UserResource($result['user']),
+            'token' => $result['token'],
         ]);
     }
 

@@ -1,8 +1,9 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import api, { csrf } from "@/lib/api";
 import { getErrorMessage } from "@/utils/errorMessage";
-import SigninForm from "../components/SigninForm";
+import SigninForm from "../_components/SigninForm";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "../signin/page.module.css";
@@ -13,6 +14,7 @@ const SigninContainer: React.FC = () => {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +28,7 @@ const SigninContainer: React.FC = () => {
       await csrf();
       await api.post("/v1/login", { email, password });
       setLoading(false);
-      alert("Login successful!");
-      // Optionally redirect to dashboard
+      router.push("/Business-setup");
     } catch (err: unknown) {
       setLoading(false);
       setError(getErrorMessage(err, "Login failed."));
