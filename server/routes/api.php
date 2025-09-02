@@ -12,7 +12,10 @@ Route::prefix('v1')->group(function () {
 	Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
 	Route::middleware('auth:sanctum')->group(function () {
-		Route::post('/logout', [AuthController::class, 'logout']);
-		Route::get('/me', [AuthController::class, 'me']);
+	Route::post('/logout', [AuthController::class, 'logout']);
+	Route::get('/me', [AuthController::class, 'me']);
+
+	// Business Profile setup
+	Route::post('/business-profile', [\App\Http\Controllers\BusinessController::class, 'storeOrUpdate']);
 	});
 });

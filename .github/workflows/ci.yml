@@ -6,17 +6,19 @@ on:
       - main
       - dev
       - feature/**
+      - slo-*
   pull_request:
     branches:
       - main
       - dev
+      - slo-*
 
 jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend || 'true' }}
+      frontend: ${{ steps.filter.outputs.frontend || 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -80,6 +82,8 @@ jobs:
         run: npm install
       - name: Run lint
         run: npm run lint --if-present
+      - name: Clear Jest cache
+        run: npx jest --clearCache
       - name: Run tests
         run: npm test -- --watchAll=false
       - name: Build project
