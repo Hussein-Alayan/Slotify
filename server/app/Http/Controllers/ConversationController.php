@@ -41,10 +41,14 @@ class ConversationController extends Controller
     // Store a new message in a conversation
     public function sendMessage(SendMessageRequest $request, $conversationId)
     {
+        // You may need to fetch client_id and business_id from the conversation
+        $conversation = \App\Models\Conversation::findOrFail($conversationId);
         $message = $this->conversationService->sendMessage(
-            $conversationId,
+            $conversation->client_id,
+            $conversation->business_id,
             $request->validated()['sender'],
-            $request->validated()['content']
+            $request->validated()['message'],
+            $request->validated()['metadata'] ?? null
         );
         return $this->successResponse(['message' => $message], 201);
     }

@@ -23,12 +23,15 @@ class ConversationService
     }
 
     // Store a message
-    public function sendMessage(int $conversationId, string $sender, string $content): Message
+    public function sendMessage(int $clientId, int $businessId, string $sender, string $message, $metadata = null): Message
     {
+        // sender: 'user' or 'ai'
         return Message::create([
-            'conversation_id' => $conversationId,
-            'sender' => $sender, // 'client', 'agent', 'ai_agent'
-            'content' => $content,
+            'client_id' => $clientId,
+            'business_id' => $businessId,
+            'sender' => $sender,
+            'message' => $message,
+            'metadata' => $metadata,
         ]);
     }
 }

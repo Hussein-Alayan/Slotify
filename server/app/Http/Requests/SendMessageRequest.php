@@ -14,8 +14,9 @@ class SendMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sender' => 'required|in:client,agent,ai_agent',
-            'content' => 'required|string',
+            'sender' => 'required|in:user,ai',
+            'message' => 'required|string',
+            'metadata' => 'nullable|array',
         ];
     }
 }
