@@ -7,8 +7,13 @@ use App\Http\Requests\SendMessageRequest;
 use App\Http\Resources\ConversationResource;
 use App\Services\ConversationService;
 
+
+use App\Traits\ApiResponseTrait;
+
 class ConversationController extends Controller
 {
+    use ApiResponseTrait;
+
     protected $conversationService;
 
     public function __construct(ConversationService $conversationService)
@@ -23,15 +28,14 @@ class ConversationController extends Controller
             $request->validated()['client_id'],
             $request->validated()['agent_id'] ?? null // optional AI agent
         );
-
-        return new ConversationResource($conversation);
+        return $this->successResponse(new ConversationResource($conversation));
     }
 
     // Fetch conversation with messages
     public function show($conversationId)
     {
         $conversation = $this->conversationService->getConversationWithMessages($conversationId);
-        return new ConversationResource($conversation);
+        return $this->successResponse(new ConversationResource($conversation));
     }
 
     // Store a new message in a conversation
@@ -42,7 +46,6 @@ class ConversationController extends Controller
             $request->validated()['sender'],
             $request->validated()['content']
         );
-
-        return response()->json(['success' => true, 'message' => $message], 201);
+        return $this->successResponse(['message' => $message], 201);
     }
 }

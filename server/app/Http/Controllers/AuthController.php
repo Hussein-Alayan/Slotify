@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 use App\Http\Requests\AuthRequests\RegisterRequest;
 use App\Http\Requests\AuthRequests\LoginRequest;
@@ -9,9 +10,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Services\AuthService;
 use Laravel\Socialite\Facades\Socialite;
+use App\Traits\ApiResponseTrait;
 
 class AuthController extends Controller
 {
+    use ApiResponseTrait;
+
     protected $authService;
 
     public function __construct(AuthService $authService)
@@ -22,7 +26,7 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         $result = $this->authService->register($request->validated());
-        return response()->json([
+        return $this->successResponse([
             'user' => new UserResource($result['user']),
             'token' => $result['token'],
         ], 201);
@@ -32,10 +36,10 @@ class AuthController extends Controller
     {
         $result = $this->authService->login($request->validated());
         if (! $result) {
-            return response()->json(['message' => 'Invalid Credentials'], 422);
+            return $this->errorResponse('Invalid Credentials', 422);
         }
         Auth::login($result['user']);
-        return response()->json([
+        return $this->successResponse([
             'user' => new UserResource($result['user']),
             'token' => $result['token'],
         ]);
@@ -44,12 +48,12 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $this->authService->logout($request->user());
-        return response()->json(['message' => 'Logged out successfully']);
+        return $this->successResponse(['message' => 'Logged out successfully']);
     }
 
     public function me(Request $request)
     {
-        return new UserResource($this->authService->me($request->user()));
+        return $this->successResponse(new UserResource($this->authService->me($request->user())));
     }
 
     public function redirectToGoogle()
