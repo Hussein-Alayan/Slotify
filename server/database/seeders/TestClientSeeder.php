@@ -13,8 +13,9 @@ class TestClientSeeder extends Seeder
         DB::table('clients')->insert([
             'business_id' => 1, // assumes TestBusinessSeeder runs first
             'name' => 'Test Client',
-            'email' => 'testclient@example.com',
             'phone' => '1234567890',
+            'email' => 'testclient@example.com',
+            'no_show_count' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
