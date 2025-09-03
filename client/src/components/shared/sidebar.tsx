@@ -12,16 +12,19 @@ import {
   BarChart3,
   Settings,
   Menu,
-  Building2,
 } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Services", href: "/services", icon: Briefcase },
-  { name: "Staff", href: "/staff", icon: UserCheck },
-  { name: "Clients", href: "/clients", icon: Users },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Settings", href: "/settings", icon: Settings },
+  {
+    name: "Dashboard",
+    href: "/business-dashboard/dashboard",
+    icon: LayoutDashboard,
+  },
+  { name: "Services", href: "/business-dashboard/services", icon: Briefcase },
+  { name: "Staff", href: "/business-dashboard/staff", icon: UserCheck },
+  { name: "Clients", href: "/business-dashboard/clients", icon: Users },
+  { name: "Analytics", href: "/business-dashboard/analytics", icon: BarChart3 },
+  { name: "Settings", href: "/business-dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar() {
