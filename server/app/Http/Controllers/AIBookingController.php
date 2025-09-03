@@ -8,6 +8,7 @@ use App\Services\BookingService;
 use App\Services\AIService;
 use App\Traits\ApiResponseTrait;
 use App\Models\Conversation;
+use App\Models\Service;
 use Carbon\Carbon;
 
 class AIBookingController extends Controller
@@ -157,8 +158,9 @@ class AIBookingController extends Controller
             $date = $forcedData['date'] ?? 'tomorrow';
             $time = $forcedData['time'] ?? '15:00';
         } else {
-            // Use AI extracted data with defaults
-            $serviceId = 1; // Default to first service (we'll improve this later)
+            // Use AI extracted data with service lookup
+            $serviceName = $aiAnalysis['extracted_data']['service'] ?? null;
+            $serviceId = $this->findServiceByName($businessId, $serviceName);
             $date = $aiAnalysis['extracted_data']['date'] ?? 'tomorrow';
             $time = $aiAnalysis['extracted_data']['time'] ?? '15:00';
         }
@@ -219,5 +221,46 @@ class AIBookingController extends Controller
         }
 
         return $baseDate;
+    }
+
+    /**
+     * Find service by name (case-insensitive partial match)
+     */
+    private function findServiceByName(int $businessId, ?string $serviceName): int
+    {
+        if (!$serviceName) {
+            // Return first available service as fallback
+            $service = Service::where('business_id', $businessId)->first();
+            if (!$service) {
+                throw new \Exception('No services available for this business');
+            }
+            return $service->id;
+        }
+
+        // Try exact match first
+        $service = Service::where('business_id', $businessId)
+            ->whereRaw('LOWER(name) = ?', [strtolower($serviceName)])
+            ->first();
+
+        if ($service) {
+            return $service->id;
+        }
+
+        // Try partial match
+        $service = Service::where('business_id', $businessId)
+            ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($serviceName) . '%'])
+            ->first();
+
+        if ($service) {
+            return $service->id;
+        }
+
+        // Fallback to first service
+        $service = Service::where('business_id', $businessId)->first();
+        if (!$service) {
+            throw new \Exception('No services available for this business');
+        }
+        
+        return $service->id;
     }
 }
