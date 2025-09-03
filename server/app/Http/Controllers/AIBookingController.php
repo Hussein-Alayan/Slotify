@@ -39,9 +39,10 @@ class AIBookingController extends Controller
         $userMessage = $request->input('message');
 
         try {
-            // Get conversation to find business_id
+            // Get conversation and client to find business_id
             $conversation = Conversation::findOrFail($conversationId);
-            $businessId = $conversation->business_id;
+            $client = $conversation->client;
+            $businessId = $client->business_id;
 
             // Step 1: Store user message
             $userMessageRecord = $this->conversationService->sendMessage(
