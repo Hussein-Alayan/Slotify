@@ -85,7 +85,7 @@ class BookingService
         $bookingRules = $business->bookingRules;
         
         if (!$bookingRules) {
-            throw new \Exception('Business hours not configured');
+            throw new \InvalidArgumentException('Business hours not configured');
         }
 
         // Get business hours for the day
@@ -160,7 +160,7 @@ class BookingService
         }
 
         if ($conflictQuery->exists()) {
-            throw new \Exception('Time slot is not available');
+            throw new \InvalidArgumentException('Time slot is not available');
         }
 
         // Check business hours
@@ -173,21 +173,21 @@ class BookingService
     {
         $bookingRules = $business->bookingRules;
         if (!$bookingRules) {
-            throw new \Exception('Business hours not configured');
+            throw new \InvalidArgumentException('Business hours not configured');
         }
 
         $dayOfWeek = Carbon::parse($startTime)->format('l');
         $workingHours = $this->getWorkingHoursForDay($bookingRules, $dayOfWeek);
         
         if (!$workingHours) {
-            throw new \Exception('Business is closed on ' . $dayOfWeek);
+            throw new \InvalidArgumentException('Business is closed on ' . $dayOfWeek);
         }
 
         $requestStart = Carbon::parse($startTime)->format('H:i');
         $requestEnd = Carbon::parse($endTime)->format('H:i');
         
         if ($requestStart < $workingHours['start'] || $requestEnd > $workingHours['end']) {
-            throw new \Exception('Booking time is outside business hours');
+            throw new \InvalidArgumentException('Booking time is outside business hours');
         }
     }
 

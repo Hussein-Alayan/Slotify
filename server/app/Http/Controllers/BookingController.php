@@ -26,20 +26,16 @@ class BookingController extends Controller
         try {
             $booking = $this->bookingService->createBooking($request->validated());
             return $this->successResponse(new BookingResource($booking), 201);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create booking: ' . $e->getMessage(), 400);
+        } catch (\InvalidArgumentException $e) {
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
     // Get booking details
     public function show($bookingId)
     {
-        try {
-            $booking = $this->bookingService->getBooking($bookingId);
-            return $this->successResponse(new BookingResource($booking));
-        } catch (\Exception $e) {
-            return $this->errorResponse('Booking not found', 404);
-        }
+        $booking = $this->bookingService->getBooking($bookingId);
+        return $this->successResponse(new BookingResource($booking));
     }
 
     // Update booking
@@ -48,20 +44,16 @@ class BookingController extends Controller
         try {
             $booking = $this->bookingService->updateBooking($bookingId, $request->validated());
             return $this->successResponse(new BookingResource($booking));
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update booking: ' . $e->getMessage(), 400);
+        } catch (\InvalidArgumentException $e) {
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
     // Cancel booking
     public function destroy($bookingId)
     {
-        try {
-            $this->bookingService->cancelBooking($bookingId);
-            return $this->successResponse(['message' => 'Booking cancelled successfully']);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to cancel booking: ' . $e->getMessage(), 400);
-        }
+        $this->bookingService->cancelBooking($bookingId);
+        return $this->successResponse(['message' => 'Booking cancelled successfully']);
     }
 
     // Check availability for a business
@@ -74,30 +66,22 @@ class BookingController extends Controller
                 $request->validated()['service_id'] ?? null
             );
             return $this->successResponse(['availability' => $availability]);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to check availability: ' . $e->getMessage(), 400);
+        } catch (\InvalidArgumentException $e) {
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
     // Get bookings for a business
     public function getBusinessBookings($businessId)
     {
-        try {
-            $bookings = $this->bookingService->getBusinessBookings($businessId);
-            return $this->successResponse(BookingResource::collection($bookings));
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to get bookings: ' . $e->getMessage(), 400);
-        }
+        $bookings = $this->bookingService->getBusinessBookings($businessId);
+        return $this->successResponse(BookingResource::collection($bookings));
     }
 
     // Get bookings for a client
     public function getClientBookings($clientId)
     {
-        try {
-            $bookings = $this->bookingService->getClientBookings($clientId);
-            return $this->successResponse(BookingResource::collection($bookings));
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to get bookings: ' . $e->getMessage(), 400);
-        }
+        $bookings = $this->bookingService->getClientBookings($clientId);
+        return $this->successResponse(BookingResource::collection($bookings));
     }
 }
