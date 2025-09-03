@@ -8,7 +8,9 @@ export function ServicesHeader() {
     <div className="flex items-center justify-between mb-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Services</h1>
-        <p className="text-gray-600 mt-1">Manage your business services and offerings</p>
+        <p className="text-gray-600 mt-1">
+          Manage your business services and offerings
+        </p>
       </div>
       <div className="flex items-center gap-3">
         <Button className="bg-slate-900 hover:bg-slate-800 text-white">
