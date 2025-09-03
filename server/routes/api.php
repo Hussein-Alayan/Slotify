@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\BookingController;
 
 Route::prefix('v1')->group(function () {
 	Route::post('/register', [AuthController::class, 'register']);
