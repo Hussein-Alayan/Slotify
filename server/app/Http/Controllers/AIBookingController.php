@@ -7,6 +7,7 @@ use App\Services\ConversationService;
 use App\Services\BookingService;
 use App\Services\AIService;
 use App\Traits\ApiResponseTrait;
+use App\Models\Conversation;
 use Carbon\Carbon;
 
 class AIBookingController extends Controller
@@ -35,10 +36,13 @@ class AIBookingController extends Controller
         $flowSteps = [];
         $conversationId = $request->input('conversation_id');
         $clientId = $request->input('client_id');
-        $businessId = $request->input('business_id');
         $userMessage = $request->input('message');
 
         try {
+            // Get conversation to find business_id
+            $conversation = Conversation::findOrFail($conversationId);
+            $businessId = $conversation->business_id;
+
             // Step 1: Store user message
             $userMessageRecord = $this->conversationService->sendMessage(
                 $conversationId,
