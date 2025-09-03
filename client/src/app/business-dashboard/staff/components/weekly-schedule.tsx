@@ -19,10 +19,10 @@ const timeSlots = [
   { time: "5 PM", slot: "evening" },
 ];
 
-const schedule = {
+const schedule: {
+  [date: string]: { [slot: string]: string };
+} = {
   "2025-01-13": {
-    morning: "Sarah J.",
-    afternoon: "Alex R.",
     evening: "Lisa P.",
   },
   "2025-01-14": {
@@ -85,68 +85,69 @@ export function WeeklySchedule() {
           Weekly Shift Calendar
         </h2>
       </div>
-
-      <Card>
-        <CardContent className="p-6">
-          {/* Calendar Header */}
-          <div className="grid grid-cols-8 gap-4 mb-4">
-            <div></div>
-            {weekDays.map((day) => (
-              <div key={day.date} className="text-center">
-                <div className="text-sm font-medium text-gray-900">
-                  {day.day}
+      <div className="overflow-x-auto">
+        <Card>
+          <CardContent className="p-6 min-w-[700px]">
+            {/* Calendar Header */}
+            <div className="grid grid-cols-8 gap-4 mb-4">
+              <div></div>
+              {weekDays.map((day) => (
+                <div key={day.date} className="text-center">
+                  <div className="text-sm font-medium text-gray-900">
+                    {day.day}
+                  </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Calendar Body */}
+            {timeSlots.map((timeSlot) => (
+              <div key={timeSlot.time} className="grid grid-cols-8 gap-4 mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-600">
+                    {timeSlot.time}
+                  </span>
+                </div>
+                {weekDays.map((day) => {
+                  const assignment =
+                    schedule[day.date]?.[timeSlot.slot] || "Unassigned";
+                  const status = getShiftStatus(assignment);
+                  const colorClass = getShiftColor(status);
+
+                  return (
+                    <div
+                      key={`${day.date}-${timeSlot.slot}`}
+                      className="p-2 text-center text-sm rounded border border-gray-200 bg-gray-50"
+                    >
+                      <span className={cn("font-medium", colorClass)}>
+                        {assignment}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             ))}
-          </div>
 
-          {/* Calendar Body */}
-          {timeSlots.map((timeSlot) => (
-            <div key={timeSlot.time} className="grid grid-cols-8 gap-4 mb-4">
-              <div className="flex items-center">
-                <span className="text-sm font-medium text-gray-600">
-                  {timeSlot.time}
-                </span>
-              </div>
-              {weekDays.map((day) => {
-                const assignment =
-                  schedule[day.date]?.[timeSlot.slot] || "Unassigned";
-                const status = getShiftStatus(assignment);
-                const colorClass = getShiftColor(status);
-
-                return (
-                  <div
-                    key={`${day.date}-${timeSlot.slot}`}
-                    className="p-2 text-center text-sm rounded border border-gray-200 bg-gray-50"
-                  >
-                    <span className={cn("font-medium", colorClass)}>
-                      {assignment}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-
-          {/* Legend */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="flex items-center gap-6 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-gray-900 rounded"></div>
-                <span>Assigned</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-600 rounded"></div>
-                <span>Absent</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-600 rounded"></div>
-                <span>Pending Replacement</span>
+            {/* Legend */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="flex items-center gap-6 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-900 rounded"></div>
+                  <span>Assigned</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-600 rounded"></div>
+                  <span>Absent</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-600 rounded"></div>
+                  <span>Pending Replacement</span>
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
