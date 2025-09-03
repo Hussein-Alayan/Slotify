@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\AIBookingController;
 
 Route::prefix('v1')->group(function () {
 	Route::post('/register', [AuthController::class, 'register']);
@@ -38,5 +39,8 @@ Route::prefix('v1')->group(function () {
 		
 		// Client-specific booking routes
 		Route::get('/clients/{client}/bookings', [BookingController::class, 'getClientBookings']); // get client bookings
+
+		// AI-powered booking routes
+		Route::post('/ai/process-message', [AIBookingController::class, 'processMessage']); // AI message processing with booking
 	});
 });

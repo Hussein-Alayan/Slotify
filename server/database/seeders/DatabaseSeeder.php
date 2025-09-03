@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             TestBusinessSeeder::class,
             TestClientSeeder::class,
+            TestServiceSeeder::class,
             TestConversationSeeder::class,
         ]);
     }
