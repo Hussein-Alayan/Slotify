@@ -6,11 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class ConversationMessage extends Model
 {
-    protected $fillable = ['client_id', 'business_id', 'sender', 'message', 'metadata'];
+    protected $fillable = ['conversation_id', 'client_id', 'business_id', 'sender', 'message', 'metadata'];
 
     protected $casts = [
         'metadata' => 'array',
     ];
+
+    public function conversation()
+    {
+        return $this->belongsTo(Conversation::class);
+    }
 
     public function client()
     {

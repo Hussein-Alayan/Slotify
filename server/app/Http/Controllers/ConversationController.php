@@ -24,12 +24,16 @@ class ConversationController extends Controller
     // Start a new conversation (called by n8n when first message arrives)
     public function startConversation(StoreConversationRequest $request)
     {
-        $conversation = $this->conversationService->startConversation(
-            $request->validated()['client_id'],
-            $request->validated()['agent_id'] ?? null, // optional AI agent
-            $request->validated()['business_id']
-        );
-        return $this->successResponse(new ConversationResource($conversation));
+        try {
+            $conversation = $this->conversationService->startConversation(
+                $request->validated()['client_id'],
+                $request->validated()['agent_id'] ?? null, // optional AI agent
+                $request->validated()['business_id']
+            );
+            return $this->successResponse(new ConversationResource($conversation));
+        } catch (\InvalidArgumentException $e) {
+            return $this->errorResponse($e->getMessage(), 400);
+        }
     }
 
     // Fetch conversation with messages
@@ -42,16 +46,20 @@ class ConversationController extends Controller
     // Store a new message in a conversation
     public function sendMessage(SendMessageRequest $request, $conversationId)
     {
-        // Fetch conversation to get client_id and business_id
-        $conversation = \App\Models\Conversation::findOrFail($conversationId);
-        $message = $this->conversationService->sendMessage(
-            $conversationId,
-            $conversation->client_id,
-            $conversation->business_id,
-            $request->validated()['sender'],
-            $request->validated()['message'],
-            $request->validated()['metadata'] ?? null
-        );
-        return $this->successResponse(['message' => $message], 201);
+        try {
+            // Fetch conversation to get client_id and business_id
+            $conversation = \App\Models\Conversation::findOrFail($conversationId);
+            $message = $this->conversationService->sendMessage(
+                $conversationId,
+                $conversation->client_id,
+                $conversation->business_id,
+                $request->validated()['sender'],
+                $request->validated()['message'],
+                $request->validated()['metadata'] ?? null
+            );
+            return $this->successResponse(['message' => $message], 201);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to send message: ' . $e->getMessage(), 400);
+        }
     }
 }

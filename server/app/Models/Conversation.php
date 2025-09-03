@@ -16,7 +16,12 @@ class Conversation extends Model
 
     public function messages(): HasMany
     {
-        return $this->hasMany(Message::class);
+        return $this->hasMany(ConversationMessage::class);
+    }
+
+    public function conversationMessages(): HasMany
+    {
+        return $this->hasMany(ConversationMessage::class);
     }
 
     public function client(): BelongsTo
