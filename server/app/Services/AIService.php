@@ -7,8 +7,15 @@ use Illuminate\Support\Facades\Log;
 
 class AIService
 {
-    private $ollamaUrl = 'http://localhost:11434/api/generate';
+    private $ollamaUrl;
     private $model = 'mistral';
+
+    public function __construct()
+    {
+        // For Docker: use host.docker.internal to reach host machine
+        // For local development: use localhost
+        $this->ollamaUrl = env('OLLAMA_URL', 'http://host.docker.internal:11434/api/generate');
+    }
 
     /**
      * Send a prompt to Ollama and get response
