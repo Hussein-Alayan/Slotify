@@ -12,8 +12,12 @@ const staff = [
 ];
 
 export function StaffStats() {
-  const availableStaff = staff.filter((member) => member.status === "Available").length;
-  const absentStaff = staff.filter((member) => member.status === "Absent").length;
+  const availableStaff = staff.filter(
+    (member) => member.status === "Available"
+  ).length;
+  const absentStaff = staff.filter(
+    (member) => member.status === "Absent"
+  ).length;
 
   return (
     <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -24,8 +28,12 @@ export function StaffStats() {
               <Check className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Staff Available Today:</p>
-              <p className="text-xl font-bold text-gray-900">{availableStaff}</p>
+              <p className="text-sm text-gray-600">
+                Total Staff Available Today:
+              </p>
+              <p className="text-xl font-bold text-gray-900">
+                {availableStaff}
+              </p>
             </div>
           </div>
         </CardContent>
