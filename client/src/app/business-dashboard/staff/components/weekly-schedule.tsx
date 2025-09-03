@@ -117,7 +117,10 @@ export function WeeklySchedule() {
                   return (
                     <div
                       key={`${day.date}-${timeSlot.slot}`}
-                      className="p-2 text-center text-sm rounded border border-gray-200 bg-gray-50"
+                      className={cn(
+                        "p-2 text-center text-sm rounded border border-gray-200 bg-gray-50 flex items-center justify-center min-h-[40px]",
+                        assignment === "Unassigned" && "text-gray-400"
+                      )}
                     >
                       <span className={cn("font-medium", colorClass)}>
                         {assignment}
