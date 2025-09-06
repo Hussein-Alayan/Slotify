@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Conversation extends Model
 {
@@ -14,22 +12,17 @@ class Conversation extends Model
         'business_id',
     ];
 
-    public function messages(): HasMany
+    public function messages()
     {
         return $this->hasMany(ConversationMessage::class);
     }
 
-    public function conversationMessages(): HasMany
-    {
-        return $this->hasMany(ConversationMessage::class);
-    }
-
-    public function client(): BelongsTo
+    public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
-    public function business(): BelongsTo
+    public function business()
     {
         return $this->belongsTo(Business::class);
     }
