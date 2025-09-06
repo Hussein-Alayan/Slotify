@@ -67,6 +67,24 @@ class WhatsAppTestSeeder extends Seeder
 
         $this->command->info("✅ Created " . count($resources) . " resources");
 
+        // Create booking rule for the business
+        \App\Models\BookingRule::create([
+            'business_id' => $business->id,
+            'hours_of_operation' => [
+                'monday' => ['open' => '09:00', 'close' => '18:00'],
+                'tuesday' => ['open' => '09:00', 'close' => '18:00'],
+                'wednesday' => ['open' => '09:00', 'close' => '18:00'],
+                'thursday' => ['open' => '09:00', 'close' => '18:00'],
+                'friday' => ['open' => '09:00', 'close' => '18:00'],
+                'saturday' => ['open' => '10:00', 'close' => '16:00'],
+                'sunday' => ['closed' => true]
+            ],
+            'buffer_time_minutes' => 15,
+            'cancellation_policy' => 'Cancellations must be made at least 24 hours in advance.'
+        ]);
+
+        $this->command->info("✅ Created booking rule");
+
         // Generate the workflow JSON using BusinessService
         $businessService = new BusinessService();
         $workflowData = [

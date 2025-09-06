@@ -101,15 +101,16 @@ class Business extends Model
 
         $tz = $timezone ?: $this->timezone ?: 'UTC';
         $now = now($tz);
-        $dayOfWeek = strtolower($now->format('D')); // mon, tue, etc.
+        $dayOfWeek = strtolower($now->format('l')); // monday, tuesday, etc.
 
         $todayHours = $this->business_hours[$dayOfWeek] ?? null;
         if (!$todayHours || isset($todayHours['closed']) && $todayHours['closed']) {
             return false;
         }
 
-        $start = $todayHours['start'] ?? '00:00';
-        $end = $todayHours['end'] ?? '23:59';
+        // Support both 'start'/'end' and 'open'/'close' formats
+        $start = $todayHours['start'] ?? $todayHours['open'] ?? '00:00';
+        $end = $todayHours['end'] ?? $todayHours['close'] ?? '23:59';
         $currentTime = $now->format('H:i');
 
         return $currentTime >= $start && $currentTime <= $end;
