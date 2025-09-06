@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CommunicationChannel extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'business_id',
         'channel_type',
@@ -13,7 +15,6 @@ class CommunicationChannel extends Model
         'token',
         'phone_number',
         'email',
-        // New n8n webhook fields
         'webhook_url',
         'provider',
         'business_number',

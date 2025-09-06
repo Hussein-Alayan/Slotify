@@ -30,7 +30,7 @@ class BusinessFactory extends Factory
             'contact_email' => $this->faker->unique()->safeEmail(),
             'contact_phone' => $this->faker->unique()->phoneNumber(),
             'address' => $this->faker->streetAddress() . ', ' . $this->faker->city() . ', ' . $this->faker->stateAbbr(),
-            'brand_voice' => $this->faker->randomElement(['Professional', 'Friendly', 'Luxury', 'Casual']),
+            'brand_voice' => $this->faker->randomElement(['formal', 'friendly', 'playful']),
             'timezone' => $this->faker->randomElement(['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles']),
             'business_hours' => [
                 'monday' => ['open' => '09:00', 'close' => '18:00'],
@@ -56,6 +56,7 @@ class BusinessFactory extends Factory
             'contact_email' => 'test@salon.com',
             'contact_phone' => '+1987654321',
             'address' => '123 Test Street, New York, NY 10001',
+            'brand_voice' => 'friendly',
             'timezone' => 'America/New_York',
             'status' => 'active',
         ]);

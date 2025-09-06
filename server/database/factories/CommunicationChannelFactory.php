@@ -19,11 +19,11 @@ class CommunicationChannelFactory extends Factory
     {
         return [
             'business_id' => Business::factory(),
-            'type' => $this->faker->randomElement(['whatsapp', 'sms', 'email']),
+            'channel_type' => $this->faker->randomElement(['whatsapp', 'sms', 'email']),
             'business_number' => $this->faker->unique()->phoneNumber(),
             'provider' => $this->faker->randomElement(['twilio', 'facebook']),
             'webhook_url' => 'http://localhost:8000/api/v1/webhooks/whatsapp',
-            'is_active' => true,
+            'status' => 'active',
         ];
     }
 
@@ -33,9 +33,10 @@ class CommunicationChannelFactory extends Factory
     public function whatsapp(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => 'whatsapp',
+            'channel_type' => 'whatsapp',
             'business_number' => '+1987654321',
             'provider' => 'twilio',
+            'status' => 'active',
         ]);
     }
 }
