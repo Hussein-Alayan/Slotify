@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class ConversationState extends Model
 {
-    protected $fillable = ['client_id', 'business_id', 'state'];
+    protected $fillable = [
+        'client_id',
+        'business_id',
+        'state',
+    ];
 
     protected $casts = [
         'state' => 'array',
