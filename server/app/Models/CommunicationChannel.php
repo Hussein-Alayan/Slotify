@@ -40,8 +40,13 @@ class CommunicationChannel extends Model
     // Helper method for n8n to find business by incoming phone number
     public static function findBusinessByPhone($phoneNumber)
     {
-        return self::where('business_number', $phoneNumber)
-            ->orWhere('phone_number', $phoneNumber)
+        return self::where(function($query) use ($phoneNumber) {
+                $query->where('business_number', $phoneNumber)
+                      ->orWhere('phone_number', $phoneNumber)
+                      // Also check with + prefix for normalized numbers
+                      ->orWhere('business_number', '+' . $phoneNumber)
+                      ->orWhere('phone_number', '+' . $phoneNumber);
+            })
             ->where('channel_type', 'whatsapp')
             ->where('status', 'active')
             ->first();
