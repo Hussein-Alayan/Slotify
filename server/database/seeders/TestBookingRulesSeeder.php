@@ -9,12 +9,12 @@ class TestBookingRulesSeeder extends Seeder
 {
     public function run(): void
     {
-        // Clear existing booking rules for business 1
-        BookingRule::where('business_id', 1)->delete();
+        // Clear existing booking rules for business 6
+        BookingRule::where('business_id', 6)->delete();
 
-        // Create booking rules for business 1 with JSON format
+        // Create booking rules for business 6 with JSON format
         BookingRule::create([
-            'business_id' => 1,
+            'business_id' => 6,
             'hours_of_operation' => [
                 'Monday' => ['start' => '09:00', 'end' => '17:00', 'available' => true],
                 'Tuesday' => ['start' => '09:00', 'end' => '17:00', 'available' => true],
