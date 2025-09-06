@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AIBookingController;
+use App\Http\Controllers\WhatsAppWebhookController;
 
 Route::prefix('v1')->group(function () {
 	Route::post('/register', [AuthController::class, 'register']);
@@ -13,6 +14,12 @@ Route::prefix('v1')->group(function () {
 	// Google Auth routes
 	Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 	Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
+	// n8n Webhook Routes (no auth required for external webhooks)
+	Route::prefix('webhooks')->group(function () {
+		Route::post('/whatsapp', [WhatsAppWebhookController::class, 'handleWebhook']);
+		Route::get('/whatsapp/health', [WhatsAppWebhookController::class, 'health']);
+	});
 
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::post('/logout', [AuthController::class, 'logout']);
