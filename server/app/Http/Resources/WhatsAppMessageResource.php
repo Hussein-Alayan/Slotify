@@ -56,6 +56,11 @@ class WhatsAppMessageResource extends JsonResource
                 'client_phone_normalized' => $this->resource['client']->normalized_phone,
                 'business_is_open' => $this->resource['business']->isOpenNow(),
             ],
+            
+            // Complete business workflow JSON for n8n
+            'business_workflow' => $this->resource['business']->workflow 
+                ? json_decode($this->resource['business']->workflow, true) 
+                : null,
         ];
     }
 }
