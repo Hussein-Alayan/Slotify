@@ -6,6 +6,7 @@ use App\Http\Requests\ProcessAIMessageRequest;
 use App\Services\ConversationService;
 use App\Services\BookingService;
 use App\Services\AIService;
+use App\Services\BookingConfigService;
 use App\Traits\ApiResponseTrait;
 use App\Models\Conversation;
 use App\Models\Service;
@@ -18,15 +19,18 @@ class AIBookingController extends Controller
     protected $conversationService;
     protected $bookingService;
     protected $aiService;
+    protected $configService;
 
     public function __construct(
         ConversationService $conversationService,
         BookingService $bookingService,
-        AIService $aiService
+        AIService $aiService,
+        BookingConfigService $configService
     ) {
         $this->conversationService = $conversationService;
         $this->bookingService = $bookingService;
         $this->aiService = $aiService;
+        $this->configService = $configService;
     }
 
     /**
@@ -64,7 +68,8 @@ class AIBookingController extends Controller
             $aiResponseText = "";
 
             // Step 3: Process booking if intent detected
-            if ($aiAnalysis['intent'] === 'booking' && $aiAnalysis['confidence'] > 0.5) {
+            $confidenceThreshold = $this->configService->getConfidenceThreshold($businessId);
+            if ($aiAnalysis['intent'] === 'booking' && $aiAnalysis['confidence'] > $confidenceThreshold) {
                 $flowSteps[] = "✅ Booking intent detected (confidence: {$aiAnalysis['confidence']})";
 
                 try {
@@ -94,8 +99,8 @@ class AIBookingController extends Controller
             } else {
                 $flowSteps[] = "ℹ️ No booking intent detected or low confidence";
                 
-                // Generate general AI response
-                $aiResponseText = "Thank you for your message! How can I help you with booking an appointment today?";
+                // Generate contextual AI response based on the message
+                $aiResponseText = $this->aiService->generateContextualResponse($userMessage, $businessId);
             }
 
             // Step 4: Store AI response
@@ -154,20 +159,23 @@ class AIBookingController extends Controller
         $forcedData = $request->input('force_booking_data', []);
         
         if (!empty($forcedData)) {
-            $serviceId = $forcedData['service_id'] ?? 1; // Default to first service
-            $date = $forcedData['date'] ?? 'tomorrow';
-            $time = $forcedData['time'] ?? '15:00';
+            $serviceId = $forcedData['service_id'] ?? $this->findServiceByName($businessId, null);
+            $date = $forcedData['date'] ?? $this->configService->getDefaultBookingDate($businessId);
+            $time = $forcedData['time'] ?? $this->configService->getDefaultBookingTime($businessId);
         } else {
             // Use AI extracted data with service lookup
             $serviceName = $aiAnalysis['extracted_data']['service'] ?? null;
             $serviceId = $this->findServiceByName($businessId, $serviceName);
-            $date = $aiAnalysis['extracted_data']['date'] ?? 'tomorrow';
-            $time = $aiAnalysis['extracted_data']['time'] ?? '15:00';
+            $date = $aiAnalysis['extracted_data']['date'] ?? $this->configService->getDefaultBookingDate($businessId);
+            $time = $aiAnalysis['extracted_data']['time'] ?? $this->configService->getDefaultBookingTime($businessId);
         }
 
         // Convert date and time to proper datetime
         $startDateTime = $this->parseDateTime($date, $time);
-        $endDateTime = $startDateTime->copy()->addHour(); // Default 1-hour appointment
+        
+        // Get duration from service instead of hard-coding 1 hour
+        $duration = $this->configService->getDefaultDuration($serviceId);
+        $endDateTime = $startDateTime->copy()->addMinutes($duration);
 
         return [
             'business_id' => $businessId,
@@ -217,7 +225,10 @@ class AIBookingController extends Controller
             
             $baseDate->setTimeFromTimeString($timeString);
         } catch (\Exception $e) {
-            $baseDate->setTime(15, 0); // Default to 3 PM
+            // Use a more intelligent default based on time of day
+            $currentHour = now()->hour;
+            $defaultHour = $currentHour < 17 ? max($currentHour + 1, 9) : 9; // Next hour or 9 AM
+            $baseDate->setTime($defaultHour, 0);
         }
 
         return $baseDate;
