@@ -139,16 +139,16 @@ class BookingService
         ?int $resourceId = null,
         ?int $excludeBookingId = null
     ): void {
-        // Check for booking conflicts
+        // Check for booking conflicts - improved logic
         $conflictQuery = Booking::where('business_id', $businessId)
             ->where('status', '!=', 'cancelled')
             ->where(function ($query) use ($startTime, $endTime) {
-                $query->whereBetween('start_time', [$startTime, $endTime])
-                    ->orWhereBetween('end_time', [$startTime, $endTime])
-                    ->orWhere(function ($q) use ($startTime, $endTime) {
-                        $q->where('start_time', '<=', $startTime)
-                          ->where('end_time', '>=', $endTime);
-                    });
+                // Check for overlapping bookings
+                $query->where(function ($q) use ($startTime, $endTime) {
+                    // New booking starts before existing ends AND new booking ends after existing starts
+                    $q->where('start_time', '<', $endTime)
+                      ->where('end_time', '>', $startTime);
+                });
             });
 
         if ($resourceId) {
@@ -159,8 +159,12 @@ class BookingService
             $conflictQuery->where('id', '!=', $excludeBookingId);
         }
 
-        if ($conflictQuery->exists()) {
-            throw new \InvalidArgumentException('Time slot is not available');
+        $conflictingBooking = $conflictQuery->first();
+        if ($conflictingBooking) {
+            throw new \InvalidArgumentException(
+                "Time slot conflicts with existing booking #{$conflictingBooking->id} " .
+                "from {$conflictingBooking->start_time->format('H:i')} to {$conflictingBooking->end_time->format('H:i')}"
+            );
         }
 
         // Check business hours
@@ -173,40 +177,88 @@ class BookingService
     {
         $bookingRules = $business->bookingRules;
         if (!$bookingRules) {
-            throw new \InvalidArgumentException('Business hours not configured');
+            // Try to use business_hours from business table as fallback
+            if (!$business->business_hours) {
+                throw new \InvalidArgumentException('Business hours not configured');
+            }
+            
+            // Create a temporary booking rule object for compatibility
+            $bookingRules = new BookingRule();
+            $bookingRules->hours_of_operation = $business->business_hours;
+            $bookingRules->setRelation('business', $business);
         }
 
-        $dayOfWeek = Carbon::parse($startTime)->format('l');
+        $dayOfWeek = Carbon::parse($startTime)->format('l'); // Monday, Tuesday, etc.
         $workingHours = $this->getWorkingHoursForDay($bookingRules, $dayOfWeek);
         
         if (!$workingHours) {
-            throw new \InvalidArgumentException('Business is closed on ' . $dayOfWeek);
+            throw new \InvalidArgumentException("Business is closed on {$dayOfWeek}");
         }
 
         $requestStart = Carbon::parse($startTime)->format('H:i');
         $requestEnd = Carbon::parse($endTime)->format('H:i');
         
         if ($requestStart < $workingHours['start'] || $requestEnd > $workingHours['end']) {
-            throw new \InvalidArgumentException('Booking time is outside business hours');
+            throw new \InvalidArgumentException(
+                "Booking time ({$requestStart}-{$requestEnd}) is outside business hours " .
+                "({$workingHours['start']}-{$workingHours['end']}) for {$dayOfWeek}"
+            );
         }
     }
 
     // Private method to get working hours for a specific day
     private function getWorkingHoursForDay(BookingRule $bookingRules, string $dayOfWeek): ?array
     {
-        // This would depend on how you store working hours in booking_rules
-        // For now, returning a placeholder - you'll need to implement based on your schema
-        $workingHours = [
-            'Monday' => ['start' => '09:00', 'end' => '17:00'],
-            'Tuesday' => ['start' => '09:00', 'end' => '17:00'],
-            'Wednesday' => ['start' => '09:00', 'end' => '17:00'],
-            'Thursday' => ['start' => '09:00', 'end' => '17:00'],
-            'Friday' => ['start' => '09:00', 'end' => '17:00'],
-            'Saturday' => null,
-            'Sunday' => null,
+        // Get the actual business hours from the database
+        $hoursOfOperation = $bookingRules->hours_of_operation;
+        
+        if (!$hoursOfOperation || !is_array($hoursOfOperation)) {
+            // Fallback to business hours if booking rules don't have them
+            $business = $bookingRules->business;
+            $hoursOfOperation = $business->business_hours ?? [];
+        }
+        
+        // Map day names to the keys used in the database
+        $dayMapping = [
+            'Monday' => 'mon',
+            'Tuesday' => 'tue', 
+            'Wednesday' => 'wed',
+            'Thursday' => 'thu',
+            'Friday' => 'fri',
+            'Saturday' => 'sat',
+            'Sunday' => 'sun',
         ];
-
-        return $workingHours[$dayOfWeek] ?? null;
+        
+        $dayKey = $dayMapping[$dayOfWeek] ?? strtolower(substr($dayOfWeek, 0, 3));
+        $dayHours = $hoursOfOperation[$dayKey] ?? null;
+        
+        // Handle different data formats
+        if (!$dayHours) {
+            return null; // Business closed
+        }
+        
+        // Handle array format: ['09:00', '17:00'] or ['start' => '09:00', 'end' => '17:00']
+        if (is_array($dayHours)) {
+            if (isset($dayHours['closed']) && $dayHours['closed']) {
+                return null; // Explicitly closed
+            }
+            
+            if (isset($dayHours['start']) && isset($dayHours['end'])) {
+                return [
+                    'start' => $dayHours['start'],
+                    'end' => $dayHours['end']
+                ];
+            }
+            
+            if (count($dayHours) >= 2 && is_numeric(array_keys($dayHours)[0])) {
+                return [
+                    'start' => $dayHours[0],
+                    'end' => $dayHours[1]
+                ];
+            }
+        }
+        
+        return null;
     }
 
     // Private method to generate available time slots
