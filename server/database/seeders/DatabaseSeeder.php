@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             TestBusinessSeeder::class,
             TestClientSeeder::class,
             TestServiceSeeder::class,
+            TestBookingRulesSeeder::class,
             TestConversationSeeder::class,
         ]);
     }
