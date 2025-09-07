@@ -269,7 +269,14 @@ class BookingService
         ?int $serviceId = null
     ): array {
         $slots = [];
-        $slotDuration = 60; // 1 hour slots by default
+        
+        // Get slot duration from service, or use business default
+        if ($serviceId) {
+            $service = Service::find($serviceId);
+            $slotDuration = $service ? $service->duration_minutes : 60;
+        } else {
+            $slotDuration = 60; // Default when no service specified
+        }
         
         $start = Carbon::parse($date . ' ' . $workingHours['start']);
         $end = Carbon::parse($date . ' ' . $workingHours['end']);
