@@ -10,47 +10,55 @@ class TestConversationSeeder extends Seeder
 {
     public function run(): void
     {
-        // Clear existing conversations to avoid duplicates
-        Conversation::whereIn('business_id', [1, 2])->delete();
+        // Don't clear existing conversations to avoid conflicts
+        // Just ensure we have the basic conversations needed for testing
+        
+        // Check if we have the conversations we need
+        $conv1 = Conversation::where('business_id', 1)->where('client_id', 1)->first();
+        $conv2 = Conversation::where('business_id', 2)->where('client_id', 3)->first();
+        $conv3 = Conversation::where('business_id', 2)->where('client_id', 4)->first();
 
-        // Create conversations for testing
-        $conversations = [
-            [
-                'id' => 1,
+        // Only create if missing (let database auto-assign IDs)
+        if (!$conv1) {
+            $conv1 = Conversation::create([
                 'business_id' => 1,
-                'client_id' => 1, // John Doe from Business 1
+                'client_id' => 1,
                 'agent_id' => null,
-            ],
-            [
-                'id' => 2,
-                'business_id' => 2,
-                'client_id' => 3, // AI Test Client from Business 2
-                'agent_id' => null,
-            ],
-            [
-                'id' => 3,
-                'business_id' => 2,
-                'client_id' => 4, // WhatsApp User from Business 2
-                'agent_id' => null,
-            ],
-        ];
-
-        foreach ($conversations as $conversationData) {
-            $conversation = Conversation::create($conversationData);
-
-            // Create initial message for each conversation
-            ConversationMessage::create([
-                'conversation_id' => $conversation->id,
-                'client_id' => $conversation->client_id,
-                'business_id' => $conversation->business_id,
-                'sender' => 'ai',
-                'direction' => 'outbound',
-                'message' => 'Hello! How can I help you today?',
-                'metadata' => json_encode(['type' => 'greeting']),
-                'delivery_status' => 'sent',
             ]);
         }
 
-        $this->command->info('✅ Created test conversations with initial messages');
+        if (!$conv2) {
+            $conv2 = Conversation::create([
+                'business_id' => 2,
+                'client_id' => 3,
+                'agent_id' => null,
+            ]);
+        }
+
+        if (!$conv3) {
+            $conv3 = Conversation::create([
+                'business_id' => 2,
+                'client_id' => 4,
+                'agent_id' => null,
+            ]);
+        }
+
+        // Create initial messages only if conversation was just created
+        foreach ([$conv1, $conv2, $conv3] as $conversation) {
+            if ($conversation->wasRecentlyCreated) {
+                ConversationMessage::create([
+                    'conversation_id' => $conversation->id,
+                    'client_id' => $conversation->client_id,
+                    'business_id' => $conversation->business_id,
+                    'sender' => 'ai',
+                    'direction' => 'outbound',
+                    'message' => 'Hello! How can I help you today?',
+                    'metadata' => json_encode(['type' => 'greeting']),
+                    'delivery_status' => 'sent',
+                ]);
+            }
+        }
+
+        $this->command->info('✅ Ensured test conversations exist (without conflicts)');
     }
 }
