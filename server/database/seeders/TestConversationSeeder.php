@@ -10,30 +10,47 @@ class TestConversationSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create a test conversation
-        $conversation = Conversation::create([
-            'client_id' => 1, // assumes TestClientSeeder runs first
-            'business_id' => 1, // assumes TestBusinessSeeder runs first
-            'agent_id' => null,
-        ]);
+        // Clear existing conversations to avoid duplicates
+        Conversation::whereIn('business_id', [1, 2])->delete();
 
-        // Create some test messages
-        ConversationMessage::create([
-            'conversation_id' => $conversation->id,
-            'client_id' => 1,
-            'business_id' => 1,
-            'sender' => 'user',
-            'message' => 'Hello, I would like to book an appointment.',
-            'metadata' => null,
-        ]);
+        // Create conversations for testing
+        $conversations = [
+            [
+                'id' => 1,
+                'business_id' => 1,
+                'client_id' => 1, // John Doe from Business 1
+                'agent_id' => null,
+            ],
+            [
+                'id' => 2,
+                'business_id' => 2,
+                'client_id' => 3, // AI Test Client from Business 2
+                'agent_id' => null,
+            ],
+            [
+                'id' => 3,
+                'business_id' => 2,
+                'client_id' => 4, // WhatsApp User from Business 2
+                'agent_id' => null,
+            ],
+        ];
 
-        ConversationMessage::create([
-            'conversation_id' => $conversation->id,
-            'client_id' => 1,
-            'business_id' => 1,
-            'sender' => 'ai',
-            'message' => 'Hello! I would be happy to help you book an appointment. What service are you interested in?',
-            'metadata' => ['intent' => 'booking_inquiry'],
-        ]);
+        foreach ($conversations as $conversationData) {
+            $conversation = Conversation::create($conversationData);
+
+            // Create initial message for each conversation
+            ConversationMessage::create([
+                'conversation_id' => $conversation->id,
+                'client_id' => $conversation->client_id,
+                'business_id' => $conversation->business_id,
+                'sender' => 'ai',
+                'direction' => 'outbound',
+                'message' => 'Hello! How can I help you today?',
+                'metadata' => json_encode(['type' => 'greeting']),
+                'delivery_status' => 'sent',
+            ]);
+        }
+
+        $this->command->info('✅ Created test conversations with initial messages');
     }
 }
