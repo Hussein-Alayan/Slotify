@@ -9,25 +9,41 @@ class TestBookingRulesSeeder extends Seeder
 {
     public function run(): void
     {
-        // Clear existing booking rules for business 6
-        BookingRule::where('business_id', 6)->delete();
+        // Clear existing booking rules for businesses 1 and 2
+        BookingRule::whereIn('business_id', [1, 2])->delete();
 
-        // Create booking rules for business 6 with JSON format
+        // Booking rules for Business 1
         BookingRule::create([
-            'business_id' => 6,
+            'business_id' => 1,
             'hours_of_operation' => [
-                'Monday' => ['start' => '09:00', 'end' => '17:00', 'available' => true],
-                'Tuesday' => ['start' => '09:00', 'end' => '17:00', 'available' => true],
-                'Wednesday' => ['start' => '09:00', 'end' => '17:00', 'available' => true],
-                'Thursday' => ['start' => '09:00', 'end' => '17:00', 'available' => true],
-                'Friday' => ['start' => '09:00', 'end' => '17:00', 'available' => true],
-                'Saturday' => ['start' => '10:00', 'end' => '16:00', 'available' => true],
-                'Sunday' => ['available' => false],
+                'mon' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'tue' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'wed' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'thu' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'fri' => ['start' => '09:00', 'end' => '19:00', 'available' => true],
+                'sat' => ['start' => '10:00', 'end' => '16:00', 'available' => true],
+                'sun' => ['available' => false],
             ],
             'buffer_time_minutes' => 15,
             'cancellation_policy' => '24 hours advance notice required',
         ]);
 
-        $this->command->info('Created booking rules for business 1');
+        // Booking rules for Business 2 (AI Test)
+        BookingRule::create([
+            'business_id' => 2,
+            'hours_of_operation' => [
+                'mon' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'tue' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'wed' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'thu' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'fri' => ['start' => '09:00', 'end' => '18:00', 'available' => true],
+                'sat' => ['start' => '10:00', 'end' => '16:00', 'available' => true],
+                'sun' => ['available' => false],
+            ],
+            'buffer_time_minutes' => 15,
+            'cancellation_policy' => '24 hours advance notice required',
+        ]);
+
+        $this->command->info('✅ Created booking rules for businesses 1 and 2');
     }
 }
