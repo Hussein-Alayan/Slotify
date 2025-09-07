@@ -3,21 +3,59 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Business;
 
 class TestBusinessSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('businesses')->insert([
-            'name' => 'Test Business',
-            'industry' => 'Testing',
-            'contact_email' => 'testbusiness@example.com',
-            'contact_phone' => '555-1234',
-            'address' => '123 Test St',
-            'brand_voice' => 'formal',
-            'created_at' => now(),
-            'updated_at' => now(),
+        // Clear existing businesses to avoid conflicts
+        Business::whereIn('id', [1, 2])->delete();
+
+        // Business 1 - Hair Salon
+        Business::create([
+            'id' => 1,
+            'name' => 'Elite Hair Salon',
+            'industry' => 'Beauty & Wellness',
+            'contact_email' => 'info@elitehair.com',
+            'contact_phone' => '555-0001',
+            'address' => '123 Main St, Downtown',
+            'brand_voice' => 'friendly',
+            'timezone' => 'America/New_York',
+            'business_hours' => [
+                'mon' => ['start' => '09:00', 'end' => '18:00'],
+                'tue' => ['start' => '09:00', 'end' => '18:00'],
+                'wed' => ['start' => '09:00', 'end' => '18:00'],
+                'thu' => ['start' => '09:00', 'end' => '18:00'],
+                'fri' => ['start' => '09:00', 'end' => '19:00'],
+                'sat' => ['start' => '10:00', 'end' => '16:00'],
+                'sun' => ['closed' => true],
+            ],
+            'status' => 'active',
         ]);
+
+        // Business 2 - AI Test Business (for WhatsApp testing)
+        Business::create([
+            'id' => 2,
+            'name' => 'AI Test Salon',
+            'industry' => 'Beauty & Wellness',
+            'contact_email' => 'ai-test@example.com',
+            'contact_phone' => '555-0002',
+            'address' => '456 AI Test Ave',
+            'brand_voice' => 'friendly',
+            'timezone' => 'America/New_York',
+            'business_hours' => [
+                'mon' => ['start' => '09:00', 'end' => '18:00'],
+                'tue' => ['start' => '09:00', 'end' => '18:00'],
+                'wed' => ['start' => '09:00', 'end' => '18:00'],
+                'thu' => ['start' => '09:00', 'end' => '18:00'],
+                'fri' => ['start' => '09:00', 'end' => '18:00'],
+                'sat' => ['start' => '10:00', 'end' => '16:00'],
+                'sun' => ['closed' => true],
+            ],
+            'status' => 'active',
+        ]);
+
+        $this->command->info('✅ Created 2 test businesses with proper hours');
     }
 }
