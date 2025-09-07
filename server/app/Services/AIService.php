@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AIService
 {
@@ -125,11 +126,49 @@ Generate a natural, empathetic response that offers to help find alternatives:";
         $response = $this->sendPrompt($prompt);
         
         if (!$response) {
-            // Fallback responses if AI is unavailable
+            // Fallback responses if AI is unavailable - make them more dynamic
             if ($success) {
-                return "Great! I've successfully booked your appointment. Looking forward to seeing you!";
+                $serviceName = $details['service'] ?? 'appointment';
+                $dateStr = isset($details['date']) ? Carbon::parse($details['date'])->format('M j') : 'soon';
+                return "Perfect! I've booked your {$serviceName} for {$dateStr}. We'll see you then!";
             } else {
-                return "I apologize, but I wasn't able to complete your booking at this time. Let me help you find an alternative time.";
+                $error = $details['error'] ?? 'a scheduling conflict';
+                return "I'm sorry, there was {$error}. Let me help you find another time that works better.";
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Generate a contextual response for non-booking messages
+     */
+    public function generateContextualResponse(string $message, int $businessId): string
+    {
+        // You could load business info here for more context
+        $prompt = "Generate a helpful, friendly customer service response to this message.
+        
+Customer message: \"{$message}\"
+
+Guidelines:
+- Be helpful and professional
+- If they're asking about services, mention you can help with bookings
+- If they're asking general questions, offer assistance
+- Keep it concise and warm
+
+Response:";
+
+        $response = $this->sendPrompt($prompt);
+        
+        if (!$response) {
+            // Dynamic fallback based on message content
+            $message = strtolower($message);
+            if (str_contains($message, 'service') || str_contains($message, 'what')) {
+                return "I'd be happy to help you learn about our services and schedule an appointment. What would you like to know?";
+            } elseif (str_contains($message, 'hour') || str_contains($message, 'time') || str_contains($message, 'when')) {
+                return "I can help you find a great time for your appointment. What service are you interested in?";
+            } else {
+                return "Thank you for reaching out! I'm here to help with any questions and to assist with booking appointments. How can I help you today?";
             }
         }
 
