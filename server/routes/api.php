@@ -21,6 +21,9 @@ Route::prefix('v1')->group(function () {
 		Route::get('/whatsapp/health', [WhatsAppWebhookController::class, 'health']);
 	});
 
+	// AI processing for n8n workflows (no auth required)
+	Route::post('/ai/process-message', [AIBookingController::class, 'processMessage']);
+
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::post('/logout', [AuthController::class, 'logout']);
 		Route::get('/me', [AuthController::class, 'me']);
@@ -46,8 +49,5 @@ Route::prefix('v1')->group(function () {
 		
 		// Client-specific booking routes
 		Route::get('/clients/{client}/bookings', [BookingController::class, 'getClientBookings']); // get client bookings
-
-		// AI-powered booking routes
-		Route::post('/ai/process-message', [AIBookingController::class, 'processMessage']); // AI message processing with booking
 	});
 });
