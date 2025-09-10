@@ -25,7 +25,7 @@ Route::prefix('v1')->group(function () {
 	Route::post('/ai/process-message', [AIBookingController::class, 'processMessage']);
 
 	Route::middleware('auth:sanctum')->group(function () {
-		Route::post('/logout', [AuthController::class, 'logout']);
+		Route::post('/logout', [AuthController::class, 'logout']); //delete this 
 		Route::get('/me', [AuthController::class, 'me']);
 
 		// Business Profile setup
@@ -41,7 +41,7 @@ Route::prefix('v1')->group(function () {
 		Route::get('/bookings/{booking}', [BookingController::class, 'show']); // get booking details
 		Route::put('/bookings/{booking}', [BookingController::class, 'update']); // update booking
 		Route::delete('/bookings/{booking}', [BookingController::class, 'destroy']); // cancel booking
-		
+		//use patch to reduce redandancy 
 		// Business-specific booking routes
 		Route::get('/businesses/{business}/availability', [BookingController::class, 'checkAvailability']); // check availability
 		Route::get('/businesses/{business}/bookings', [BookingController::class, 'getBusinessBookings']); // get business bookings

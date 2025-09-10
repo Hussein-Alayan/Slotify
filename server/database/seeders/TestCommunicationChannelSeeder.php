@@ -25,6 +25,19 @@ class TestCommunicationChannelSeeder extends Seeder
             'status' => 'active',
         ]);
 
+        // Communication channel for your real WhatsApp business number (Meta/Facebook)
+        CommunicationChannel::create([
+            'business_id' => 1, // Link to Elite Hair Salon or change as needed
+            'channel_type' => 'whatsapp',
+            'provider' => 'facebook',
+            'business_number' => '+15551918334',
+            'phone_number' => '+15551918334',
+            'api_key' => 'test_facebook_key_business_real',
+            'token' => 'test_facebook_token_business_real',
+            'webhook_url' => 'https://graph.facebook.com/v17.0/whatsapp',
+            'status' => 'active',
+        ]);
+
         // Communication channels for Business 2 (AI Test Salon)
         CommunicationChannel::create([
             'business_id' => 2,

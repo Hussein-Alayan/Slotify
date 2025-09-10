@@ -38,7 +38,7 @@ class WhatsAppMessageResource extends JsonResource
             ],
             'message' => [
                 'id' => $this->resource['message']->id,
-                'content' => $this->resource['message']->content,
+                'content' => $this->resource['message']->message,
                 'direction' => $this->resource['message']->direction,
                 'source_phone' => $this->resource['message']->source_phone,
                 'external_message_id' => $this->resource['message']->external_message_id,
