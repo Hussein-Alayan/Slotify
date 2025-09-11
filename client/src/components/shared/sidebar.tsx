@@ -9,7 +9,6 @@ import {
   Users,
   Briefcase,
   UserCheck,
-  BarChart3,
   Settings,
   Menu,
 } from "lucide-react";
@@ -23,7 +22,6 @@ const navigation = [
   { name: "Services", href: "/business-dashboard/services", icon: Briefcase },
   { name: "Staff", href: "/business-dashboard/staff", icon: UserCheck },
   { name: "Clients", href: "/business-dashboard/clients", icon: Users },
-  { name: "Analytics", href: "/business-dashboard/analytics", icon: BarChart3 },
   { name: "Settings", href: "/business-dashboard/settings", icon: Settings },
 ];
 
