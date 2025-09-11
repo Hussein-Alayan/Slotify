@@ -34,43 +34,9 @@ class AIBookingController extends Controller
     }
 
     /**
-     * @OA\Post(
-     *     path="/api/v1/ai/process-message",
-     *     summary="Process AI message and handle booking flow",
-     *     tags={"AI Booking"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"conversation_id", "client_id", "message"},
-     *             @OA\Property(property="conversation_id", type="integer", example=1),
-     *             @OA\Property(property="client_id", type="integer", example=1),
-     *             @OA\Property(property="message", type="string", example="I want to book a haircut for tomorrow at 3pm"),
-     *             @OA\Property(property="force_booking_data", type="object", nullable=true)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Message processed successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message_processed", type="boolean"),
-     *             @OA\Property(property="flow_steps", type="array", @OA\Items(type="string")),
-     *             @OA\Property(property="ai_analysis", type="object"),
-     *             @OA\Property(property="booking_created", type="boolean"),
-     *             @OA\Property(property="booking", type="object", nullable=true),
-     *             @OA\Property(property="conversation_summary", type="object"),
-     *             @OA\Property(property="processing_metadata", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Message processing failed",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string"),
-     *             @OA\Property(property="error", type="string"),
-     *             @OA\Property(property="flow_steps", type="array", @OA\Items(type="string"))
-     *         )
-     *     )
-     * )
+     * Process AI message and handle booking flow
+     * 
+     * @see App\Http\Docs\AIBookingDocs for complete API documentation
      */
     public function processMessage(ProcessAIMessageRequest $request)
     {
