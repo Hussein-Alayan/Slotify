@@ -26,9 +26,6 @@ namespace App\Http\Docs;
  *         description="Invalid input or error starting conversation"
  *     )
  * )
- */
-
-/**
  * @OA\Get(
  *     path="/api/v1/conversations/{conversation}",
  *     summary="Fetch conversation with messages",
@@ -40,9 +37,6 @@ namespace App\Http\Docs;
  *         description="Conversation details returned successfully"
  *     )
  * )
- */
-
-/**
  * @OA\Post(
  *     path="/api/v1/conversations/{conversation}/messages",
  *     summary="Store a new message in a conversation",

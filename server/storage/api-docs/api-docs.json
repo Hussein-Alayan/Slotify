@@ -12,8 +12,10 @@
                     "AI Booking"
                 ],
                 "summary": "Process AI message and handle booking flow",
-                "operationId": "bbfe5cb75504e2aebd43f6839b7a4549",
+                "description": "Processes user messages through AI to extract booking intent, handle multi-step booking flow, and create bookings when all required information is collected. This endpoint is designed for n8n workflows and does not require authentication.",
+                "operationId": "9e067d436aa2a7830d93de932ad4e205",
                 "requestBody": {
+                    "description": "Message processing request payload",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -25,18 +27,38 @@
                                 ],
                                 "properties": {
                                     "conversation_id": {
+                                        "description": "ID of the conversation this message belongs to",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "client_id": {
+                                        "description": "ID of the client sending the message",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "message": {
+                                        "description": "The user's message containing booking intent or information",
                                         "type": "string",
                                         "example": "I want to book a haircut for tomorrow at 3pm"
                                     },
                                     "force_booking_data": {
+                                        "description": "Optional object to force specific booking data, bypassing AI analysis",
+                                        "properties": {
+                                            "service_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "date": {
+                                                "type": "string",
+                                                "format": "date",
+                                                "example": "2024-12-25"
+                                            },
+                                            "time": {
+                                                "type": "string",
+                                                "format": "time",
+                                                "example": "15:00"
+                                            }
+                                        },
                                         "type": "object",
                                         "nullable": true
                                     }
@@ -54,28 +76,55 @@
                                 "schema": {
                                     "properties": {
                                         "message_processed": {
+                                            "description": "Whether the message was successfully processed",
                                             "type": "boolean"
                                         },
                                         "flow_steps": {
+                                            "description": "Steps taken during processing",
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
                                             }
                                         },
                                         "ai_analysis": {
+                                            "description": "AI analysis results of the message",
                                             "type": "object"
                                         },
                                         "booking_created": {
+                                            "description": "Whether a booking was created",
                                             "type": "boolean"
                                         },
                                         "booking": {
+                                            "description": "Created booking details if booking was made",
                                             "type": "object",
                                             "nullable": true
                                         },
                                         "conversation_summary": {
+                                            "description": "Summary of the conversation",
                                             "type": "object"
                                         },
                                         "processing_metadata": {
+                                            "description": "Additional processing information",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "Validation errors",
                                             "type": "object"
                                         }
                                     },
@@ -85,22 +134,14 @@
                         }
                     },
                     "500": {
-                        "description": "Message processing failed",
+                        "description": "Server error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
+                                            "description": "Error message",
                                             "type": "string"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        },
-                                        "flow_steps": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
                                         }
                                     },
                                     "type": "object"
@@ -111,13 +152,13 @@
                 }
             }
         },
-        "/api/register": {
+        "/api/v1/register": {
             "post": {
                 "tags": [
                     "Authentication"
                 ],
                 "summary": "Register a new user",
-                "operationId": "8a56853624e025573120a09a4c75d468",
+                "operationId": "734aea3c377fcf04d75f0a6b48e4a5a0",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -208,13 +249,13 @@
                 }
             }
         },
-        "/api/login": {
+        "/api/v1/login": {
             "post": {
                 "tags": [
                     "Authentication"
                 ],
                 "summary": "Login user",
-                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "operationId": "6f08fa12b998e490cb95c2f0c826fa09",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -292,13 +333,13 @@
                 }
             }
         },
-        "/api/logout": {
+        "/api/v1/logout": {
             "post": {
                 "tags": [
                     "Authentication"
                 ],
                 "summary": "Logout user",
-                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "operationId": "967b8e55e40b41ba6c9d8f83c464b8e9",
                 "responses": {
                     "200": {
                         "description": "Logout successful",
@@ -327,6 +368,553 @@
                     }
                 ]
             }
+        },
+        "/api/v1/bookings": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Create a new booking",
+                "operationId": "ccbc5176b92a9d4f0538fc772b017735",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "service_id",
+                                    "date",
+                                    "time"
+                                ],
+                                "properties": {
+                                    "service_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-09-12"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "format": "time",
+                                        "example": "14:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Booking created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "service_id": {
+                                            "type": "integer"
+                                        },
+                                        "date": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "time": {
+                                            "type": "string",
+                                            "format": "time"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input or booking error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/bookings/{booking}": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get booking details",
+                "operationId": "1c10e45fd7f2b6d8d5589346045dddff",
+                "parameters": [
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking details returned successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Update a booking",
+                "operationId": "8f128408ca8bc0d6e903079985a1f7a3",
+                "parameters": [
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-09-13"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "format": "time",
+                                        "example": "15:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Booking updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid input or update error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Cancel a booking",
+                "operationId": "f6342fe2264684a038e0f5705bf5e829",
+                "parameters": [
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking cancelled successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/businesses/{business}/availability": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Check business availability",
+                "operationId": "ce48f45a3566adbaa4e008c031025ade",
+                "parameters": [
+                    {
+                        "name": "business",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "service_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Availability returned successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/businesses/{business}/bookings": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get bookings for a business",
+                "operationId": "8f680973c1edb8c1c409346dd360087a",
+                "parameters": [
+                    {
+                        "name": "business",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Business bookings returned successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/clients/{client}/bookings": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get bookings for a client",
+                "operationId": "c28e0dbb022bb6d3844f086da9bf993a",
+                "parameters": [
+                    {
+                        "name": "client",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Client bookings returned successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/business-profile": {
+            "post": {
+                "tags": [
+                    "Business"
+                ],
+                "summary": "Create or update a business profile",
+                "operationId": "1288524aa9339f5062042adca27d6b59",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "address"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Barber Shop"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "123 Main St, City"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+1234567890"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Best barbers in town"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Business profile created or updated successfully"
+                    },
+                    "404": {
+                        "description": "Business not found or could not be created"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/conversations": {
+            "post": {
+                "tags": [
+                    "Conversations"
+                ],
+                "summary": "Start a new conversation",
+                "operationId": "2f5ea04ea147b61fe76bf1c24e85beec",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "client_id",
+                                    "business_id"
+                                ],
+                                "properties": {
+                                    "client_id": {
+                                        "type": "integer",
+                                        "example": 17
+                                    },
+                                    "business_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "agent_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Conversation started successfully"
+                    },
+                    "400": {
+                        "description": "Invalid input or error starting conversation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/conversations/{conversation}": {
+            "get": {
+                "tags": [
+                    "Conversations"
+                ],
+                "summary": "Fetch conversation with messages",
+                "operationId": "17d8a2d7ae00a733c4992e980a6bbf83",
+                "parameters": [
+                    {
+                        "name": "conversation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Conversation details returned successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/conversations/{conversation}/messages": {
+            "post": {
+                "tags": [
+                    "Conversations"
+                ],
+                "summary": "Store a new message in a conversation",
+                "operationId": "1e7cc35b6d0a68c72adac54517d7d545",
+                "parameters": [
+                    {
+                        "name": "conversation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "sender",
+                                    "message"
+                                ],
+                                "properties": {
+                                    "sender": {
+                                        "type": "string",
+                                        "example": "client"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Hello, I want to book a haircut"
+                                    },
+                                    "metadata": {
+                                        "type": "object",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Message stored successfully"
+                    },
+                    "400": {
+                        "description": "Failed to send message"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/webhooks/whatsapp": {
+            "post": {
+                "tags": [
+                    "Webhooks"
+                ],
+                "summary": "Handle incoming WhatsApp webhook from n8n workflows",
+                "operationId": "0c106efed27262c727040bfd4eb8954d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "provider": {
+                                        "type": "string",
+                                        "example": "twilio"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Hello from WhatsApp!"
+                                    },
+                                    "from": {
+                                        "type": "string",
+                                        "example": "+1234567890"
+                                    },
+                                    "to": {
+                                        "type": "string",
+                                        "example": "+0987654321"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed successfully"
+                    },
+                    "401": {
+                        "description": "Invalid signature"
+                    },
+                    "500": {
+                        "description": "Webhook processing failed"
+                    }
+                }
+            }
+        },
+        "/api/v1/webhooks/whatsapp/health": {
+            "get": {
+                "tags": [
+                    "Webhooks"
+                ],
+                "summary": "Health check endpoint for webhook monitoring",
+                "operationId": "beafedb45c51f739a0ec4e13efe0f084",
+                "responses": {
+                    "200": {
+                        "description": "Service is healthy"
+                    }
+                }
+            }
         }
     },
     "tags": [
@@ -337,6 +925,22 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Bookings",
+            "description": "Bookings"
+        },
+        {
+            "name": "Business",
+            "description": "Business"
+        },
+        {
+            "name": "Conversations",
+            "description": "Conversations"
+        },
+        {
+            "name": "Webhooks",
+            "description": "Webhooks"
         }
     ],
     "components": {

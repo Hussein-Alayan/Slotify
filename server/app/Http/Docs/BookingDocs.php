@@ -33,9 +33,6 @@ namespace App\Http\Docs;
  *         description="Invalid input or booking error"
  *     )
  * )
- */
-
-/**
  * @OA\Get(
  *     path="/api/v1/bookings/{booking}",
  *     summary="Get booking details",
@@ -47,9 +44,6 @@ namespace App\Http\Docs;
  *         description="Booking details returned successfully"
  *     )
  * )
- */
-
-/**
  * @OA\Put(
  *     path="/api/v1/bookings/{booking}",
  *     summary="Update a booking",
@@ -72,9 +66,6 @@ namespace App\Http\Docs;
  *         description="Invalid input or update error"
  *     )
  * )
- */
-
-/**
  * @OA\Delete(
  *     path="/api/v1/bookings/{booking}",
  *     summary="Cancel a booking",
@@ -86,9 +77,6 @@ namespace App\Http\Docs;
  *         description="Booking cancelled successfully"
  *     )
  * )
- */
-
-/**
  * @OA\Get(
  *     path="/api/v1/businesses/{business}/availability",
  *     summary="Check business availability",
@@ -102,9 +90,6 @@ namespace App\Http\Docs;
  *         description="Availability returned successfully"
  *     )
  * )
- */
-
-/**
  * @OA\Get(
  *     path="/api/v1/businesses/{business}/bookings",
  *     summary="Get bookings for a business",
@@ -116,9 +101,6 @@ namespace App\Http\Docs;
  *         description="Business bookings returned successfully"
  *     )
  * )
- */
-
-/**
  * @OA\Get(
  *     path="/api/v1/clients/{client}/bookings",
  *     summary="Get bookings for a client",

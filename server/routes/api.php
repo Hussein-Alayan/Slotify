@@ -25,7 +25,6 @@ Route::prefix('v1')->group(function () {
 	Route::post('/ai/process-message', [AIBookingController::class, 'processMessage']);
 
 	Route::middleware('auth:sanctum')->group(function () {
-		Route::post('/logout', [AuthController::class, 'logout']); //delete this 
 		Route::get('/me', [AuthController::class, 'me']);
 
 		// Business Profile setup

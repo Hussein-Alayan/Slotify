@@ -29,9 +29,6 @@ namespace App\Http\Docs;
  *         description="Webhook processing failed"
  *     )
  * )
- */
-
-/**
  * @OA\Get(
  *     path="/api/v1/webhooks/whatsapp/health",
  *     summary="Health check endpoint for webhook monitoring",

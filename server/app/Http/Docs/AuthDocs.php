@@ -38,9 +38,6 @@ namespace App\Http\Docs;
  *         )
  *     )
  * )
- */
-
-/**
  * @OA\Post(
  *     path="/api/v1/login",
  *     summary="Login user",
@@ -70,23 +67,6 @@ namespace App\Http\Docs;
  *         @OA\JsonContent(
  *             @OA\Property(property="success", type="boolean", example=false),
  *             @OA\Property(property="message", type="string", example="Invalid Credentials")
- *         )
- *     )
- * )
- */
-
-/**
- * @OA\Post(
- *     path="/api/v1/logout",
- *     summary="Logout user",
- *     tags={"Authentication"},
- *     security={{"sanctum": {}}},
- *     @OA\Response(
- *         response=200,
- *         description="Logout successful",
- *         @OA\JsonContent(
- *             @OA\Property(property="success", type="boolean", example=true),
- *             @OA\Property(property="message", type="string", example="Logged out successfully")
  *         )
  *     )
  * )

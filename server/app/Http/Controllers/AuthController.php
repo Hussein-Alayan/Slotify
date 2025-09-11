@@ -45,11 +45,6 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout(Request $request)
-    {
-        $this->authService->logout($request->user());
-        return $this->successResponse(['message' => 'Logged out successfully']);
-    }
 
     public function me(Request $request)
     {
