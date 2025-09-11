@@ -21,7 +21,10 @@ class ConversationController extends Controller
         $this->conversationService = $conversationService;
     }
 
-    // Start a new conversation (called by n8n when first message arrives)
+    /**
+     * Start a new conversation
+     * @see App\Http\Docs\ConversationDocs for API documentation
+     */
     public function startConversation(StoreConversationRequest $request)
     {
         try {
@@ -36,14 +39,20 @@ class ConversationController extends Controller
         }
     }
 
-    // Fetch conversation with messages
+    /**
+     * Fetch conversation with messages
+     * @see App\Http\Docs\ConversationDocs for API documentation
+     */
     public function show($conversationId)
     {
         $conversation = $this->conversationService->getConversationWithMessages($conversationId);
         return $this->successResponse(new ConversationResource($conversation));
     }
 
-    // Store a new message in a conversation
+    /**
+     * Store a new message in a conversation
+     * @see App\Http\Docs\ConversationDocs for API documentation
+     */
     public function sendMessage(SendMessageRequest $request, $conversationId)
     {
         try {
