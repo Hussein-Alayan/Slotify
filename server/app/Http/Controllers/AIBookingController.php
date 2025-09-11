@@ -32,12 +32,6 @@ class AIBookingController extends Controller
         $this->aiService = $aiService;
         $this->configService = $configService;
     }
-
-    /**
-     * Process AI message and handle booking flow
-     * 
-     * @see App\Http\Docs\AIBookingDocs for complete API documentation
-     */
     public function processMessage(ProcessAIMessageRequest $request)
     {
         $flowSteps = [];

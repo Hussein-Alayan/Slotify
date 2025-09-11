@@ -20,7 +20,10 @@ class BookingController extends Controller
         $this->bookingService = $bookingService;
     }
 
-    // Create a new booking
+    /**
+     * Create a new booking
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
     public function store(CreateBookingRequest $request)
     {
         try {
@@ -31,14 +34,20 @@ class BookingController extends Controller
         }
     }
 
-    // Get booking details
+    /**
+     * Get booking details
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
     public function show($bookingId)
     {
         $booking = $this->bookingService->getBooking($bookingId);
         return $this->successResponse(new BookingResource($booking));
     }
 
-    // Update booking
+    /**
+     * Update booking
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
     public function update(UpdateBookingRequest $request, $bookingId)
     {
         try {
@@ -49,14 +58,20 @@ class BookingController extends Controller
         }
     }
 
-    // Cancel booking
+    /**
+     * Cancel booking
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
     public function destroy($bookingId)
     {
         $this->bookingService->cancelBooking($bookingId);
         return $this->successResponse(['message' => 'Booking cancelled successfully']);
     }
 
-    // Check availability for a business
+    /**
+     * Check availability for a business
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
     public function checkAvailability(CheckAvailabilityRequest $request, $businessId)
     {
         try {
@@ -71,14 +86,20 @@ class BookingController extends Controller
         }
     }
 
-    // Get bookings for a business
+    /**
+     * Get bookings for a business
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
     public function getBusinessBookings($businessId)
     {
         $bookings = $this->bookingService->getBusinessBookings($businessId);
         return $this->successResponse(BookingResource::collection($bookings));
     }
 
-    // Get bookings for a client
+    /**
+     * Get bookings for a client
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
     public function getClientBookings($clientId)
     {
         $bookings = $this->bookingService->getClientBookings($clientId);
