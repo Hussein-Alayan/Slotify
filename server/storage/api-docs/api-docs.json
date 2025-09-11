@@ -1,0 +1,121 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Slotify API",
+        "description": "API documentation for Slotify booking system",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/v1/ai/process-message": {
+            "post": {
+                "tags": [
+                    "AI Booking"
+                ],
+                "summary": "Process AI message and handle booking flow",
+                "operationId": "bbfe5cb75504e2aebd43f6839b7a4549",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "conversation_id",
+                                    "client_id",
+                                    "message"
+                                ],
+                                "properties": {
+                                    "conversation_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "client_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "I want to book a haircut for tomorrow at 3pm"
+                                    },
+                                    "force_booking_data": {
+                                        "type": "object",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Message processed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message_processed": {
+                                            "type": "boolean"
+                                        },
+                                        "flow_steps": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "ai_analysis": {
+                                            "type": "object"
+                                        },
+                                        "booking_created": {
+                                            "type": "boolean"
+                                        },
+                                        "booking": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "conversation_summary": {
+                                            "type": "object"
+                                        },
+                                        "processing_metadata": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Message processing failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        },
+                                        "flow_steps": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "AI Booking",
+            "description": "AI Booking"
+        }
+    ]
+}
