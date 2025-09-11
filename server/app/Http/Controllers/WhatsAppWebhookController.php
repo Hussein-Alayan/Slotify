@@ -20,10 +20,11 @@ class WhatsAppWebhookController extends Controller
         $this->webhookService = $webhookService;
     }
 
-    
-     // Handle incoming WhatsApp webhook from n8n workflows
-     
-        public function handleWebhook(WhatsAppWebhookRequest $request): JsonResponse
+    /**
+     * Handle incoming WhatsApp webhook from n8n workflows
+     * @see App\Http\Docs\WhatsAppWebhookDocs for API documentation
+     */
+    public function handleWebhook(WhatsAppWebhookRequest $request): JsonResponse
     {
         try {
             // Verify webhook signature for security
@@ -61,7 +62,10 @@ class WhatsAppWebhookController extends Controller
     }
     
          
-     //Health check endpoint for webhook monitoring
+    /**
+     * Health check endpoint for webhook monitoring
+     * @see App\Http\Docs\WhatsAppWebhookDocs for API documentation
+     */
     public function health(): JsonResponse
     {
         return $this->successResponse([
