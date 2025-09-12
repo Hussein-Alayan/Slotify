@@ -45,6 +45,23 @@ class AIBookingController extends Controller
             $client = $conversation->client;
             $businessId = $client->business_id;
 
+            // Load business with workflow data
+            $business = \App\Models\Business::find($businessId);
+            $businessData = [];
+            
+            if ($business && $business->workflow) {
+                $workflowData = json_decode($business->workflow, true);
+                $businessData = [
+                    'name' => $business->name,
+                    'industry' => $business->industry,
+                    'brand_voice' => $business->brand_voice,
+                    'services' => $workflowData['services'] ?? []
+                ];
+                $flowSteps[] = "✅ Business workflow data loaded from database";
+            } else {
+                $flowSteps[] = "⚠️ No workflow data found, using database fallback";
+            }
+
             // Step 1: Store user message
             $userMessageRecord = $this->conversationService->sendMessage(
                 $conversationId,
@@ -78,7 +95,6 @@ class AIBookingController extends Controller
                     $flowSteps[] = "✅ Booking created successfully";
 
                     // Generate AI success response with business and client context
-                    $business = \App\Models\Business::find($businessId);
                     $client = \App\Models\Client::find($clientId);
                     
                     $aiResponseText = $this->aiService->generateBookingResponse(true, [
@@ -87,7 +103,7 @@ class AIBookingController extends Controller
                         'date' => $bookingData['start_time'],
                         'time' => $bookingData['start_time'],
                         'service' => $booking->service->name ?? 'appointment'
-                    ]);
+                    ], $businessData);
 
                 } catch (\Exception $e) {
                     $flowSteps[] = "❌ Booking failed: " . $e->getMessage();
@@ -96,13 +112,13 @@ class AIBookingController extends Controller
                     $aiResponseText = $this->aiService->generateBookingResponse(false, [
                         'business_id' => $businessId,
                         'error' => $e->getMessage()
-                    ]);
+                    ], $businessData);
                 }
             } else {
                 $flowSteps[] = "ℹ️ No booking intent detected or low confidence";
                 
                 // Generate contextual AI response based on the message
-                $aiResponseText = $this->aiService->generateContextualResponse($userMessage, $businessId);
+                $aiResponseText = $this->aiService->generateContextualResponse($userMessage, $businessId, $businessData);
             }
 
             // Step 4: Store AI response
