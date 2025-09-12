@@ -40,7 +40,7 @@ class CommunicationChannel extends Model
     // Helper method for n8n to find business by incoming phone number
     public static function findBusinessByPhone($phoneNumber)
     {
-        return self::where(function($query) use ($phoneNumber) {
+        return self::with('business')->where(function($query) use ($phoneNumber) {
                 $query->where('business_number', $phoneNumber)
                       ->orWhere('phone_number', $phoneNumber)
                       // Also check with + prefix for normalized numbers
