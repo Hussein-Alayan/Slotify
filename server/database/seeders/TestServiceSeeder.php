@@ -10,70 +10,38 @@ class TestServiceSeeder extends Seeder
     public function run(): void
     {
         // Clear existing services to avoid duplicates
-        Service::whereIn('business_id', [1, 2])->delete();
+        Service::whereIn('business_id', [1, 2, 3])->delete();
         
-        // Services for Business 1 (Elite Hair Salon)
-        $business1Services = [
+        // Services for Business 3 (Test Business 15551388631)
+        $business3Services = [
             [
-                'business_id' => 1,
-                'name' => 'Haircut',
-                'duration_minutes' => 60,
-                'price' => 50.00,
-                'description' => 'Professional haircut and styling',
-            ],
-            [
-                'business_id' => 1,
-                'name' => 'Hair Wash',
+                'business_id' => 3,
+                'name' => 'General Consultation',
                 'duration_minutes' => 30,
                 'price' => 25.00,
-                'description' => 'Hair washing and conditioning',
+                'description' => 'General business consultation',
             ],
             [
-                'business_id' => 1,
-                'name' => 'Hair Color',
-                'duration_minutes' => 120,
-                'price' => 80.00,
-                'description' => 'Hair coloring and treatment',
-            ],
-            [
-                'business_id' => 1,
-                'name' => 'Beard Trim',
-                'duration_minutes' => 30,
-                'price' => 30.00,
-                'description' => 'Professional beard trimming',
-            ],
-        ];
-
-        // Services for Business 2 (AI Test Salon)
-        $business2Services = [
-            [
-                'business_id' => 2,
-                'name' => 'Haircut',
+                'business_id' => 3,
+                'name' => 'Premium Service',
                 'duration_minutes' => 60,
-                'price' => 45.00,
-                'description' => 'AI Test - Professional haircut',
+                'price' => 50.00,
+                'description' => 'Premium service offering',
             ],
             [
-                'business_id' => 2,
-                'name' => 'Consultation',
-                'duration_minutes' => 30,
-                'price' => 0.00,
-                'description' => 'Free consultation service',
-            ],
-            [
-                'business_id' => 2,
-                'name' => 'Full Service',
+                'business_id' => 3,
+                'name' => 'Extended Package',
                 'duration_minutes' => 90,
                 'price' => 75.00,
-                'description' => 'Complete styling package',
+                'description' => 'Extended service package',
             ],
         ];
 
-        // Create all services
-        foreach (array_merge($business1Services, $business2Services) as $serviceData) {
+        // Create services for Business 3
+        foreach ($business3Services as $serviceData) {
             Service::create($serviceData);
         }
 
-        $this->command->info('✅ Created services for businesses 1 and 2');
+        $this->command->info('✅ Created services for business +15551388631');
     }
 }

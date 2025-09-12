@@ -10,45 +10,29 @@ class TestClientSeeder extends Seeder
     public function run(): void
     {
         // Clear existing clients to avoid duplicates
-        Client::whereIn('business_id', [1, 2])->delete();
+        Client::whereIn('business_id', [1, 2, 3])->delete();
 
-        // Clients for Business 1 (Elite Hair Salon)
-        $business1Clients = [
+        // Clients for Business 3 (Test Business 15551388631)
+        $business3Clients = [
             [
-                'business_id' => 1,
-                'name' => 'John Doe',
-                'email' => 'john.doe@example.com',
-                'phone' => '+1234567890',
+                'business_id' => 3,
+                'name' => 'Test Client',
+                'email' => 'test.client@example.com',
+                'phone' => '+96170653458',
             ],
             [
-                'business_id' => 1,
-                'name' => 'Jane Smith',
-                'email' => 'jane.smith@example.com',
-                'phone' => '+1234567891',
+                'business_id' => 3,
+                'name' => 'WhatsApp Tester',
+                'email' => 'whatsapp.tester@example.com',
+                'phone' => '+1234567894',
             ],
         ];
 
-        // Clients for Business 2 (AI Test Salon)
-        $business2Clients = [
-            [
-                'business_id' => 2,
-                'name' => 'AI Test Client',
-                'email' => 'ai-test@example.com',
-                'phone' => '+1234567892',
-            ],
-            [
-                'business_id' => 2,
-                'name' => 'WhatsApp User',
-                'email' => 'whatsapp@example.com',
-                'phone' => '+1234567893',
-            ],
-        ];
-
-        // Create all clients
-        foreach (array_merge($business1Clients, $business2Clients) as $clientData) {
+        // Create clients for Business 3
+        foreach ($business3Clients as $clientData) {
             Client::create($clientData);
         }
 
-        $this->command->info('✅ Created clients for businesses 1 and 2');
+        $this->command->info('✅ Created test clients for business +15551388631');
     }
 }
