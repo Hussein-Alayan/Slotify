@@ -77,8 +77,13 @@ class AIBookingController extends Controller
                     $bookingCreated = true;
                     $flowSteps[] = "✅ Booking created successfully";
 
-                    // Generate AI success response
+                    // Generate AI success response with business and client context
+                    $business = \App\Models\Business::find($businessId);
+                    $client = \App\Models\Client::find($clientId);
+                    
                     $aiResponseText = $this->aiService->generateBookingResponse(true, [
+                        'business_id' => $businessId,
+                        'client_name' => $client->name ?? null,
                         'date' => $bookingData['start_time'],
                         'time' => $bookingData['start_time'],
                         'service' => $booking->service->name ?? 'appointment'
@@ -87,8 +92,9 @@ class AIBookingController extends Controller
                 } catch (\Exception $e) {
                     $flowSteps[] = "❌ Booking failed: " . $e->getMessage();
                     
-                    // Generate AI failure response
+                    // Generate AI failure response with business context
                     $aiResponseText = $this->aiService->generateBookingResponse(false, [
+                        'business_id' => $businessId,
                         'error' => $e->getMessage()
                     ]);
                 }
