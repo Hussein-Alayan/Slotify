@@ -99,7 +99,7 @@ JSON Response:";
     /**
      * Generate a natural response for booking results
      */
-    public function generateBookingResponse(bool $success, array $details = []): string
+    public function generateBookingResponse(bool $success, array $details = [], array $businessData = []): string
     {
         if ($success) {
             // Get business and client info for personalization
@@ -109,14 +109,9 @@ JSON Response:";
             $time = $details['time'] ?? '3:00 PM';
             $service = $details['service'] ?? 'appointment';
             
-            // Get business info for personalization
-            $business = null;
-            if ($businessId) {
-                $business = \App\Models\Business::find($businessId);
-            }
-            
-            $businessName = $business ? $business->name : 'our salon';
-            $brandVoice = $business ? $business->brand_voice : 'friendly';
+            // Extract business data (should always be provided now)
+            $businessName = $businessData['name'] ?? 'our salon';
+            $brandVoice = $businessData['brand_voice'] ?? 'friendly';
             
             // Format date nicely
             try {
@@ -146,14 +141,9 @@ Requirements:
 Generate the response:";
         } else {
             $errorReason = $details['error'] ?? 'availability issue';
-            $businessId = $details['business_id'] ?? null;
             
-            $business = null;
-            if ($businessId) {
-                $business = \App\Models\Business::find($businessId);
-            }
-            
-            $brandVoice = $business ? $business->brand_voice : 'friendly';
+            // Extract business data (should always be provided now)
+            $brandVoice = $businessData['brand_voice'] ?? 'friendly';
             
             $prompt = "Generate a {$brandVoice}, helpful WhatsApp response for a failed booking.
 
@@ -194,36 +184,74 @@ Generate the response:";
     /**
      * Generate a contextual response for non-booking messages
      */
-    public function generateContextualResponse(string $message, int $businessId): string
+    public function generateContextualResponse(string $message, int $businessId, array $businessData = []): string
     {
-        // You could load business info here for more context
-        $prompt = "Generate a helpful, friendly customer service response to this message.
+        // Extract business data (should always be provided now)
+        $businessName = $businessData['name'] ?? 'our business';
+        $businessIndustry = $businessData['industry'] ?? 'service business';
+        $brandVoice = $businessData['brand_voice'] ?? 'friendly';
+        $serviceList = $businessData['services'] ?? [];
         
+        // If no services provided in business data, fall back to database
+        if (empty($serviceList)) {
+            $services = \App\Models\Service::where('business_id', $businessId)->get();
+            $serviceList = $services->pluck('name')->toArray();
+        }
+        
+        // Handle service list formatting
+        if (is_array($serviceList) && !empty($serviceList)) {
+            $serviceNames = is_array($serviceList[0]) ? 
+                array_column($serviceList, 'name') : $serviceList;
+            $serviceText = implode(', ', $serviceNames);
+        } else {
+            $serviceText = 'various services';
+        }
+        
+        $prompt = "Generate a {$brandVoice}, helpful WhatsApp response for this customer inquiry.
+
+Business Context:
+- Name: {$businessName}
+- Industry: {$businessIndustry}
+- Services: {$serviceText}
+
 Customer message: \"{$message}\"
 
 Guidelines:
-- Be helpful and professional
-- If they're asking about services, mention you can help with bookings
-- If they're asking general questions, offer assistance
-- Keep it concise and warm
+- Use WhatsApp casual tone (no formal structure)
+- Be specific about actual services offered
+- If asking about services, list the real services available
+- Encourage booking if appropriate
+- Keep under 100 words
+- Match {$brandVoice} brand voice
 
 Response:";
 
         $response = $this->sendPrompt($prompt);
         
         if (!$response) {
-            // Dynamic fallback based on message content
-            $message = strtolower($message);
-            if (str_contains($message, 'service') || str_contains($message, 'what')) {
-                return "I'd be happy to help you learn about our services and schedule an appointment. What would you like to know?";
-            } elseif (str_contains($message, 'hour') || str_contains($message, 'time') || str_contains($message, 'when')) {
-                return "I can help you find a great time for your appointment. What service are you interested in?";
+            // Business-specific fallback responses
+            $messageLower = strtolower($message);
+            
+            if (str_contains($messageLower, 'service') || str_contains($messageLower, 'what') || str_contains($messageLower, 'offer')) {
+                if (is_array($serviceList) && !empty($serviceList)) {
+                    $serviceNames = is_array($serviceList[0]) ? 
+                        array_column($serviceList, 'name') : $serviceList;
+                    $serviceListText = implode(', ', array_slice($serviceNames, 0, 4)); // Show first 4 services
+                    if (count($serviceNames) > 4) $serviceListText .= ', and more';
+                    return "Hi! At {$businessName} we offer: {$serviceListText}. Would you like to book any of these services? Just let me know!";
+                } else {
+                    return "Hi! We offer various {$businessIndustry} services. I'd be happy to help you book an appointment. What are you looking for?";
+                }
+            } elseif (str_contains($messageLower, 'hour') || str_contains($messageLower, 'time') || str_contains($messageLower, 'when') || str_contains($messageLower, 'open')) {
+                return "I can help you find a great time for your appointment! What service would you like to book?";
+            } elseif (str_contains($messageLower, 'price') || str_contains($messageLower, 'cost') || str_contains($messageLower, 'how much')) {
+                return "I'd be happy to help with pricing information! Which service are you interested in? I can also help you book an appointment.";
             } else {
-                return "Thank you for reaching out! I'm here to help with any questions and to assist with booking appointments. How can I help you today?";
+                return "Hi! Thanks for reaching out to {$businessName}. I'm here to help with questions and bookings. How can I assist you today?";
             }
         }
 
-        return $response;
+        return trim($response);
     }
 
     /**
