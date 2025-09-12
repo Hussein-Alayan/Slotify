@@ -102,42 +102,93 @@ JSON Response:";
     public function generateBookingResponse(bool $success, array $details = []): string
     {
         if ($success) {
+            // Get business and client info for personalization
+            $businessId = $details['business_id'] ?? null;
+            $clientName = $details['client_name'] ?? null;
             $date = $details['date'] ?? 'tomorrow';
             $time = $details['time'] ?? '3:00 PM';
             $service = $details['service'] ?? 'appointment';
             
-            $prompt = "Generate a friendly, professional customer service response confirming a successful appointment booking.
+            // Get business info for personalization
+            $business = null;
+            if ($businessId) {
+                $business = \App\Models\Business::find($businessId);
+            }
+            
+            $businessName = $business ? $business->name : 'our salon';
+            $brandVoice = $business ? $business->brand_voice : 'friendly';
+            
+            // Format date nicely
+            try {
+                $formattedDate = Carbon::parse($date)->format('l, F j, Y');
+                $formattedTime = Carbon::parse($time)->format('g:i A');
+            } catch (\Exception $e) {
+                $formattedDate = $date;
+                $formattedTime = $time;
+            }
+            
+            $prompt = "Generate a {$brandVoice}, professional WhatsApp booking confirmation message.
 
-Booking Details:
-- Date: {$date}
-- Time: {$time}
-- Service: {$service}
+Business: {$businessName}
+Customer: " . ($clientName ? $clientName : 'valued customer') . "
+Service: {$service}
+Date: {$formattedDate}
+Time: {$formattedTime}
 
-Generate a natural, warm confirmation message:";
+Requirements:
+- Keep it under 150 words
+- Use WhatsApp-friendly format (no formal letter structure)
+- Include the specific booking details
+- End with a helpful note about changes/questions
+- Match the {$brandVoice} brand voice
+- No placeholder text like [Your Name] or [Contact Info]
+
+Generate the response:";
         } else {
             $errorReason = $details['error'] ?? 'availability issue';
-            $prompt = "Generate a polite, helpful customer service response for a failed booking attempt.
+            $businessId = $details['business_id'] ?? null;
+            
+            $business = null;
+            if ($businessId) {
+                $business = \App\Models\Business::find($businessId);
+            }
+            
+            $brandVoice = $business ? $business->brand_voice : 'friendly';
+            
+            $prompt = "Generate a {$brandVoice}, helpful WhatsApp response for a failed booking.
 
 Issue: {$errorReason}
 
-Generate a natural, empathetic response that offers to help find alternatives:";
+Requirements:
+- Keep it under 100 words
+- Be empathetic but solution-focused
+- Offer to help find alternatives
+- Use WhatsApp-friendly casual tone
+- Match the {$brandVoice} brand voice
+
+Generate the response:";
         }
 
         $response = $this->sendPrompt($prompt);
         
         if (!$response) {
-            // Fallback responses if AI is unavailable - make them more dynamic
+            // Improved fallback responses
             if ($success) {
                 $serviceName = $details['service'] ?? 'appointment';
-                $dateStr = isset($details['date']) ? Carbon::parse($details['date'])->format('M j') : 'soon';
-                return "Perfect! I've booked your {$serviceName} for {$dateStr}. We'll see you then!";
+                try {
+                    $dateStr = Carbon::parse($details['date'])->format('M j');
+                    $timeStr = Carbon::parse($details['time'])->format('g:i A');
+                    return "✅ Perfect! Your {$serviceName} is confirmed for {$dateStr} at {$timeStr}. Looking forward to seeing you! Reply if you need to make any changes.";
+                } catch (\Exception $e) {
+                    return "✅ Perfect! Your {$serviceName} is booked. We'll see you soon! Reply if you need to make any changes.";
+                }
             } else {
                 $error = $details['error'] ?? 'a scheduling conflict';
-                return "I'm sorry, there was {$error}. Let me help you find another time that works better.";
+                return "Sorry, there was {$error}. Let me help you find another time that works! What other days/times work for you?";
             }
         }
 
-        return $response;
+        return trim($response);
     }
 
     /**
