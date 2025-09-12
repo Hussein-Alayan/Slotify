@@ -61,7 +61,45 @@ class WhatsAppWebhookService
         
         $channel = CommunicationChannel::findBusinessByPhone($normalizedPhone);
         
-        return $channel ? $channel->business : null;
+        if (!$channel || !$channel->business) {
+            return null;
+        }
+        
+        // Ensure business has workflow data loaded
+        $business = $channel->business;
+        if (!$business->workflow) {
+            // Generate workflow data if missing
+            $business = $this->ensureBusinessWorkflow($business);
+        }
+        
+        return $business;
+    }
+    
+    /**
+     * Ensure business has workflow data, generate if missing
+     */
+    private function ensureBusinessWorkflow(Business $business): Business
+    {
+        // Reload with relationships
+        $business = Business::with(['services', 'resources', 'bookingRules', 'communicationChannels', 'clients'])
+            ->find($business->id);
+            
+        // Generate workflow JSON if missing
+        if (!$business->workflow) {
+            $workflow = [
+                'business' => $business->toArray(),
+                'services' => $business->services->toArray(),
+                'resources' => $business->resources->toArray(),
+                'booking_rules' => $business->bookingRules->first(),
+                'communication_channels' => $business->communicationChannels->toArray(),
+                'clients' => $business->clients->toArray(),
+            ];
+            
+            $business->workflow = json_encode($workflow);
+            $business->save();
+        }
+        
+        return $business;
     }
 
     /**
