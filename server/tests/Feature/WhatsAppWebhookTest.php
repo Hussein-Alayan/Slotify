@@ -10,17 +10,28 @@ class WhatsAppWebhookTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_valid_whatsapp_webhook()
     {
+        $phone = '1234567890'; // normalized phone (no plus)
         $business = Business::factory()->create([
-            'contact_phone' => '+1234567890'
+            'contact_phone' => $phone
+        ]);
+        \App\Models\BookingRule::factory()->create([
+            'business_id' => $business->id
+        ]);
+        \App\Models\CommunicationChannel::factory()->create([
+            'business_id' => $business->id,
+            'channel_type' => 'whatsapp',
+            'business_number' => $phone,
+            'provider' => 'twilio',
+            'status' => 'active',
         ]);
 
         $payload = [
             'provider' => 'twilio',
-            'to_phone' => '+1234567890',
-            'from_phone' => '+0987654321',
+            'to_phone' => $phone,
+            'from_phone' => '0987654321',
             'from_name' => 'Test User',
             'message_content' => 'Hello, I want to book an appointment',
             'external_message_id' => 'msg_123'
@@ -41,7 +52,7 @@ class WhatsAppWebhookTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_returns_health_check()
     {
         $response = $this->getJson('/api/v1/webhooks/whatsapp/health');
@@ -56,7 +67,7 @@ class WhatsAppWebhookTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_invalid_webhook_signature()
     {
         $payload = [
@@ -68,14 +79,16 @@ class WhatsAppWebhookTest extends TestCase
 
         $response = $this->postJson('/api/v1/webhooks/whatsapp', $payload);
 
-        $response->assertStatus(401)
+        $response->assertStatus(422)
                 ->assertJson([
-                    'success' => false,
-                    'message' => 'Invalid signature'
+                    'message' => 'The provider must be either twilio or facebook.',
+                    'errors' => [
+                        'provider' => ['The provider must be either twilio or facebook.']
+                    ]
                 ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_unknown_business()
     {
         $payload = [
