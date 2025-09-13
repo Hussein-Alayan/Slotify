@@ -13,7 +13,7 @@ class AuthTest extends TestCase
 
     public function test_user_can_register()
     {
-    $response = $this->postJson('/api/v1/register', [
+        $response = $this->postJson('/api/v1/register', [
             'name' => 'Test User',
             'email' => 'test' . Str::random(5) . '@example.com',
             'password' => 'password123',
@@ -21,7 +21,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['user']);
+            ->assertJsonStructure(['data' => ['user']]);
     }
 
     public function test_user_can_login()
@@ -30,13 +30,13 @@ class AuthTest extends TestCase
             'password' => bcrypt('password123'),
         ]);
 
-    $response = $this->postJson('/api/v1/login', [
+        $response = $this->postJson('/api/v1/login', [
             'email' => $user->email,
             'password' => 'password123',
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['user']);
+            ->assertJsonStructure(['data' => ['user']]);
     }
 
     public function test_authenticated_user_can_get_profile()
@@ -48,7 +48,7 @@ class AuthTest extends TestCase
             ->getJson('/api/v1/me');
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['id', 'name', 'email', 'created_at', 'updated_at']);
+            ->assertJsonStructure(['data' => ['id', 'name', 'email', 'created_at', 'updated_at']]);
     }
 
     public function test_user_cannot_login_with_invalid_credentials()
@@ -57,7 +57,7 @@ class AuthTest extends TestCase
             'password' => bcrypt('password123'),
         ]);
 
-    $response = $this->postJson('/api/v1/login', [
+        $response = $this->postJson('/api/v1/login', [
             'email' => $user->email,
             'password' => 'wrongpassword',
         ]);
