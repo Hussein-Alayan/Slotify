@@ -12,7 +12,7 @@ class WebhookToAIIntegrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_processes_complete_webhook_to_ai_flow()
     {
         // Setup: Create business with WhatsApp number
@@ -71,7 +71,7 @@ class WebhookToAIIntegrationTest extends TestCase
         $this->assertEquals(2, $conversation->messages()->count()); // User + AI messages
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_webhook_followed_by_non_booking_ai_query()
     {
         // Setup

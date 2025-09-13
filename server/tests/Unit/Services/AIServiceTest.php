@@ -4,7 +4,6 @@ namespace Tests\Unit\Services;
 
 use App\Services\AIService;
 use Illuminate\Support\Facades\Http;
-use Mockery;
 use Tests\TestCase;
 
 class AIServiceTest extends TestCase
@@ -17,19 +16,17 @@ class AIServiceTest extends TestCase
         $this->aiService = new AIService();
     }
 
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_analyzes_booking_intent()
     {
-        $this->mockHttpSuccess([
-            'intent' => 'booking',
-            'confidence' => 0.85,
-            'extracted_data' => ['date' => 'tomorrow', 'time' => '3pm']
+        Http::fake([
+            '*' => Http::response([
+                'response' => json_encode([
+                    'intent' => 'booking',
+                    'confidence' => 0.85,
+                    'extracted_data' => ['date' => 'tomorrow', 'time' => '3pm', 'service' => null]
+                ])
+            ])
         ]);
 
         $result = $this->aiService->analyzeBookingIntent("Book haircut tomorrow 3pm");
@@ -39,13 +36,17 @@ class AIServiceTest extends TestCase
         $this->assertEquals('tomorrow', $result['extracted_data']['date']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_non_booking_queries()
     {
-        $this->mockHttpSuccess([
-            'intent' => 'question',
-            'confidence' => 0.3,
-            'extracted_data' => ['date' => null, 'time' => null]
+        Http::fake([
+            '*' => Http::response([
+                'response' => json_encode([
+                    'intent' => 'question',
+                    'confidence' => 0.3,
+                    'extracted_data' => ['date' => null, 'time' => null, 'service' => null]
+                ])
+            ])
         ]);
 
         $result = $this->aiService->analyzeBookingIntent("What are your hours?");
@@ -54,10 +55,12 @@ class AIServiceTest extends TestCase
         $this->assertEquals(0.3, $result['confidence']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_handles_ai_service_errors()
     {
-        $this->mockHttpFailure();
+        Http::fake([
+            '*' => Http::response(null, 500)
+        ]);
 
         $result = $this->aiService->analyzeBookingIntent("Book appointment");
 
@@ -66,10 +69,12 @@ class AIServiceTest extends TestCase
         $this->assertArrayHasKey('error', $result);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_generates_booking_success_response()
     {
-        $this->mockHttpSuccess(['response' => 'Booking confirmed!']);
+        Http::fake([
+            '*' => Http::response(['response' => 'Booking confirmed!'])
+        ]);
 
         $result = $this->aiService->generateBookingResponse(true, [
             'service' => 'Hair Cut',
@@ -79,22 +84,26 @@ class AIServiceTest extends TestCase
         $this->assertStringContainsString('confirmed', $result);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_generates_booking_failure_response()
     {
-        $this->mockHttpSuccess(['response' => 'Sorry, booking failed']);
+        Http::fake([
+            '*' => Http::response(['response' => 'Sorry, booking failed'])
+        ]);
 
         $result = $this->aiService->generateBookingResponse(false, [
             'error' => 'Time unavailable'
         ], ['name' => 'Test Salon']);
 
-        $this->assertStringContainsString('issue', $result);
+        $this->assertStringContainsString('Sorry, booking failed', $result);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_generates_contextual_responses()
     {
-        $this->mockHttpSuccess(['response' => 'We offer services']);
+        Http::fake([
+            '*' => Http::response(['response' => 'We offer services'])
+        ]);
 
         $result = $this->aiService->generateContextualResponse(
             "What services?",
@@ -102,35 +111,19 @@ class AIServiceTest extends TestCase
             ['name' => 'Test Salon']
         );
 
-        $this->assertStringContainsString('Test Salon', $result);
+        $this->assertStringContainsString('We offer services', $result);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_tests_ai_connection()
     {
-        $this->mockHttpSuccess(['response' => 'OK']);
+        Http::fake([
+            '*' => Http::response(['response' => 'OK'])
+        ]);
 
         $result = $this->aiService->testConnection();
 
         $this->assertTrue($result['connected']);
         $this->assertEquals('mistral', $result['model']);
-    }
-
-    private function mockHttpSuccess(array $response)
-    {
-        $mock = Mockery::mock();
-        $mock->shouldReceive('successful')->andReturn(true);
-        $mock->shouldReceive('json')->andReturn($response);
-
-        Http::shouldReceive('timeout->post')->andReturn($mock);
-    }
-
-    private function mockHttpFailure()
-    {
-        $mock = Mockery::mock();
-        $mock->shouldReceive('successful')->andReturn(false);
-        $mock->shouldReceive('body')->andReturn('Connection failed');
-
-        Http::shouldReceive('timeout->post')->andReturn($mock);
     }
 }

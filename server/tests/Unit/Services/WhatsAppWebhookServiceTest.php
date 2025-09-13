@@ -18,18 +18,30 @@ class WhatsAppWebhookServiceTest extends TestCase
         $this->webhookService = new WhatsAppWebhookService();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_processes_incoming_whatsapp_message()
     {
         // Create test data
+        $phone = '1234567890'; // normalized phone (no plus)
         $business = Business::factory()->create([
-            'contact_phone' => '+1234567890'
+            'contact_phone' => $phone
+        ]);
+        \App\Models\BookingRule::factory()->create([
+            'business_id' => $business->id
+        ]);
+        \App\Models\CommunicationChannel::factory()->create([
+            'business_id' => $business->id,
+            'channel_type' => 'whatsapp',
+            'business_number' => $phone,
+            'phone_number' => $phone,
+            'provider' => 'twilio',
+            'status' => 'active',
         ]);
 
         $data = [
             'provider' => 'twilio',
-            'to_phone' => '+1234567890',
-            'from_phone' => '+0987654321',
+            'to_phone' => $phone,
+            'from_phone' => '0987654321',
             'from_name' => 'Test User',
             'message_content' => 'Hello, I want to book',
             'external_message_id' => 'msg_123'
@@ -44,23 +56,35 @@ class WhatsAppWebhookServiceTest extends TestCase
         $this->assertEquals($business->id, $result['business']->id);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_finds_business_by_phone_number()
     {
+        $phone = '15551234567'; // normalized phone (no plus)
         $business = Business::factory()->create([
-            'contact_phone' => '+15551234567'
+            'contact_phone' => $phone
+        ]);
+        \App\Models\BookingRule::factory()->create([
+            'business_id' => $business->id
+        ]);
+        \App\Models\CommunicationChannel::factory()->create([
+            'business_id' => $business->id,
+            'channel_type' => 'whatsapp',
+            'business_number' => $phone,
+            'phone_number' => $phone,
+            'provider' => 'twilio',
+            'status' => 'active',
         ]);
 
         $foundBusiness = $this->invokePrivateMethod(
             'findBusinessByPhone',
-            ['+15551234567']
+            [$phone]
         );
 
         $this->assertNotNull($foundBusiness);
         $this->assertEquals($business->id, $foundBusiness->id);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_returns_null_for_unknown_business()
     {
         $foundBusiness = $this->invokePrivateMethod(
@@ -71,7 +95,7 @@ class WhatsAppWebhookServiceTest extends TestCase
         $this->assertNull($foundBusiness);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_creates_or_finds_client()
     {
         $business = Business::factory()->create();
@@ -87,7 +111,7 @@ class WhatsAppWebhookServiceTest extends TestCase
         $this->assertEquals($business->id, $client->business_id);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_creates_conversation_for_business_client()
     {
         $business = Business::factory()->create();
@@ -103,7 +127,7 @@ class WhatsAppWebhookServiceTest extends TestCase
         $this->assertEquals($client->id, $conversation->client_id);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_verifies_webhook_signature()
     {
         // Test Twilio signature (currently returns true for MVP)
@@ -125,7 +149,7 @@ class WhatsAppWebhookServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_throws_exception_for_unknown_business()
     {
         $this->expectException(\Exception::class);
