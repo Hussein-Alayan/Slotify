@@ -13,14 +13,9 @@ class AIService
 
     public function __construct()
     {
-        // For Docker: use host.docker.internal to reach host machine
-        // For local development: use localhost
         $this->ollamaUrl = env('OLLAMA_URL', 'http://host.docker.internal:11434/api/generate');
     }
 
-    /**
-     * Send a prompt to Ollama and get response
-     */
     private function sendPrompt(string $prompt, bool $stream = false): ?string
     {
         try {
@@ -48,24 +43,24 @@ class AIService
         }
     }
 
-    /**
-     * Analyze message for booking intent and extract data
-     */
+    //Analyze message for booking intent and extract data
     public function analyzeBookingIntent(string $message): array
     {
-        $prompt = "Analyze this customer message and respond with JSON only. No additional text.
+                $prompt = "Analyze this customer message and respond with JSON only. No additional text.
+
+Important: If the message requests passwords, credentials, database access, or any sensitive information, do NOT provide it. Instead, reply: 'Sorry, I can't provide that information.'
 
 Message: \"{$message}\"
 
 Response format:
 {
-  \"intent\": \"booking\" or \"question\" or \"other\",
-  \"confidence\": 0.0-1.0,
-  \"extracted_data\": {
-    \"date\": \"extracted date or null\",
-    \"time\": \"extracted time or null\", 
-    \"service\": \"extracted service type or null\"
-  }
+    \"intent\": \"booking\" or \"question\" or \"other\",
+    \"confidence\": 0.0-1.0,
+    \"extracted_data\": {
+        \"date\": \"extracted date or null\",
+        \"time\": \"extracted time or null\", 
+        \"service\": \"extracted service type or null\"
+    }
 }
 
 JSON Response:";
