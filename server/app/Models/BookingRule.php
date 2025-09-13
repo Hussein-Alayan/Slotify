@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class BookingRule extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'business_id',
         'hours_of_operation',
