@@ -18,8 +18,7 @@ class WhatsAppMessageResource extends JsonResource
             'business' => [
                 'id' => $this->resource['business']->id,
                 'name' => $this->resource['business']->name,
-                'slug' => $this->resource['business']->slug,
-                'phone' => $this->resource['business']->phone,
+                'contact_phone' => $this->resource['business']->contact_phone,
                 'timezone' => $this->resource['business']->timezone,
                 'is_open_now' => $this->resource['business']->isOpenNow(),
             ],
