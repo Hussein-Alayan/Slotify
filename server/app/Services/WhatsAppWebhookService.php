@@ -90,11 +90,10 @@ class WhatsAppWebhookService
                 'business' => $business->toArray(),
                 'services' => $business->services->toArray(),
                 'resources' => $business->resources->toArray(),
-                'booking_rules' => $business->bookingRules->first(),
+                'booking_rules' => $business->bookingRules, // hasOne returns model or null
                 'communication_channels' => $business->communicationChannels->toArray(),
                 'clients' => $business->clients->toArray(),
             ];
-            
             $business->workflow = json_encode($workflow);
             $business->save();
         }
