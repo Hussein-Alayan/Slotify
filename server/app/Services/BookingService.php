@@ -24,6 +24,33 @@ class BookingService
             ->where('business_id', $data['business_id'])
             ->firstOrFail();
 
+        // Auto-assign staff if resource_id is not provided
+        if (empty($data['resource_id'])) {
+            // Get all staff who can perform this service
+            $staff = $service->resources()->where('type', 'staff')->get();
+            $start = Carbon::parse($data['start_time']);
+            $end = Carbon::parse($data['end_time']);
+            $assigned = false;
+            foreach ($staff as $member) {
+                // Check for overlapping bookings for this staff
+                $hasConflict = Booking::where('resource_id', $member->id)
+                    ->where('status', 'confirmed')
+                    ->where(function($q) use ($start, $end) {
+                        $q->where('start_time', '<', $end)
+                          ->where('end_time', '>', $start);
+                    })
+                    ->exists();
+                if (!$hasConflict) {
+                    $data['resource_id'] = $member->id;
+                    $assigned = true;
+                    break;
+                }
+            }
+            if (!$assigned) {
+                throw new \InvalidArgumentException('No available staff for the requested time slot.');
+            }
+        }
+
         // Check availability
         $this->validateAvailability(
             $data['business_id'],
