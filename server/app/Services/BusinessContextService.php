@@ -48,25 +48,38 @@ class BusinessContextService
      */
     public function getAIContext(int $businessId, ?string $date = null): array
     {
-        // Always get fresh context to ensure we have the latest booking data
-        $context = $this->getCompleteContext($businessId, $date);
-        
-        // Get resources that can perform each service
-        $serviceProviders = [];
-        foreach ($context['services'] as $service) {
-            $resources = \App\Models\Service::find($service['id'])->resources;
-            $serviceProviders[$service['name']] = $resources->pluck('name')->toArray();
-        }
-        
-        // Format resource availability for AI consumption
+        // Get business and services
+        $business = \App\Models\Business::findOrFail($businessId);
+        $services = $business->services->map(function($service) {
+            return [
+                'id' => $service->id,
+                'name' => $service->name,
+                'duration_minutes' => $service->duration_minutes
+            ];
+        })->toArray();
+
+        // Get business hours for the relevant day
+        $dateObj = $date ? Carbon::parse($date) : Carbon::today();
+        $dayOfWeek = strtolower($dateObj->format('D'));
+        $businessHours = $business->business_hours[$dayOfWeek] ?? null;
+
+        // Get all staff/resources
+        $resources = $business->resources->map(function($resource) {
+            return [
+                'id' => $resource->id,
+                'name' => $resource->name,
+                'type' => $resource->type,
+                'services_offered' => $resource->services->pluck('name')->toArray()
+            ];
+        })->toArray();
+
+        // Get booked slots for each staff
         $resourceAvailability = [];
-        foreach ($context['resources'] as $resource) {
-            if ($resource['type'] === 'staff') {
-                // Get all bookings for this resource, not just for today
-                $bookedSlots = \App\Models\Booking::where('resource_id', $resource['id'])
+        foreach ($business->resources as $resource) {
+            if ($resource->type === 'staff') {
+                $bookedSlots = \App\Models\Booking::where('resource_id', $resource->id)
                     ->where('status', 'confirmed')
                     ->whereDate('start_time', '>=', Carbon::today())
-                    ->with(['service'])
                     ->get()
                     ->map(function($booking) {
                         return [
@@ -78,25 +91,39 @@ class BusinessContextService
                     })
                     ->values()
                     ->toArray();
-                
-                $resourceAvailability[$resource['name']] = [
-                    'id' => $resource['id'],
-                    'type' => $resource['type'],
+                $resourceAvailability[] = [
+                    'id' => $resource->id,
+                    'name' => $resource->name,
+                    'type' => $resource->type,
                     'booked_slots' => $bookedSlots,
-                    'services_offered' => \App\Models\Resource::find($resource['id'])->services->pluck('name')->toArray()
+                    'services_offered' => $resource->services->pluck('name')->toArray()
                 ];
             }
         }
-        
-        // Only include necessary data and avoid duplications
+
+        // Get floating (unassigned) bookings for the relevant date
+        $floatingBookings = \App\Models\Booking::where('business_id', $businessId)
+            ->whereNull('resource_id')
+            ->where('status', 'confirmed')
+            ->when($date, function($q) use ($dateObj) {
+                $q->whereDate('start_time', $dateObj->format('Y-m-d'));
+            })
+            ->get()
+            ->map(function($booking) {
+                return [
+                    'date' => Carbon::parse($booking->start_time)->format('Y-m-d'),
+                    'start' => Carbon::parse($booking->start_time)->format('H:i'),
+                    'end' => Carbon::parse($booking->end_time)->format('H:i'),
+                    'service' => optional($booking->service)->name
+                ];
+            })->toArray();
+
         return [
-            'business' => $context['business'],
-            'services' => $context['services'],
-            'resources' => $context['resources'],
-            'booking_rules' => $context['booking_rules'],
+            'business_hours' => $businessHours,
+            'services' => $services,
+            'resources' => $resources,
             'resource_availability' => $resourceAvailability,
-            'service_providers' => $serviceProviders,
-            'booked_slots' => $this->getAllFutureBookings($businessId) // Get all future bookings
+            'floating_bookings' => $floatingBookings
         ];
     }
     
