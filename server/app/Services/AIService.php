@@ -409,36 +409,35 @@ Response:";
         $time = $this->extractTime($message);
         $date = $this->extractDate($message);
         
-        // Get resources from context
-        $resources = $context['resources'] ?? [];
+        // Use resource_availability for accurate staff bookings
+        $resources = $context['resource_availability'] ?? [];
         $businessName = $context['business']['name'] ?? 'our business';
         $brandVoice = $context['business']['brand_voice'] ?? 'friendly';
         
-        // Format resources info for the prompt
+        // Format resource availability info for the prompt
         $resourcesInfo = '';
         if (!empty($resources)) {
-            $resourcesInfo = "Available staff/resources:\n";
+            $resourcesInfo = "Staff/resource availability:\n";
             foreach ($resources as $resource) {
                 $name = $resource['name'] ?? 'Unknown';
-                $title = $resource['title'] ?? 'staff member';
-                $servicesInfo = '';
-                
-                if (isset($resource['services']) && !empty($resource['services'])) {
-                    $serviceNames = array_column($resource['services'], 'name');
-                    $servicesInfo = " - Can perform: " . implode(', ', $serviceNames);
+                $type = $resource['type'] ?? 'staff';
+                $services = isset($resource['services_offered']) ? implode(', ', $resource['services_offered']) : '';
+                $bookedSlots = $resource['booked_slots'] ?? [];
+                $bookingsText = '';
+                if (!empty($bookedSlots)) {
+                    $bookingsText = "  Booked slots:";
+                    foreach ($bookedSlots as $slot) {
+                        $bookingsText .= "\n    - " . ($slot['date'] ?? '?') . " from " . ($slot['start'] ?? '?') . " to " . ($slot['end'] ?? '?') . " (" . ($slot['service'] ?? 'unknown service') . ")";
+                    }
+                } else {
+                    $bookingsText = "  No bookings.";
                 }
-                
-                $availabilityInfo = '';
-                if (isset($resource['availability'])) {
-                    $availabilityInfo = " - Available: " . $resource['availability'];
-                }
-                
-                $resourcesInfo .= "- {$name} ({$title}){$servicesInfo}{$availabilityInfo}\n";
+                $resourcesInfo .= "- {$name} [{$type}] | Services: {$services}\n{$bookingsText}\n";
             }
         }
         
-        // Build the prompt
-        $prompt = "Answer a customer question about staff/resource availability at {$businessName}.
+    // Build the prompt
+    $prompt = "Answer a customer question about staff/resource availability at {$businessName}.
 Use a {$brandVoice} tone in your response.
 
 BUSINESS CONTEXT:
@@ -450,16 +449,13 @@ CUSTOMER QUESTION:
 TIME MENTIONED: " . ($time ?? 'Not specified') . "
 DATE MENTIONED: " . ($date ?? 'Not specified') . "
 
-IMPORTANT INSTRUCTIONS FOR CHECKING AVAILABILITY:
-1. Look at the 'booked_slots' array for each staff member to check their availability.
-2. Check if the requested DATE differs from the dates in booked_slots. If it's a different date, the staff member IS available.
-3. If the date matches, check if the requested TIME overlaps with any booking time range. If no overlap, the staff member IS available.
-4. Business hours: " . json_encode($context['business']['business_hours'] ?? []) . " - ensure the requested time is within business hours.
-5. Be DEFINITIVE and CONFIDENT when the data clearly shows availability or unavailability.
-6. If a specific staff member has NO bookings on the requested date/time, state CONFIDENTLY that they ARE available.
-7. If a specific staff member HAS a booking that conflicts with the requested time, state CONFIDENTLY that they are NOT available.
-8. Only express uncertainty if the requested date is beyond the booking data provided or if no specific date/time was mentioned.
-9. Keep your response under 100 words, conversational and helpful.
+INSTRUCTIONS FOR CHECKING AVAILABILITY:
+1. Review the 'booked slots' for each staff/resource above to determine if they are available at the requested date and time.
+2. If a staff/resource has a booking that overlaps with the requested time, they are NOT available.
+3. If there is no overlap, or no bookings, they ARE available.
+4. Ensure the requested time is within business hours: " . json_encode($context['business']['business_hours'] ?? []) . ".
+5. Be clear and confident in your answer. Only express uncertainty if the requested date/time is not provided or is outside the data shown.
+6. Keep your response under 100 words, conversational and helpful.
 
 YOUR RESPONSE:";
 
