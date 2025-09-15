@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Services\AIService;
+use App\Services\BusinessContextService;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -13,7 +14,8 @@ class AIServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->aiService = new AIService();
+        $contextService = $this->createMock(BusinessContextService::class);
+        $this->aiService = new AIService($contextService);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

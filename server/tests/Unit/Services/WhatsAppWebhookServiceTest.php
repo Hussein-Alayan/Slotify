@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\Business;
 use App\Models\Client;
 use App\Models\Conversation;
+use App\Services\BusinessContextService;
 use App\Services\WhatsAppWebhookService;
 use Tests\TestCase;
 
@@ -15,7 +16,8 @@ class WhatsAppWebhookServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->webhookService = new WhatsAppWebhookService();
+        $contextService = $this->createMock(BusinessContextService::class);
+        $this->webhookService = new WhatsAppWebhookService($contextService);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
