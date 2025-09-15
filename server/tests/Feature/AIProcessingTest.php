@@ -49,6 +49,17 @@ class AIProcessingTest extends TestCase
             $bookingDate = $tomorrow->toDateString();
         }
 
+        // Create a staff resource
+        $resource = \App\Models\Resource::factory()->create([
+            'business_id' => $business->id,
+            'type' => 'staff',
+            'name' => 'Test Staff'
+        ]);
+        // Attach service to resource if needed
+        if (method_exists($resource, 'services')) {
+            $resource->services()->attach($service->id);
+        }
+
         $payload = [
             'conversation_id' => $conversation->id,
             'client_id' => $client->id,

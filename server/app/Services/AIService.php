@@ -10,10 +10,12 @@ class AIService
 {
     private $ollamaUrl;
     private $model = 'mistral';
+    protected $contextService;
 
-    public function __construct()
+    public function __construct(BusinessContextService $contextService)
     {
         $this->ollamaUrl = env('OLLAMA_URL', 'http://host.docker.internal:11434/api/generate');
+        $this->contextService = $contextService;
     }
 
     private function sendPrompt(string $prompt, bool $stream = false): ?string
@@ -96,6 +98,12 @@ JSON Response:";
      */
     public function generateBookingResponse(bool $success, array $details = [], array $businessData = []): string
     {
+        // Use BusinessContextService to get context if not provided
+        if (empty($businessData) && isset($details['business_id'])) {
+            $context = $this->contextService->getStaticContext($details['business_id']);
+            $businessData = $context['business'] ?? [];
+        }
+        
         if ($success) {
             // Get business and client info for personalization
             $businessId = $details['business_id'] ?? null;
@@ -104,7 +112,7 @@ JSON Response:";
             $time = $details['time'] ?? '3:00 PM';
             $service = $details['service'] ?? 'appointment';
             
-            // Extract business data (should always be provided now)
+            // Extract business data
             $businessName = $businessData['name'] ?? 'our salon';
             $brandVoice = $businessData['brand_voice'] ?? 'friendly';
             
@@ -179,19 +187,32 @@ Generate the response:";
     /**
      * Generate a contextual response for non-booking messages
      */
+    /**
+     * Generate a contextual response based on customer message
+     *
+     * @param string $message Customer message
+     * @param int $businessId Business ID
+     * @param array $businessData Optional business data
+     * @return string Response from AI
+     */
     public function generateContextualResponse(string $message, int $businessId, array $businessData = []): string
     {
-        // Extract business data (should always be provided now)
-        $businessName = $businessData['name'] ?? 'our business';
-        $businessIndustry = $businessData['industry'] ?? 'service business';
-        $brandVoice = $businessData['brand_voice'] ?? 'friendly';
-        $serviceList = $businessData['services'] ?? [];
+        // Check if this is an availability question
+        $isAvailabilityQuestion = $this->isAvailabilityQuestion($message);
         
-        // If no services provided in business data, fall back to database
-        if (empty($serviceList)) {
-            $services = \App\Models\Service::where('business_id', $businessId)->get();
-            $serviceList = $services->pluck('name')->toArray();
+        // Get AI context with availability data
+        $context = $this->contextService->getAIContext($businessId);
+        
+        // If it's an availability question, use special prompt
+        if ($isAvailabilityQuestion) {
+            return $this->generateAvailabilityResponse($message, $context);
         }
+        
+        // Extract business data
+        $businessName = $context['business']['name'] ?? 'our business';
+        $businessIndustry = $context['business']['industry'] ?? 'service business';
+        $brandVoice = $context['business']['brand_voice'] ?? 'friendly';
+        $serviceList = $context['services'] ?? [];
         
         // Handle service list formatting
         if (is_array($serviceList) && !empty($serviceList)) {
@@ -322,5 +343,130 @@ Response:";
             'url' => $this->ollamaUrl,
             'response' => $response
         ];
+    }
+    
+    /**
+     * Check if a message is asking about resource/staff availability
+     *
+     * @param string $message The customer message
+     * @return bool True if this is an availability question
+     */
+    private function isAvailabilityQuestion(string $message): bool
+    {
+        $message = strtolower($message);
+        
+        // Keywords related to availability
+        $availabilityKeywords = [
+            'available', 'free', 'open', 'book', 'schedule', 'appointment',
+            'slot', 'time', 'when can', 'is there', 'do you have'
+        ];
+        
+        // Keywords related to staff/resources
+        $resourceKeywords = [
+            'staff', 'person', 'people', 'employee', 'worker', 'specialist',
+            'technician', 'stylist', 'therapist', 'doctor', 'provider'
+        ];
+        
+        // Check for time indicators
+        $hasTimeIndicator = $this->extractTime($message) !== null || 
+                          $this->extractDate($message) !== null ||
+                          preg_match('/(today|tomorrow|next week|this week|weekend)/i', $message);
+        
+        // Check for availability keywords
+        $hasAvailabilityKeyword = false;
+        foreach ($availabilityKeywords as $keyword) {
+            if (strpos($message, $keyword) !== false) {
+                $hasAvailabilityKeyword = true;
+                break;
+            }
+        }
+        
+        // Check for resource/staff keywords or if message mentions a specific name
+        $hasResourceKeyword = false;
+        foreach ($resourceKeywords as $keyword) {
+            if (strpos($message, $keyword) !== false) {
+                $hasResourceKeyword = true;
+                break;
+            }
+        }
+        
+        // If message has time indicator + (availability keyword or resource keyword)
+        // Or if it explicitly asks about someone's availability
+        return ($hasTimeIndicator && ($hasAvailabilityKeyword || $hasResourceKeyword)) || 
+               (preg_match('/(is|are|will|can|could)\s+\w+\s+be\s+available/i', $message));
+    }
+    
+    /**
+     * Generate a response specifically for availability questions
+     * 
+     * @param string $message The customer message
+     * @param array $context The business context including resources and availability
+     * @return string The AI-generated response
+     */
+    private function generateAvailabilityResponse(string $message, array $context): string
+    {
+        // Extract time and date information from the message
+        $time = $this->extractTime($message);
+        $date = $this->extractDate($message);
+        
+        // Use resource_availability for accurate staff bookings
+        $resources = $context['resource_availability'] ?? [];
+        $businessName = $context['business']['name'] ?? 'our business';
+        $brandVoice = $context['business']['brand_voice'] ?? 'friendly';
+        
+        // Format resource availability info for the prompt
+        $resourcesInfo = '';
+        if (!empty($resources)) {
+            $resourcesInfo = "Staff/resource availability:\n";
+            foreach ($resources as $resource) {
+                $name = $resource['name'] ?? 'Unknown';
+                $type = $resource['type'] ?? 'staff';
+                $services = isset($resource['services_offered']) ? implode(', ', $resource['services_offered']) : '';
+                $bookedSlots = $resource['booked_slots'] ?? [];
+                $bookingsText = '';
+                if (!empty($bookedSlots)) {
+                    $bookingsText = "  Booked slots:";
+                    foreach ($bookedSlots as $slot) {
+                        $bookingsText .= "\n    - " . ($slot['date'] ?? '?') . " from " . ($slot['start'] ?? '?') . " to " . ($slot['end'] ?? '?') . " (" . ($slot['service'] ?? 'unknown service') . ")";
+                    }
+                } else {
+                    $bookingsText = "  No bookings.";
+                }
+                $resourcesInfo .= "- {$name} [{$type}] | Services: {$services}\n{$bookingsText}\n";
+            }
+        }
+        
+    // Build the prompt
+    $prompt = "Answer a customer question about staff/resource availability at {$businessName}.
+Use a {$brandVoice} tone in your response.
+
+BUSINESS CONTEXT:
+{$resourcesInfo}
+
+CUSTOMER QUESTION:
+\"{$message}\"
+
+TIME MENTIONED: " . ($time ?? 'Not specified') . "
+DATE MENTIONED: " . ($date ?? 'Not specified') . "
+
+INSTRUCTIONS FOR CHECKING AVAILABILITY:
+1. Review the 'booked slots' for each staff/resource above to determine if they are available at the requested date and time.
+2. If a staff/resource has a booking that overlaps with the requested time, they are NOT available.
+3. If there is no overlap, or no bookings, they ARE available.
+4. Ensure the requested time is within business hours: " . json_encode($context['business']['business_hours'] ?? []) . ".
+5. Be clear and confident in your answer. Only express uncertainty if the requested date/time is not provided or is outside the data shown.
+6. Keep your response under 100 words, conversational and helpful.
+
+YOUR RESPONSE:";
+
+        // Get response from AI
+        $response = $this->sendPrompt($prompt);
+        
+        // Fallback response if AI fails
+        if (!$response) {
+            return "I'd be happy to check availability for you. Could you please contact us directly at our phone number or through our booking system for the most up-to-date information? Thank you for your interest in our services!";
+        }
+        
+        return $response;
     }
 }

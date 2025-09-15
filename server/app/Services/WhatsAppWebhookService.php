@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Log;
 
 class WhatsAppWebhookService
 {
+    protected $contextService;
+
+    public function __construct(BusinessContextService $contextService)
+    {
+        $this->contextService = $contextService;
+    }
+
     /**
      * Process incoming WhatsApp message from webhook
      */
@@ -80,21 +87,11 @@ class WhatsAppWebhookService
      */
     private function ensureBusinessWorkflow(Business $business): Business
     {
-        // Reload with relationships
-        $business = Business::with(['services', 'resources', 'bookingRules', 'communicationChannels', 'clients'])
-            ->find($business->id);
-            
-        // Generate workflow JSON if missing
+        // Check if workflow is missing
         if (!$business->workflow) {
-            $workflow = [
-                'business' => $business->toArray(),
-                'services' => $business->services->toArray(),
-                'resources' => $business->resources->toArray(),
-                'booking_rules' => $business->bookingRules, // hasOne returns model or null
-                'communication_channels' => $business->communicationChannels->toArray(),
-                'clients' => $business->clients->toArray(),
-            ];
-            $business->workflow = json_encode($workflow);
+            // Generate static context using the new service
+            $staticContext = $this->contextService->getStaticContext($business->id);
+            $business->workflow = json_encode($staticContext);
             $business->save();
         }
         

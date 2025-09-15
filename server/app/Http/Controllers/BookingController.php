@@ -7,7 +7,9 @@ use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Requests\CheckAvailabilityRequest;
 use App\Http\Resources\BookingResource;
 use App\Services\BookingService;
+use App\Services\BusinessContextService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
@@ -42,6 +44,33 @@ class BookingController extends Controller
     {
         $booking = $this->bookingService->getBooking($bookingId);
         return $this->successResponse(new BookingResource($booking));
+    }
+    
+    /**
+     * Check if a resource is available at a specific time
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
+    public function checkResourceAvailability(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'resource_id' => 'required|exists:resources,id',
+                'date' => 'required|date_format:Y-m-d',
+                'time' => 'required|date_format:H:i',
+                'duration_minutes' => 'nullable|integer|min:5|max:480'
+            ]);
+            
+            $result = app(BusinessContextService::class)->isResourceAvailable(
+                $validated['resource_id'],
+                $validated['date'], 
+                $validated['time'],
+                $validated['duration_minutes'] ?? 30
+            );
+            
+            return $this->successResponse($result);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 400);
+        }
     }
 
     /**
