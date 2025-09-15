@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Business;
+use App\Models\Resource;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -49,7 +50,7 @@ class BusinessContextService
     public function getAIContext(int $businessId, ?string $date = null): array
     {
         // Get business and services
-        $business = \App\Models\Business::findOrFail($businessId);
+    $business = Business::findOrFail($businessId);
         $services = $business->services->map(function($service) {
             return [
                 'id' => $service->id,
@@ -150,8 +151,8 @@ class BusinessContextService
         $endTime = $startTime->copy()->addMinutes($durationMinutes);
         
         // Get resource
-        $resource = \App\Models\Resource::findOrFail($resourceId);
-        $business = \App\Models\Business::findOrFail($resource->business_id);
+    $resource = Resource::findOrFail($resourceId);
+    $business = Business::findOrFail($resource->business_id);
         
         // 1. Check if business is open
         $dayOfWeek = strtolower($startTime->format('D'));
