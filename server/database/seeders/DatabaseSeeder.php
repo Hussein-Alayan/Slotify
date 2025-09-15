@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             TestBookingRulesSeeder::class,
             TestCommunicationChannelSeeder::class,
             TestConversationSeeder::class,
+            ResourceServiceSeeder::class,
         ]);
     }
 }

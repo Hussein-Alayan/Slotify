@@ -44,6 +44,139 @@ class BusinessContextService
     }
     
     /**
+     * Get AI-optimized context without duplication
+     */
+    public function getAIContext(int $businessId, ?string $date = null): array
+    {
+        // Always get fresh context to ensure we have the latest booking data
+        $context = $this->getCompleteContext($businessId, $date);
+        
+        // Get resources that can perform each service
+        $serviceProviders = [];
+        foreach ($context['services'] as $service) {
+            $resources = \App\Models\Service::find($service['id'])->resources;
+            $serviceProviders[$service['name']] = $resources->pluck('name')->toArray();
+        }
+        
+        // Format resource availability for AI consumption
+        $resourceAvailability = [];
+        foreach ($context['resources'] as $resource) {
+            if ($resource['type'] === 'staff') {
+                // Get all bookings for this resource, not just for today
+                $bookedSlots = \App\Models\Booking::where('resource_id', $resource['id'])
+                    ->where('status', 'confirmed')
+                    ->whereDate('start_time', '>=', Carbon::today())
+                    ->with(['service'])
+                    ->get()
+                    ->map(function($booking) {
+                        return [
+                            'date' => Carbon::parse($booking->start_time)->format('Y-m-d'),
+                            'start' => Carbon::parse($booking->start_time)->format('H:i'),
+                            'end' => Carbon::parse($booking->end_time)->format('H:i'),
+                            'service' => optional($booking->service)->name
+                        ];
+                    })
+                    ->values()
+                    ->toArray();
+                
+                $resourceAvailability[$resource['name']] = [
+                    'id' => $resource['id'],
+                    'type' => $resource['type'],
+                    'booked_slots' => $bookedSlots,
+                    'services_offered' => \App\Models\Resource::find($resource['id'])->services->pluck('name')->toArray()
+                ];
+            }
+        }
+        
+        // Only include necessary data and avoid duplications
+        return [
+            'business' => $context['business'],
+            'services' => $context['services'],
+            'resources' => $context['resources'],
+            'booking_rules' => $context['booking_rules'],
+            'resource_availability' => $resourceAvailability,
+            'service_providers' => $serviceProviders,
+            'booked_slots' => $this->getAllFutureBookings($businessId) // Get all future bookings
+        ];
+    }
+    
+    /**
+     * Get all future bookings for a business
+     */
+    private function getAllFutureBookings(int $businessId): array
+    {
+        return \App\Models\Booking::where('business_id', $businessId)
+            ->where('status', 'confirmed')
+            ->whereDate('start_time', '>=', Carbon::today())
+            ->with(['client', 'service'])
+            ->get()
+            ->toArray();
+    }
+    
+    /**
+     * Check if a resource is available at the specified time
+     */
+    public function isResourceAvailable(int $resourceId, string $date, string $time, int $durationMinutes = 30): array
+    {
+        // Convert time to datetime objects
+        $startTime = Carbon::parse("$date $time");
+        $endTime = $startTime->copy()->addMinutes($durationMinutes);
+        
+        // Get resource
+        $resource = \App\Models\Resource::findOrFail($resourceId);
+        $business = \App\Models\Business::findOrFail($resource->business_id);
+        
+        // 1. Check if business is open
+        $dayOfWeek = strtolower($startTime->format('D'));
+        $businessHours = $business->business_hours[$dayOfWeek] ?? null;
+        
+        if (!$businessHours || isset($businessHours['closed']) || empty($businessHours['start']) || empty($businessHours['end'])) {
+            return [
+                'available' => false,
+                'reason' => 'Business is closed on this day'
+            ];
+        }
+        
+        // Check if time is within business hours
+        $businessOpen = Carbon::parse("$date {$businessHours['start']}");
+        $businessClose = Carbon::parse("$date {$businessHours['end']}");
+        
+        if ($startTime < $businessOpen || $endTime > $businessClose) {
+            return [
+                'available' => false,
+                'reason' => 'Outside business hours'
+            ];
+        }
+        
+        // 2. Check for conflicting bookings
+        $conflictingBooking = \App\Models\Booking::where('resource_id', $resourceId)
+            ->where(function($query) use ($startTime, $endTime) {
+                $query->whereBetween('start_time', [$startTime, $endTime])
+                    ->orWhereBetween('end_time', [$startTime, $endTime])
+                    ->orWhere(function($q) use ($startTime, $endTime) {
+                        $q->where('start_time', '<', $startTime)
+                          ->where('end_time', '>', $startTime);
+                    });
+            })
+            ->first();
+        
+        if ($conflictingBooking) {
+            return [
+                'available' => false,
+                'reason' => 'Resource is already booked',
+                'conflict' => [
+                    'start' => $conflictingBooking->start_time->format('H:i'),
+                    'end' => $conflictingBooking->end_time->format('H:i')
+                ]
+            ];
+        }
+        
+        return [
+            'available' => true
+        ];
+    }
+    
+    /**
      * Refresh static context (after business updates)
      */
     public function refreshStaticContext(int $businessId): array
@@ -76,7 +209,13 @@ class BusinessContextService
         }
         
         return [
-            'business' => $business->toArray(),
+            'business' => array_diff_key($business->toArray(), [
+                'services' => 1, 
+                'resources' => 1, 
+                'bookingRules' => 1,
+                'communicationChannels' => 1,
+                'clients' => 1
+            ]),
             'services' => $business->services->toArray(),
             'resources' => $business->resources->toArray(),
             'booking_rules' => $business->bookingRules,
@@ -100,7 +239,7 @@ class BusinessContextService
         
         // Get today's bookings
         $bookings = \App\Models\Booking::where('business_id', $businessId)
-            ->whereDate('scheduled_at', $date)
+            ->whereDate('start_time', $date)
             ->with(['client', 'service'])
             ->get();
         
@@ -113,8 +252,8 @@ class BusinessContextService
             if ($resource->type === 'staff') {
                 $resourceBookings = $bookings->where('resource_id', $resource->id);
                 $bookedSlots = $resourceBookings->map(function ($booking) {
-                    $start = Carbon::parse($booking->scheduled_at);
-                    $end = $start->copy()->addMinutes($booking->duration_minutes);
+                    $start = Carbon::parse($booking->start_time);
+                    $end = Carbon::parse($booking->end_time);
                     return [
                         'start' => $start->format('H:i'),
                         'end' => $end->format('H:i'),

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\BusinessContextService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -56,10 +57,8 @@ class WhatsAppMessageResource extends JsonResource
                 'business_is_open' => $this->resource['business']->isOpenNow(),
             ],
             
-            // Complete business workflow JSON for n8n
-            'business_workflow' => $this->resource['business']->workflow 
-                ? json_decode($this->resource['business']->workflow, true) 
-                : null,
+            // Use AI-optimized business workflow JSON for n8n (no duplicates)
+            'business_workflow' => app(BusinessContextService::class)->getAIContext($this->resource['business']->id),
         ];
     }
 }
