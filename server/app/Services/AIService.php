@@ -10,10 +10,12 @@ class AIService
 {
     private $ollamaUrl;
     private $model = 'mistral';
+    protected $contextService;
 
-    public function __construct()
+    public function __construct(BusinessContextService $contextService)
     {
         $this->ollamaUrl = env('OLLAMA_URL', 'http://host.docker.internal:11434/api/generate');
+        $this->contextService = $contextService;
     }
 
     private function sendPrompt(string $prompt, bool $stream = false): ?string
@@ -96,6 +98,12 @@ JSON Response:";
      */
     public function generateBookingResponse(bool $success, array $details = [], array $businessData = []): string
     {
+        // Use BusinessContextService to get context if not provided
+        if (empty($businessData) && isset($details['business_id'])) {
+            $context = $this->contextService->getStaticContext($details['business_id']);
+            $businessData = $context['business'] ?? [];
+        }
+        
         if ($success) {
             // Get business and client info for personalization
             $businessId = $details['business_id'] ?? null;
@@ -104,7 +112,7 @@ JSON Response:";
             $time = $details['time'] ?? '3:00 PM';
             $service = $details['service'] ?? 'appointment';
             
-            // Extract business data (should always be provided now)
+            // Extract business data
             $businessName = $businessData['name'] ?? 'our salon';
             $brandVoice = $businessData['brand_voice'] ?? 'friendly';
             
@@ -181,16 +189,21 @@ Generate the response:";
      */
     public function generateContextualResponse(string $message, int $businessId, array $businessData = []): string
     {
-        // Extract business data (should always be provided now)
+        // Use BusinessContextService to get complete context if not provided
+        if (empty($businessData)) {
+            $context = $this->contextService->getCompleteContext($businessId);
+            $businessData = $context['business'] ?? [];
+        }
+        
+        // Extract business data
         $businessName = $businessData['name'] ?? 'our business';
         $businessIndustry = $businessData['industry'] ?? 'service business';
         $brandVoice = $businessData['brand_voice'] ?? 'friendly';
-        $serviceList = $businessData['services'] ?? [];
+        $serviceList = $context['services'] ?? [];
         
-        // If no services provided in business data, fall back to database
-        if (empty($serviceList)) {
-            $services = \App\Models\Service::where('business_id', $businessId)->get();
-            $serviceList = $services->pluck('name')->toArray();
+        // If no services provided in context, fall back to business data
+        if (empty($serviceList) && isset($businessData['services'])) {
+            $serviceList = $businessData['services'];
         }
         
         // Handle service list formatting

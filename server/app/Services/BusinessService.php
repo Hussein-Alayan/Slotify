@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\DB;
 
 class BusinessService
 {
+    protected $contextService;
+
+    public function __construct(BusinessContextService $contextService)
+    {
+        $this->contextService = $contextService;
+    }
+
     public function storeOrUpdate($user, array $validated)
     {
         $business = null;
@@ -50,16 +57,9 @@ class BusinessService
                 }
             }
 
-            // Generate workflow JSON
-            $workflow = [
-                'business' => $business->toArray(),
-                'services' => $business->services()->get()->toArray(),
-                'resources' => $business->resources()->get()->toArray(),
-                'booking_rules' => $business->bookingRules()->first(),
-                'communication_channels' => $business->communicationChannels()->get()->toArray(),
-                'clients' => $business->clients()->get()->toArray(),
-            ];
-            $business->workflow = json_encode($workflow);
+            // Generate and cache static context
+            $staticContext = $this->contextService->refreshStaticContext($business->id);
+            $business->workflow = json_encode($staticContext);
             $business->save();
         });
         return $business;
