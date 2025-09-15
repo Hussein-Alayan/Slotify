@@ -45,21 +45,20 @@ class AIBookingController extends Controller
             $client = $conversation->client;
             $businessId = $client->business_id;
 
-            // Load business with workflow data
-            $business = \App\Models\Business::find($businessId);
-            $businessData = [];
-            
-            if ($business && $business->workflow) {
-                $workflowData = json_decode($business->workflow, true);
-                $businessData = [
-                    'name' => $business->name,
-                    'industry' => $business->industry,
-                    'brand_voice' => $business->brand_voice,
-                    'services' => $workflowData['services'] ?? []
-                ];
-                $flowSteps[] = "✅ Business workflow data loaded from database";
-            } else {
-                $flowSteps[] = "⚠️ No workflow data found, using database fallback";
+            // Get minimal AI context
+            $aiContext = app(\App\Services\BusinessContextService::class)->getAIContext($businessId);
+
+            // Get last user and AI messages for context
+            $conversationWithMessages = $this->conversationService->getConversationWithMessages($conversationId);
+            $messages = collect($conversationWithMessages->messages ?? []);
+            // Get the last 2 messages in chronological order (oldest first)
+            $lastMessages = $messages->sortBy('created_at')->take(-2);
+            $previousAiMessage = null;
+            foreach ($lastMessages as $msg) {
+                $isAi = (isset($msg->direction) && $msg->direction === 'ai') || (isset($msg->sender) && $msg->sender === 'ai');
+                if ($isAi) {
+                    $previousAiMessage = $msg->content ?? $msg->message;
+                }
             }
 
             // Step 1: Store user message
@@ -86,39 +85,37 @@ class AIBookingController extends Controller
                 $flowSteps[] = "✅ Booking intent detected (confidence: {$aiAnalysis['confidence']})";
 
                 try {
-                    // Use forced booking data if provided, otherwise use AI extracted data + defaults
                     $bookingData = $this->prepareBookingData($request, $aiAnalysis, $businessId, $clientId);
-                    
-                    // Create the booking
                     $booking = $this->bookingService->createBooking($bookingData);
                     $bookingCreated = true;
                     $flowSteps[] = "✅ Booking created successfully";
 
-                    // Generate AI success response with business and client context
                     $client = \App\Models\Client::find($clientId);
-                    
                     $aiResponseText = $this->aiService->generateBookingResponse(true, [
                         'business_id' => $businessId,
                         'client_name' => $client->name ?? null,
                         'date' => $bookingData['start_time'],
                         'time' => $bookingData['start_time'],
-                        'service' => $booking->service->name ?? 'appointment'
-                    ], $businessData);
+                        'service' => $booking->service->name ?? 'appointment',
+                        'ai_context' => $aiContext,
+                        'previous_ai_message' => $previousAiMessage
+                    ]);
 
                 } catch (\Exception $e) {
                     $flowSteps[] = "❌ Booking failed: " . $e->getMessage();
-                    
-                    // Generate AI failure response with business context
                     $aiResponseText = $this->aiService->generateBookingResponse(false, [
                         'business_id' => $businessId,
-                        'error' => $e->getMessage()
-                    ], $businessData);
+                        'error' => $e->getMessage(),
+                        'ai_context' => $aiContext,
+                        'previous_ai_message' => $previousAiMessage
+                    ]);
                 }
             } else {
                 $flowSteps[] = "ℹ️ No booking intent detected or low confidence";
-                
-                // Generate contextual AI response based on the message
-                $aiResponseText = $this->aiService->generateContextualResponse($userMessage, $businessId, $businessData);
+                $aiResponseText = $this->aiService->generateContextualResponse($userMessage, $businessId, [
+                    'ai_context' => $aiContext,
+                    'previous_ai_message' => $previousAiMessage
+                ]);
             }
 
             // Step 4: Store AI response
@@ -159,7 +156,6 @@ class AIBookingController extends Controller
 
         } catch (\Exception $e) {
             $flowSteps[] = "❌ Flow failed: " . $e->getMessage();
-            
             return $this->errorResponse([
                 'message' => 'Message processing failed',
                 'error' => $e->getMessage(),
