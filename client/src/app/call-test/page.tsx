@@ -1,6 +1,16 @@
 "use client";
 // pages/call-test.tsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+// Helper to start a call and get a call_id from FastAPI
+async function fetchCallId(caller_phone = "test") {
+  const resp = await fetch("http://localhost:8001/incoming/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ caller_phone }),
+  });
+  const data = await resp.json();
+  return data.call_id;
+}
 
 /**
  * Simple call simulator page
@@ -14,7 +24,8 @@ import { useEffect, useRef, useState } from "react";
  */
 
 export default function CallTest() {
-  const [sessionId, setSessionId] = useState("test-session");
+  const [callId, setCallId] = useState<number | null>(null);
+  // ...existing code...
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
@@ -69,8 +80,11 @@ export default function CallTest() {
 
   // ---- Start recording + open websocket ----
   async function startCall() {
+    // Get a real call_id from FastAPI
+    const newCallId = await fetchCallId();
+    setCallId(newCallId);
     // create websocket
-    const wsUrl = `ws://localhost:8001/ws/call/${sessionId}`;
+    const wsUrl = `ws://localhost:8001/ws/call/${newCallId}`;
     const ws = new WebSocket(wsUrl);
     ws.binaryType = "arraybuffer";
     ws.onopen = () => console.log("WS open", wsUrl);
@@ -138,7 +152,7 @@ export default function CallTest() {
   }
 
   // ---- Stop recording + close websocket ----
-  async function stopCall() {
+  const stopCall = useCallback(async () => {
     setIsRecording(false);
 
     // stop audio nodes
@@ -170,26 +184,23 @@ export default function CallTest() {
       }
       wsRef.current = null;
     }
-  }
+  }, []);
 
   // cleanup on unmount
   useEffect(() => {
     return () => {
       stopCall();
     };
-  }, []);
+  }, [stopCall]);
 
   return (
     <div style={{ padding: 20, fontFamily: "system-ui, sans-serif" }}>
       <h1>Slotify — Real-time Call Simulator</h1>
 
-      <label>
-        Session ID:&nbsp;
-        <input
-          value={sessionId}
-          onChange={(e) => setSessionId(e.target.value)}
-        />
-      </label>
+      <div>
+        <strong>Call ID:</strong>{" "}
+        {callId ? callId : <span style={{ color: "#888" }}>Not started</span>}
+      </div>
 
       <div style={{ marginTop: 12 }}>
         {!isRecording ? (
@@ -229,8 +240,8 @@ export default function CallTest() {
       <section style={{ marginTop: 20 }}>
         <small>
           Notes: WebSocket URL is{" "}
-          <code>ws://localhost:8001/ws/call/{`{sessionId}`}</code>. Make sure
-          FastAPI server is running and accepts PCM LINEAR16 @ 16kHz.
+          <code>ws://localhost:8001/ws/call/{callId || "{call_id}"}</code>. Make
+          sure FastAPI server is running and accepts PCM LINEAR16 @ 16kHz.
         </small>
       </section>
     </div>
