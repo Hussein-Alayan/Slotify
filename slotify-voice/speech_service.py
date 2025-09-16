@@ -1,5 +1,5 @@
 from google.cloud import speech
-
+#FastAPI to handle PCM chunks from the browser
 class GoogleSpeechStreamer:
     def __init__(self, sample_rate=16000, language_code="en-US"):
         self.client = speech.SpeechClient()
