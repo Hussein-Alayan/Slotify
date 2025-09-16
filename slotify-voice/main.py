@@ -19,8 +19,12 @@ app.add_middleware(
 
 LARAVEL_API = "http://localhost:8000/api/v1/voice"
 
+
 # In-memory cache for static business context
 static_context_cache = {}
+
+# In-memory cache for dynamic context per session/call ID
+dynamic_context_cache = {}
 
 def fetch_static_context(business_id):
     try:
@@ -35,6 +39,21 @@ def cache_static_context(session_id, context):
 
 def get_static_context(session_id):
     return static_context_cache.get(session_id)
+
+def init_dynamic_context(session_id):
+    dynamic_context_cache[session_id] = {
+        "last_ai_response": None,
+        "current_bookings": [],
+        "user_messages": []
+    }
+
+def get_dynamic_context(session_id):
+    return dynamic_context_cache.get(session_id)
+
+def update_dynamic_context(session_id, key, value):
+    ctx = dynamic_context_cache.get(session_id)
+    if ctx is not None:
+        ctx[key] = value
 
 
 # -----------------------
@@ -51,6 +70,7 @@ class StartCallRequest(BaseModel):
 # -----------------------
 # REST Endpoints
 # -----------------------
+
 
 @app.post("/incoming/start")
 def start_call(data: StartCallRequest):
@@ -70,6 +90,9 @@ def start_call(data: StartCallRequest):
         static_context = fetch_static_context(data.business_id)
         if static_context:
             cache_static_context(call_id, static_context)
+
+        # Initialize dynamic context for this session
+        init_dynamic_context(call_id)
 
         return {"call_id": call_id, "reply": "Hi, thanks for calling Slotify!"}
     except Exception as e:
