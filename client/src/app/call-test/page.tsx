@@ -89,7 +89,28 @@ export default function CallTest() {
     ws.binaryType = "arraybuffer";
     ws.onopen = () => console.log("WS open", wsUrl);
     ws.onmessage = (ev) => {
-      // server sends text transcripts
+      // If message is ArrayBuffer, treat as TTS audio
+      if (ev.data instanceof ArrayBuffer) {
+        const audioContext = audioContextRef.current;
+        if (!audioContext) return;
+        // LINEAR16 PCM to Float32
+        const pcm16 = new Int16Array(ev.data);
+        const float32 = new Float32Array(pcm16.length);
+        for (let i = 0; i < pcm16.length; i++) {
+          float32[i] = pcm16[i] / 32768;
+        }
+        // Create AudioBuffer and play
+        const buffer = audioContext.createBuffer(1, float32.length, 16000);
+        buffer.getChannelData(0).set(float32);
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start();
+        // Optionally, show UI indicator for TTS playback
+        // ...
+        return;
+      }
+      // Otherwise, treat as transcript text
       try {
         const text = ev.data;
         setTranscript((prev) => prev + (prev ? "\n" : "") + text);
