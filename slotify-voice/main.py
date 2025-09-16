@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
+from fastapi import WebSocket, WebSocketDisconnect
+from speech_service import GoogleSpeechStreamer
 
 app = FastAPI()
 
@@ -49,3 +51,50 @@ def receive_audio(call_id: int):
 def end_call(call_id: int):
     requests.post(f"{LARAVEL_API}/{call_id}/end")
     return {"success": True}
+
+    # WebSocket endpoint for real-time PCM chunk streaming
+
+import asyncio
+import threading
+from queue import Queue
+
+@app.websocket("/ws/call/{session_id}")
+async def websocket_call(websocket: WebSocket, session_id: str):
+    await websocket.accept()
+    stt_streamer = GoogleSpeechStreamer()
+    chunk_queue = Queue()
+    transcript_queue = Queue()
+    stop_event = threading.Event()
+
+    def stt_worker():
+        try:
+            def chunk_iter():
+                while not stop_event.is_set():
+                    chunk = chunk_queue.get()
+                    if chunk is None:
+                        break
+                    yield chunk
+            for transcript in stt_streamer.stream_transcribe(chunk_iter()):
+                transcript_queue.put(transcript)
+        except Exception as e:
+            transcript_queue.put(f"[STT error] {str(e)}")
+
+    stt_thread = threading.Thread(target=stt_worker)
+    stt_thread.start()
+
+    try:
+        while True:
+            chunk = await websocket.receive_bytes()
+            chunk_queue.put(chunk)
+            # Send any transcripts from the queue
+            while not transcript_queue.empty():
+                transcript = transcript_queue.get()
+                await websocket.send_text(transcript)
+    except WebSocketDisconnect:
+        stop_event.set()
+        chunk_queue.put(None)  # Signal end to worker
+        stt_thread.join()
+        # Flush remaining transcripts
+        while not transcript_queue.empty():
+            transcript = transcript_queue.get()
+            await websocket.send_text(transcript)
