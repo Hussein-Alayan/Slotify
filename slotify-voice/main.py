@@ -4,7 +4,10 @@ from pydantic import BaseModel
 import requests
 import threading
 from queue import Queue
+
 from speech_service import GoogleSpeechStreamer
+import asyncio
+from gemini import get_ai_response
 
 
 
@@ -160,6 +163,23 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                         f"{LARAVEL_API}/{session_id}/transcript",
                         json={"transcript": transcript},
                     )
+
+                    # --- Gemini AI integration ---
+                    static_context = get_static_context(session_id)
+                    dynamic_context = get_dynamic_context(session_id)
+                    # Call Gemini API for AI response
+                    ai_result = asyncio.run(get_ai_response(
+                        session_id,
+                        transcript,
+                        static_context,
+                        dynamic_context
+                    ))
+                    # Update dynamic context with AI response
+                    if ai_result:
+                        update_dynamic_context(session_id, "last_ai_response", ai_result.get("response_text"))
+                        # Optionally update bookings, user_messages, etc.
+                        # Send AI response to frontend
+                        await websocket.send_text(f"AI: {ai_result.get('response_text')}")
     except WebSocketDisconnect:
         stop_event.set()
         chunk_queue.put(None)
