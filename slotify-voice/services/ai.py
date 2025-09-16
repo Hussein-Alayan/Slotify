@@ -1,19 +1,25 @@
-
 import httpx
+import os
 
-GEMINI_API_URL = "https://api.gemini.example.com/v1/ai"
-GEMINI_API_KEY = "your-gemini-api-key"  # Replace with your actual key
+GEMINI_API_URL = os.getenv("GEMINI_API_URL") or ""
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or ""
+
+if not GEMINI_API_URL or not GEMINI_API_KEY:
+	raise RuntimeError("Gemini API credentials are not set. Check your .env file.")
 
 async def get_ai_response(session_id: str, transcript: str, static_context: dict, dynamic_context: dict) -> dict:
 	payload = {
-		"session_id": session_id,
-		"user_transcript": transcript,
-		"static_context": static_context,
-		"dynamic_context": dynamic_context
+		"contents": [
+			{
+				"parts": [
+					{"text": transcript}
+				]
+			}
+		]
 	}
 	headers = {
-		"Authorization": f"Bearer {GEMINI_API_KEY}",
-		"Content-Type": "application/json"
+		"Content-Type": "application/json",
+		"X-goog-api-key": GEMINI_API_KEY
 	}
 	async with httpx.AsyncClient() as client:
 		resp = await client.post(GEMINI_API_URL, json=payload, headers=headers)
