@@ -7,6 +7,7 @@ import threading
 from queue import Queue
 
 from services.stt import STTSession
+from services.tts import synthesize_speech
 import asyncio
 from services.ai import get_ai_response
 
@@ -128,7 +129,14 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                         update_dynamic_context(session_id, "last_ai_response", ai_result.get("response_text"))
                         # Optionally update bookings, user_messages, etc.
                         # Send AI response to frontend
-                        await websocket.send_text(f"AI: {ai_result.get('response_text')}")
+                        ai_text = ai_result.get('response_text')
+                        await websocket.send_text(f"AI: {ai_text}")
+
+                        # --- TTS: synthesize and stream audio ---
+                        if ai_text:
+                            tts_audio = synthesize_speech(ai_text)
+                            # Stream audio bytes to frontend (as binary frame)
+                            await websocket.send_bytes(tts_audio)
     except WebSocketDisconnect:
         stt_session.stop()
 
