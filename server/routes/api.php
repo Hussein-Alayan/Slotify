@@ -6,6 +6,7 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AIBookingController;
 use App\Http\Controllers\WhatsAppWebhookController;
+use App\Http\Controllers\VoiceCallController;
 
 Route::prefix('v1')->group(function () {
 	Route::post('/register', [AuthController::class, 'register']);
@@ -20,6 +21,13 @@ Route::prefix('v1')->group(function () {
 		Route::post('/whatsapp', [WhatsAppWebhookController::class, 'handleWebhook']);
 		Route::get('/whatsapp/health', [WhatsAppWebhookController::class, 'health']);
 	});
+
+// Voice Call Assistant routes
+Route::prefix('voice')->group(function () {
+    Route::post('/log', [VoiceCallController::class, 'logCall']);
+    Route::post('/{id}/transcript', [VoiceCallController::class, 'updateTranscript']);
+    Route::post('/{id}/end', [VoiceCallController::class, 'endCall']);
+});
 
 	// AI processing for n8n workflows (no auth required)
 	Route::post('/ai/process-message', [AIBookingController::class, 'processMessage']);
