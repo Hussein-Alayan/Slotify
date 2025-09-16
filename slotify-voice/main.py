@@ -1,3 +1,7 @@
+
+from dotenv import load_dotenv
+load_dotenv()
+
 from services.booking import forward_transcript, end_call_api
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -118,23 +122,25 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                     static_context = get_static_context(session_id) or {}
                     dynamic_context = get_dynamic_context(session_id) or {}
                     # Call Gemini API for AI response
-                    ai_result = asyncio.run(get_ai_response(
+                    ai_result = await get_ai_response(
                         session_id,
                         transcript,
                         static_context,
                         dynamic_context
-                    ))
+                    )
                     # Update dynamic context with AI response
                     if ai_result:
                         update_dynamic_context(session_id, "last_ai_response", ai_result.get("response_text"))
                         # Optionally update bookings, user_messages, etc.
                         # Send AI response to frontend
                         ai_text = ai_result.get('response_text')
+                        print(f"AI response text: {ai_text}")
                         await websocket.send_text(f"AI: {ai_text}")
 
                         # --- TTS: synthesize and stream audio ---
                         if ai_text:
                             tts_audio = synthesize_speech(ai_text)
+                            print(f"Sending TTS audio bytes: {len(tts_audio)} bytes")
                             # Stream audio bytes to frontend (as binary frame)
                             await websocket.send_bytes(tts_audio)
     except WebSocketDisconnect:
