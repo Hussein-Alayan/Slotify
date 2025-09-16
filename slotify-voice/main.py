@@ -7,6 +7,7 @@ from queue import Queue
 from speech_service import GoogleSpeechStreamer
 
 
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -18,19 +19,39 @@ app.add_middleware(
 
 LARAVEL_API = "http://localhost:8000/api/v1/voice"
 
+# In-memory cache for static business context
+static_context_cache = {}
+
+def fetch_static_context(business_id):
+    try:
+        resp = requests.get(f"{LARAVEL_API}/business-context/{business_id}")
+        resp.raise_for_status()
+        return resp.json()["data"]
+    except Exception as e:
+        return None
+
+def cache_static_context(session_id, context):
+    static_context_cache[session_id] = context
+
+def get_static_context(session_id):
+    return static_context_cache.get(session_id)
+
 
 # -----------------------
 # Request Models
 # -----------------------
+from typing import Optional
+
 class StartCallRequest(BaseModel):
     caller_phone: str
-    business_id: int = None
-    client_id: int = None
+    business_id: Optional[int] = None
+    client_id: Optional[int] = None
 
 
 # -----------------------
 # REST Endpoints
 # -----------------------
+
 @app.post("/incoming/start")
 def start_call(data: StartCallRequest):
     try:
@@ -44,6 +65,12 @@ def start_call(data: StartCallRequest):
         )
         resp.raise_for_status()
         call_id = resp.json()["data"]["call_id"]
+
+        # Fetch and cache static business context
+        static_context = fetch_static_context(data.business_id)
+        if static_context:
+            cache_static_context(call_id, static_context)
+
         return {"call_id": call_id, "reply": "Hi, thanks for calling Slotify!"}
     except Exception as e:
         return {"error": str(e), "response": getattr(e, "response", None)}
