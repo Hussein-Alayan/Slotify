@@ -200,6 +200,33 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                 await websocket.send_text(transcript_clean)
 
                 if is_final:
+
+                    # LLM intent detection and entity extraction
+                    from services.intent import detect_intent_llm
+                    from services.booking import create_booking, get_service_mapping
+                    print(f"[DEBUG] Transcript received: {transcript_clean}")
+                    business_id = static_context.get("id") or static_context.get("business_id")
+                    service_mapping = get_service_mapping(business_id) if business_id else {}
+                    result = await detect_intent_llm(transcript_clean, service_mapping=service_mapping)
+                    print(f"[DEBUG] LLM intent result: {result}")
+                    intent = result.get("intent")
+                    entities = result.get("entities", {})
+
+                    # Example: handle booking intent
+                    booking_response = None
+                    if intent == "booking":
+                        client_info = dynamic_context.get("client_info") if dynamic_context else None
+                        print(f"[DEBUG] Calling create_booking with: business_id={business_id}, date={entities.get('date')}, time={entities.get('time')}, service_id={entities.get('service_id')}, client_info={client_info}")
+                        booking_response = create_booking(
+                            business_id,
+                            entities.get("date"),
+                            entities.get("time"),
+                            entities.get("service_id"),
+                            client_info
+                        )
+                        print(f"[DEBUG] Booking API response: {booking_response}")
+                        update_dynamic_context(session_id, "last_booking_result", booking_response)
+
                     forward_transcript(session_id, transcript_clean)
                     history = dynamic_context.get("history", [])
                     history.append({"role": "user", "content": transcript_clean})
