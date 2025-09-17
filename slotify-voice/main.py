@@ -117,18 +117,15 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                 return ai_result['candidates'][0]['content']['parts'][0]['text']
             except (KeyError, IndexError, TypeError):
                 return None
-        if ai_result:
-            ai_text = extract_gemini_text(ai_result)
-            update_dynamic_context(session_id, "last_ai_response", ai_text)
-            # Append AI response to conversation history
-            dynamic_context = get_dynamic_context(session_id) or {}
-            history = dynamic_context.get("history", [])
-            history.append({"role": "assistant", "content": ai_text})
-            update_dynamic_context(session_id, "history", history)
-            await websocket.send_text(f"AI: {ai_text}")
-            if ai_text:
-                tts_audio = synthesize_speech(ai_text)
-                await websocket.send_bytes(tts_audio)
+        # Use Gemini streaming for real-time AI responses
+        from services.ai import stream_gemini_response
+        dynamic_context = get_dynamic_context(session_id) or {}
+        async for chunk in stream_gemini_response(static_context, dynamic_context):
+            # Send Gemini chunk as text
+            await websocket.send_text(f"AI: {chunk}")
+            # Send Gemini chunk as audio (TTS)
+            tts_audio = synthesize_speech(chunk)
+            await websocket.send_bytes(tts_audio)
 
     try:
         while True:
