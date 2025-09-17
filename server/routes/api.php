@@ -27,8 +27,10 @@ Route::prefix('v1')->group(function () {
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::get('/me', [AuthController::class, 'me']);
 
-		// Business Profile setup
-		Route::post('/business-profile', [\App\Http\Controllers\BusinessController::class, 'storeOrUpdate']);
+	// Business Profile setup
+	Route::post('/business-profile', [\App\Http\Controllers\BusinessController::class, 'storeOrUpdate']);
+	// Business stats
+	Route::get('/businesses/{business}/total-clients', [\App\Http\Controllers\BusinessStatsController::class, 'totalClients']);
 
 		// Conversation routes
 		Route::post('/conversations', [ConversationController::class, 'startConversation']); // start new conversation
