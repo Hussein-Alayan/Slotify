@@ -3,24 +3,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, CalendarDays } from "lucide-react";
 
-const stats = [
-  {
-    title: "Total Clients",
-    value: "247",
-    change: "+12 from last month",
-    icon: Users,
-    color: "text-blue-600",
-  },
-  {
-    title: "Today's Bookings",
-    value: "18",
-    change: "3 pending confirmations",
-    icon: CalendarDays,
-    color: "text-green-600",
-  },
-];
+type StatsGridProps = {
+  totalClients: number;
+};
 
-export function StatsGrid() {
+export function StatsGrid({ totalClients }: StatsGridProps) {
+  const stats = [
+    {
+      title: "Total Clients",
+      value: totalClients.toString(),
+      change: "",
+      icon: Users,
+      color: "text-blue-600",
+    },
+    {
+      title: "Today's Bookings",
+      value: "18",
+      change: "3 pending confirmations",
+      icon: CalendarDays,
+      color: "text-green-600",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {stats.map((stat, index) => {
