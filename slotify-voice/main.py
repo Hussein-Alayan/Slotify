@@ -73,6 +73,8 @@ def start_call(data: StartCallRequest):
 
         # Initialize dynamic context
         init_dynamic_context(call_id)
+        # Initialize conversation history for this session
+        update_dynamic_context(call_id, "history", [])
 
         return {"call_id": call_id, "reply": "Hi, thanks for calling Slotify!"}
     except Exception as e:
