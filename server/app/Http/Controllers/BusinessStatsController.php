@@ -1,14 +1,34 @@
 <?php
 
-namespace App\Http\Controllers;
+    namespace App\Http\Controllers;
 
-use App\Models\Business;
-use Illuminate\Http\Request;
-use App\Traits\ApiResponseTrait;
+    use App\Models\Business;
+    use Illuminate\Http\Request;
+    use App\Traits\ApiResponseTrait;
 
-class BusinessStatsController extends Controller
-{
-    use ApiResponseTrait;
+    class BusinessStatsController extends Controller
+    {
+        use ApiResponseTrait;
+
+        public function totalServices($businessId)
+        {
+            $business = Business::find($businessId);
+            if (!$business) {
+                return $this->errorResponse('Business not found.', 404);
+            }
+            $totalServices = $business->services()->count();
+            return $this->successResponse(['total_services' => $totalServices]);
+        }
+
+        public function activeServices($businessId)
+        {
+            $business = Business::find($businessId);
+            if (!$business) {
+                return $this->errorResponse('Business not found.', 404);
+            }
+            $activeServices = $business->services()->where('status', 'active')->count();
+            return $this->successResponse(['active_services' => $activeServices]);
+        }
 
     public function totalClients($businessId)
     {

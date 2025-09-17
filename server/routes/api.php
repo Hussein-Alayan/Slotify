@@ -8,6 +8,9 @@ use App\Http\Controllers\AIBookingController;
 use App\Http\Controllers\WhatsAppWebhookController;
 
 Route::prefix('v1')->group(function () {
+	// Service stats (no auth for testing)
+	Route::get('/businesses/{business}/total-services', [\App\Http\Controllers\BusinessStatsController::class, 'totalServices']);
+	Route::get('/businesses/{business}/active-services', [\App\Http\Controllers\BusinessStatsController::class, 'activeServices']);
 	Route::post('/register', [AuthController::class, 'register']);
 	Route::post('/login', [AuthController::class, 'login']);
 
