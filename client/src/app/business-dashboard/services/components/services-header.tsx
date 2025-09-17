@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Plus, Settings } from "lucide-react";
 
-export function ServicesHeader() {
+export function ServicesHeader({ onAddService }: { onAddService: () => void }) {
   return (
     <div className="flex items-center justify-between mb-6">
       <div>
@@ -13,7 +13,10 @@ export function ServicesHeader() {
         </p>
       </div>
       <div className="flex items-center gap-3">
-        <Button className="bg-slate-900 hover:bg-slate-800 text-white">
+        <Button
+          className="bg-slate-900 hover:bg-slate-800 text-white"
+          onClick={onAddService}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Service
         </Button>
