@@ -7,6 +7,13 @@ export function AddServiceModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const [title, setTitle] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [price, setPrice] = React.useState("");
+  const [duration, setDuration] = React.useState("");
+  const [availableHours, setAvailableHours] = React.useState("");
+  const [status, setStatus] = React.useState(false);
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/10">
@@ -29,6 +36,8 @@ export function AddServiceModal({
             <input
               className="w-full border rounded-lg px-4 py-2 text-gray-900"
               placeholder="Enter your service title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
           </div>
           <div className="mb-4">
@@ -39,6 +48,8 @@ export function AddServiceModal({
               className="w-full border rounded-lg px-4 py-2 text-gray-900"
               rows={3}
               placeholder="Describe your service in detail..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
           </div>
           <div className="flex gap-4 mb-4">
@@ -52,13 +63,19 @@ export function AddServiceModal({
                 min="0"
                 step="0.01"
                 placeholder="$ 0.00"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
               />
             </div>
             <div className="flex-1">
               <label className="block font-semibold mb-1 text-gray-900">
                 Duration (Hours)
               </label>
-              <select className="w-full border rounded-lg px-4 py-2 text-gray-900">
+              <select
+                className="w-full border rounded-lg px-4 py-2 text-gray-900"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+              >
                 <option value="">Select duration</option>
                 <option value="1">1 hour</option>
                 <option value="2">2 hours</option>
@@ -71,7 +88,12 @@ export function AddServiceModal({
             <label className="block font-semibold mb-1 text-gray-900">
               Available Hours
             </label>
-            {/* Placeholder for available hours input */}
+            <input
+              className="w-full border rounded-lg px-4 py-2 text-gray-900"
+              placeholder="e.g. 9am - 5pm"
+              value={availableHours}
+              onChange={(e) => setAvailableHours(e.target.value)}
+            />
           </div>
           <div className="mb-4">
             <label className="block font-semibold mb-1 text-gray-900">
@@ -91,7 +113,12 @@ export function AddServiceModal({
               <span className="text-gray-600">
                 Enable or disable this service for booking
               </span>
-              <input type="checkbox" className="ml-2" />
+              <input
+                type="checkbox"
+                className="ml-2"
+                checked={status}
+                onChange={(e) => setStatus(e.target.checked)}
+              />
             </div>
           </div>
           <div className="flex justify-end gap-4">
