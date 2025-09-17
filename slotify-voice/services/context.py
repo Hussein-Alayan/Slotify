@@ -12,7 +12,9 @@ def fetch_static_context(business_id):
 	try:
 		resp = requests.get(f"{LARAVEL_API}/business-context/{business_id}")
 		resp.raise_for_status()
-		return resp.json()["data"]
+		data = resp.json()["data"]
+		# Return only the workflow field
+		return data.get("workflow", {})
 	except Exception as e:
 		return None
 
@@ -23,11 +25,20 @@ def get_static_context(session_id):
 	return static_context_cache.get(session_id)
 
 def init_dynamic_context(session_id):
-	dynamic_context_cache[session_id] = {
-		"last_ai_response": None,
-		"current_bookings": [],
-		"user_messages": []
-	}
+		# Fetch current bookings from Laravel
+		try:
+			# You need to know the business_id for this session
+			business_id = session_id.split('-')[0] if '-' in session_id else session_id
+			resp = requests.get(f"http://localhost:8000/api/v1/businesses/{business_id}/bookings")
+			resp.raise_for_status()
+			bookings = resp.json().get("data", [])
+		except Exception:
+			bookings = []
+		dynamic_context_cache[session_id] = {
+			"last_ai_response": None,
+			"current_bookings": bookings,
+			"user_messages": []
+		}
 
 def get_dynamic_context(session_id):
 	return dynamic_context_cache.get(session_id)
