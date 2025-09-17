@@ -16,7 +16,7 @@ export function ServicesContainer({
 }) {
   const [modalOpen, setModalOpen] = React.useState(false);
   // TODO: Replace with actual businessId from context or props
-  const businessId = 1;
+  const businessId = 3;
   // Add state to trigger refresh
   const [refreshKey, setRefreshKey] = React.useState(0);
 
@@ -33,7 +33,7 @@ export function ServicesContainer({
       />
       <ServicesFilters />
       {/* Pass refreshKey as a key to force re-mount and refresh */}
-      <ServicesGrid key={refreshKey} />
+      <ServicesGrid key={refreshKey} businessId={businessId} />
       <AddServiceModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

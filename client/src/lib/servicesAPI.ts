@@ -1,3 +1,7 @@
+export async function fetchServices(businessId: number) {
+  const response = await api.get(`/v1/businesses/${businessId}/services`);
+  return response.data;
+}
 import api from './api';
 
 export async function createService(businessId: number, data: {
@@ -7,6 +11,6 @@ export async function createService(businessId: number, data: {
   description?: string;
   status: 'active' | 'inactive';
 }) {
-  const response = await api.post(`/businesses/${businessId}/services`, data);
+  const response = await api.post(`/v1/businesses/${businessId}/services`, data);
   return response.data;
 }

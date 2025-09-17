@@ -18,6 +18,15 @@ class ServiceController extends Controller
     {
         $this->serviceService = $serviceService;
     }
+    public function index($businessId)
+    {
+        try {
+            $services = $this->serviceService->getServicesByBusiness($businessId);
+            return $this->successResponse($services);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
 
     public function store(CreateServiceRequest $request, $businessId)
     {

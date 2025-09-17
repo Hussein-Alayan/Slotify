@@ -13,4 +13,10 @@ class ServiceService
         $data['business_id'] = $business->id;
         return Service::create($data);
     }
+
+    public function getServicesByBusiness($businessId)
+    {
+        $business = Business::findOrFail($businessId);
+        return $business->services()->get();
+    }
 }

@@ -1,38 +1,63 @@
 "use client";
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal } from "lucide-react";
+import { fetchServices } from "@/lib/servicesAPI";
 
-const services = [
-  {
-    id: 1,
-    name: "Beard Trim",
-    description: "Custom beard trim with the best barbers in town",
-    price: 20,
-    status: "Active",
-    image: "/professional-beard-trimming-service.png",
-  },
-  {
-    id: 2,
-    name: "Haircut",
-    description: "Custom haircut with the best barbers in town",
-    price: 50,
-    status: "Active",
-    image: "/professional-haircut.png",
-  },
-  {
-    id: 3,
-    name: "Hair Styling",
-    description: "Custom hair styling with the best barbers in town",
-    price: 10,
-    status: "Active",
-    image: "/professional-hair-styling-service.png",
-  },
-];
+type Service = {
+  id: number;
+  name: string;
+  description?: string;
+  price: number;
+  status: string;
+  image?: string;
+};
 
-export function ServicesGrid() {
+export function ServicesGrid({ businessId }: { businessId: number }) {
+  const [services, setServices] = React.useState<Service[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetchServices(businessId)
+      .then((data: any) => {
+        // If backend returns { success: true, data: [...] }, extract data.data
+        if (Array.isArray(data?.data)) {
+          setServices(data.data);
+        } else if (Array.isArray(data)) {
+          setServices(data);
+        } else if (Array.isArray(data?.services)) {
+          setServices(data.services);
+        } else {
+          setServices([]);
+        }
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        setLoading(false);
+        if (typeof err === "object" && err !== null && "message" in err) {
+          setError(
+            (err as { message?: string }).message || "Failed to fetch services."
+          );
+        } else {
+          setError("Failed to fetch services.");
+        }
+      });
+  }, [businessId]);
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center text-gray-600">Loading services...</div>
+    );
+  }
+  if (error) {
+    return <div className="py-12 text-center text-red-600">{error}</div>;
+  }
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
@@ -76,30 +101,6 @@ export function ServicesGrid() {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">
-          Showing 1 to 6 of 24 results
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            Previous
-          </Button>
-          <Button size="sm" className="bg-slate-900 text-white">
-            1
-          </Button>
-          <Button variant="outline" size="sm">
-            2
-          </Button>
-          <Button variant="outline" size="sm">
-            3
-          </Button>
-          <Button variant="outline" size="sm">
-            Next
-          </Button>
-        </div>
       </div>
     </>
   );
