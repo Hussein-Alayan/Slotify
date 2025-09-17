@@ -1,3 +1,4 @@
+
 // Utility to get CSRF cookie before auth requests
 export async function csrf() {
   await axios.get(
