@@ -1,4 +1,3 @@
-
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -92,63 +91,90 @@ async def websocket_call(websocket: WebSocket, session_id: str):
         try:
             dynamic_context = get_dynamic_context(session_id) or {}
             print(f"AI called for user message: {dynamic_context.get('last_user_message')}")
+            buffer = ""
             ai_buffer = ""
-            
             import json
-            import re
             async for chunk in stream_gemini_response(static_context, dynamic_context):
-                print(f"Chunk: {repr(chunk[:100])}")
                 if not chunk or not chunk.strip():
                     continue
+                buffer += chunk
+                print(f"Buffer after chunk: {repr(buffer[:200])}")  # Debug: show first 200 chars of buffer
+                print(f"Raw buffer after chunk: {buffer}")  # Debug: print full buffer every time
                 
-                # Use regex to extract any substantial quoted text (likely AI responses)
-                text_pattern = r'"([^"]{15,})"'  # Find quoted strings longer than 15 chars
-                matches = re.findall(text_pattern, chunk)
+                # Try to parse multiple JSON objects from the buffer
+                try:
+                    # Handle multiple JSON objects separated by commas
+                    json_str = buffer.strip()
+                    if json_str.startswith('[') and not json_str.endswith(']'):
+                        json_str += ']'  # Close the array if needed
+                    
+                    # Try to parse as JSON array
+                    if json_str.startswith('[') and json_str.endswith(']'):
+                        try:
+                            data = json.loads(json_str)
+                            if isinstance(data, list):
+                                # Extract text from all objects in the array
+                                for obj in data:
+                                    if isinstance(obj, dict) and "candidates" in obj:
+                                        for candidate in obj["candidates"]:
+                                            if "content" in candidate and "parts" in candidate["content"]:
+                                                for part in candidate["content"]["parts"]:
+                                                    if "text" in part:
+                                                        text = part["text"]
+                                                        print(f"Extracted text from JSON array: {text}")
+                                                        ai_buffer += text
+                                # Clear buffer after successful parsing
+                                buffer = ""
+                        except json.JSONDecodeError:
+                            # If array parsing fails, try individual objects
+                            pass
+                    
+                    # Fallback: try to extract text using regex for partial JSON
+                    if '"text":' in buffer:
+                        import re
+                        # Find all text values in the buffer
+                        text_matches = re.findall(r'"text":\s*"([^"]*)"', buffer)
+                        for text in text_matches:
+                            if text and text not in ai_buffer:  # Avoid duplicates
+                                print(f"Extracted text from regex: {text}")
+                                ai_buffer += text
                 
-                for match in matches:
-                    # Skip common JSON field names, metadata, and technical strings
-                    skip_terms = [
-                        'candidates', 'content', 'parts', 'role', 'model', 'text', 'finish_reason', 
-                        'usage_metadata', 'traffic_type', 'model_version', 'create_time', 'response_id',
-                        'prompt_token_count', 'candidates_token_count', 'total_token_count',
-                        'gemini-2.5-flash-lite', 'trafficType', 'modelVersion', 'createTime', 
-                        'responseId', 'promptTokenCount', 'candidatesTokenCount', 'totalTokenCount',
-                        'promptTokensDetails'
-                    ]
-                    
-                    # Skip if it's metadata/JSON structure
-                    if any(term.lower() in match.lower() for term in skip_terms):
-                        continue
-                    
-                    # Skip if it contains mostly JSON syntax
-                    if match.count('{') > 2 or match.count('[') > 2 or match.count(':') > 3:
-                        continue
-                    
-                    # Skip timestamps and IDs
-                    if re.match(r'.*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', match):
-                        continue
-                    
-                    # Only keep text that looks like natural conversation
-                    if any(word in match.lower() for word in ['help', 'can', 'you', 'with', 'today', 'appointment', 'service', 'question', 'booking', 'available', 'slot', 'day', 'time', 'yes', 'no', 'what', 'when', 'how', 'come in', 'schedule']):
-                        print(f"Extracted text: {repr(match)}")
-                        ai_buffer += match + " "  # Add space between fragments
+                except Exception as e:
+                    print(f"JSON parsing error: {e}")
+                    continue
             
-            # Send the complete accumulated response to TTS
+            # Send accumulated response after loop ends
             if ai_buffer.strip():
                 tts_text = ai_buffer.strip()
-                print(f"Sending complete response to TTS: {repr(tts_text)}")
+                print(f"Sending complete accumulated response to TTS: {tts_text}")
                 tts_audio = synthesize_speech(tts_text)
                 await websocket.send_bytes(tts_audio)
                 await websocket.send_text(ai_buffer)
-                
-                # Save to history
                 history = dynamic_context.get("history", [])
                 history.append({"role": "assistant", "content": ai_buffer})
                 update_dynamic_context(session_id, "history", history)
-                    
+                
             print("AI finished responding")
         except Exception as e:
             print(f"AI task error: {e}")
+            # Try to send any accumulated response even if there was an error
+            try:
+                if 'ai_buffer' in locals() and ai_buffer.strip():
+                    tts_text = ai_buffer.strip()
+                    print(f"Sending complete response to TTS after error: {repr(tts_text)}")
+                    tts_audio = synthesize_speech(tts_text)
+                    await websocket.send_bytes(tts_audio)
+                    await websocket.send_text(ai_buffer)
+                    
+                    # Save to history
+                    if 'dynamic_context' in locals():
+                        history = dynamic_context.get("history", [])
+                        history.append({"role": "assistant", "content": ai_buffer})
+                        update_dynamic_context(session_id, "history", history)
+            except Exception as inner_e:
+                print(f"Error sending response after main error: {inner_e}")
+                    
+            print("AI finished responding")
 
     try:
         while True:
