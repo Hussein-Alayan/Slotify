@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, CalendarDays, DollarSign, TrendingUp } from "lucide-react";
+import { Users, CalendarDays } from "lucide-react";
 
 const stats = [
   {
@@ -18,25 +18,11 @@ const stats = [
     icon: CalendarDays,
     color: "text-green-600",
   },
-  {
-    title: "Monthly Revenue",
-    value: "$12,450",
-    change: "+8.2% from last month",
-    icon: DollarSign,
-    color: "text-emerald-600",
-  },
-  {
-    title: "No-show Rate",
-    value: "8.2%",
-    change: "-2.1% from last month",
-    icon: TrendingUp,
-    color: "text-orange-600",
-  },
 ];
 
 export function StatsGrid() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
