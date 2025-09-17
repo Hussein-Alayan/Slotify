@@ -19,4 +19,14 @@ class BusinessStatsController extends Controller
         $totalClients = $business->clients()->count();
         return $this->successResponse(['total_clients' => $totalClients]);
     }
+
+    public function totalBookings($businessId)
+    {
+        $business = Business::find($businessId);
+        if (!$business) {
+            return $this->errorResponse('Business not found.', 404);
+        }
+        $totalBookings = $business->bookings()->count();
+        return $this->successResponse(['total_bookings' => $totalBookings]);
+    }
 }
