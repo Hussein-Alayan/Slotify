@@ -98,6 +98,28 @@ async def websocket_call(websocket: WebSocket, session_id: str):
     stt_session = STTSession()
     stt_session.start()
     greeting_sent = False
+    async def handle_ai_and_tts(transcript, session_id, static_context):
+        # Refresh dynamic_context to include the latest user message
+        dynamic_context = get_dynamic_context(session_id) or {}
+        ai_result = await get_ai_response(
+            session_id,
+            transcript,
+            static_context,
+            dynamic_context
+        )
+        def extract_gemini_text(ai_result):
+            try:
+                return ai_result['candidates'][0]['content']['parts'][0]['text']
+            except (KeyError, IndexError, TypeError):
+                return None
+        if ai_result:
+            ai_text = extract_gemini_text(ai_result)
+            update_dynamic_context(session_id, "last_ai_response", ai_text)
+            await websocket.send_text(f"AI: {ai_text}")
+            if ai_text:
+                tts_audio = synthesize_speech(ai_text)
+                await websocket.send_bytes(tts_audio)
+
     try:
         while True:
             chunk = await websocket.receive_bytes()
@@ -126,28 +148,8 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                     user_messages.append(transcript)
                     update_dynamic_context(session_id, "user_messages", user_messages)
 
-                    # Send transcript to AI (no greeting logic)
-                    ai_result = await get_ai_response(
-                        session_id,
-                        transcript,
-                        static_context,
-                        dynamic_context
-                    )
-
-                    def extract_gemini_text(ai_result):
-                        try:
-                            return ai_result['candidates'][0]['content']['parts'][0]['text']
-                        except (KeyError, IndexError, TypeError):
-                            return None
-
-                    if ai_result:
-                        ai_text = extract_gemini_text(ai_result)
-                        update_dynamic_context(session_id, "last_ai_response", ai_text)
-                        await websocket.send_text(f"AI: {ai_text}")
-
-                        if ai_text:
-                            tts_audio = synthesize_speech(ai_text)
-                            await websocket.send_bytes(tts_audio)
+                    # Offload AI and TTS to background task
+                    asyncio.create_task(handle_ai_and_tts(transcript, session_id, static_context))
     except WebSocketDisconnect:
         stt_session.stop()
         while not stt_session.transcript_queue.empty():
