@@ -138,18 +138,22 @@ async def websocket_call(websocket: WebSocket, session_id: str):
 
             while not stt_session.transcript_queue.empty():
                 transcript, is_final = stt_session.transcript_queue.get()
-                await websocket.send_text(transcript)
+                transcript_clean = transcript.strip()
+                # Skip empty or noisy short transcripts
+                if not transcript_clean or len(transcript_clean) < 2:
+                    continue
+                await websocket.send_text(transcript_clean)
 
                 if is_final:
-                    forward_transcript(session_id, transcript)
+                    forward_transcript(session_id, transcript_clean)
 
                     # Track user messages
                     user_messages = dynamic_context.get("user_messages", [])
-                    user_messages.append(transcript)
+                    user_messages.append(transcript_clean)
                     update_dynamic_context(session_id, "user_messages", user_messages)
 
                     # Offload AI and TTS to background task
-                    asyncio.create_task(handle_ai_and_tts(transcript, session_id, static_context))
+                    asyncio.create_task(handle_ai_and_tts(transcript_clean, session_id, static_context))
     except WebSocketDisconnect:
         stt_session.stop()
         while not stt_session.transcript_queue.empty():
