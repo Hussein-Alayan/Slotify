@@ -26,14 +26,13 @@ Route::prefix('v1')->group(function () {
 
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::get('/me', [AuthController::class, 'me']);
-
-	// Business Profile setup
-	Route::post('/business-profile', [\App\Http\Controllers\BusinessController::class, 'storeOrUpdate']);
+		// Business Profile setup
+		Route::post('/business-profile', [\App\Http\Controllers\BusinessController::class, 'storeOrUpdate']);
 	});
 
 	// Business stats (no auth for testing)
-	Route::get('/v1/businesses/{business}/total-clients', [\App\Http\Controllers\BusinessStatsController::class, 'totalClients']);
-	Route::get('/v1/businesses/{business}/total-bookings', [\App\Http\Controllers\BusinessStatsController::class, 'totalBookings']);
+	Route::get('/businesses/{business}/total-clients', [\App\Http\Controllers\BusinessStatsController::class, 'totalClients']);
+	Route::get('/businesses/{business}/total-bookings', [\App\Http\Controllers\BusinessStatsController::class, 'totalBookings']);
 
 		// Conversation routes
 		Route::post('/conversations', [ConversationController::class, 'startConversation']); // start new conversation
@@ -53,6 +52,5 @@ Route::prefix('v1')->group(function () {
 		Route::post('/businesses/{business}/bookings', [BookingController::class, 'store']); // create booking for business
 		
 		// Client-specific booking routes
-		Route::get('/clients/{client}/bookings', [BookingController::class, 'getClientBookings']); // get client bookings
-	});
+	Route::get('/clients/{client}/bookings', [BookingController::class, 'getClientBookings']); // get client bookings
 });

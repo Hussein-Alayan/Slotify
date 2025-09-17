@@ -2,7 +2,7 @@ import { getTotalClients, getTotalBookings } from "@/lib/business-dashboardAPI";
 import { DashboardContainer } from "./containers/dashboard-container";
 
 // Replace with your actual business ID
-const BUSINESS_ID = 1;
+const BUSINESS_ID = 3;
 
 export default async function DashboardPage() {
   const [totalClients, totalBookings] = await Promise.all([

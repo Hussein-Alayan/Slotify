@@ -12,14 +12,14 @@ export function StatsGrid({ totalClients, totalBookings }: StatsGridProps) {
   const stats = [
     {
       title: "Total Clients",
-      value: totalClients.toString(),
+      value: (totalClients ?? 0).toString(),
       change: "",
       icon: Users,
       color: "text-blue-600",
     },
     {
       title: "Today's Bookings",
-      value: totalBookings.toString(),
+      value: (totalBookings ?? 0).toString(),
       change: "",
       icon: CalendarDays,
       color: "text-green-600",
