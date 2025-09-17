@@ -89,9 +89,9 @@ def receive_audio(call_id: int):
 @app.post("/incoming/end/{call_id}")
 def end_call(call_id: int):
     end_call_api(call_id)
-    # Clear conversation history and dynamic context for this call/session
-    update_dynamic_context(call_id, "history", [])
-    update_dynamic_context(call_id, "last_ai_response", None)
+    # Clear all session-specific keys in dynamic_context for this call/session
+    for key in ["history", "last_ai_response", "user_messages"]:
+        update_dynamic_context(call_id, key, None)
     return {"success": True}
 
 # -----------------------
