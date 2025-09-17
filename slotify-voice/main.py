@@ -97,10 +97,22 @@ async def websocket_call(websocket: WebSocket, session_id: str):
     await websocket.accept()
     stt_session = STTSession()
     stt_session.start()
+    greeting_sent = False
     try:
         while True:
             chunk = await websocket.receive_bytes()
             stt_session.chunk_queue.put(chunk)
+
+            static_context = get_static_context(session_id) or {}
+            dynamic_context = get_dynamic_context(session_id) or {}
+
+            # Send greeting via TTS only once at the start of the call
+            if not greeting_sent:
+                business_name = static_context.get("name", "this business")
+                greeting_text = f"Welcome to {business_name}, how can I help you?"
+                tts_audio = synthesize_speech(greeting_text)
+                await websocket.send_bytes(tts_audio)
+                greeting_sent = True
 
             while not stt_session.transcript_queue.empty():
                 transcript, is_final = stt_session.transcript_queue.get()
@@ -108,9 +120,13 @@ async def websocket_call(websocket: WebSocket, session_id: str):
 
                 if is_final:
                     forward_transcript(session_id, transcript)
-                    static_context = get_static_context(session_id) or {}
-                    dynamic_context = get_dynamic_context(session_id) or {}
 
+                    # Track user messages
+                    user_messages = dynamic_context.get("user_messages", [])
+                    user_messages.append(transcript)
+                    update_dynamic_context(session_id, "user_messages", user_messages)
+
+                    # Send transcript to AI (no greeting logic)
                     ai_result = await get_ai_response(
                         session_id,
                         transcript,

@@ -8,10 +8,13 @@ if not GEMINI_API_URL or not GEMINI_API_KEY:
 	raise RuntimeError("Gemini API credentials are not set. Check your .env file.")
 
 async def get_ai_response(session_id: str, transcript: str, static_context: dict, dynamic_context: dict) -> dict:
+	business_name = static_context.get("name", "this business")
 	system_instruction = (
-		"You are an AI assistant speaking in a real-time phone call. "
-		"Keep your responses concise, natural, and conversational. "
-		"Avoid long explanations or lists. Reply in 1-2 sentences unless asked for more detail."
+		f"You are an AI assistant handling a real-time phone call for {business_name}. "
+		"Your job is to help callers book appointments, answer questions about services, staff, and hours, and provide helpful information using the provided business context and current bookings. "
+		"Keep responses concise, natural, and conversational—never more than 1-2 sentences unless asked for detail. "
+		"Do not invent information or bookings; only use what is provided. "
+		"If you are unsure, ask the caller for clarification or offer to connect them to a human."
 	)
 	payload = {
 		"contents": [
