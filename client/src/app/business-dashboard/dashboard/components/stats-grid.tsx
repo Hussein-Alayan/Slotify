@@ -5,9 +5,10 @@ import { Users, CalendarDays } from "lucide-react";
 
 type StatsGridProps = {
   totalClients: number;
+  totalBookings: number;
 };
 
-export function StatsGrid({ totalClients }: StatsGridProps) {
+export function StatsGrid({ totalClients, totalBookings }: StatsGridProps) {
   const stats = [
     {
       title: "Total Clients",
@@ -18,8 +19,8 @@ export function StatsGrid({ totalClients }: StatsGridProps) {
     },
     {
       title: "Today's Bookings",
-      value: "18",
-      change: "3 pending confirmations",
+      value: totalBookings.toString(),
+      change: "",
       icon: CalendarDays,
       color: "text-green-600",
     },
