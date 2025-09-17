@@ -1,18 +1,54 @@
 import React from "react";
+import { createService } from "@/lib/servicesAPI";
+
+type AddServiceModalProps = {
+  open: boolean;
+  onClose: () => void;
+  businessId: number;
+  onSuccess?: () => void;
+};
 
 export function AddServiceModal({
   open,
   onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+  businessId,
+  onSuccess,
+}: AddServiceModalProps) {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [price, setPrice] = React.useState("");
   const [duration, setDuration] = React.useState("");
-  const [availableHours, setAvailableHours] = React.useState("");
+  // Removed availableHours state
   const [status, setStatus] = React.useState(false);
+
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await createService(businessId, {
+        name: title,
+        duration_minutes: Number(duration) * 60,
+        price: Number(price),
+        description,
+        status: status ? "active" : "inactive",
+      });
+      setLoading(false);
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (err: unknown) {
+      setLoading(false);
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const errorObj = err as { response?: { data?: { message?: string } } };
+        setError(errorObj.response?.data?.message || "Failed to add service.");
+      } else {
+        setError("Failed to add service.");
+      }
+    }
+  }
 
   if (!open) return null;
   return (
@@ -28,7 +64,10 @@ export function AddServiceModal({
         <h2 className="text-2xl font-bold mb-6 text-gray-900">
           Add New Service
         </h2>
-        <form>
+        {error && (
+          <div className="mb-4 text-red-600 text-sm font-semibold">{error}</div>
+        )}
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block font-semibold mb-1 text-gray-900">
               Service Title
@@ -83,17 +122,6 @@ export function AddServiceModal({
                 {/* Add more options as needed */}
               </select>
             </div>
-          </div>
-          <div className="mb-4">
-            <label className="block font-semibold mb-1 text-gray-900">
-              Available Hours
-            </label>
-            <input
-              className="w-full border rounded-lg px-4 py-2 text-gray-900"
-              placeholder="e.g. 9am - 5pm"
-              value={availableHours}
-              onChange={(e) => setAvailableHours(e.target.value)}
-            />
           </div>
           <div className="mb-4">
             <label className="block font-semibold mb-1 text-gray-900">
