@@ -16,15 +16,21 @@ async def get_ai_response(session_id: str, transcript: str, static_context: dict
 		"Do not invent information or bookings; only use what is provided. "
 		"If you are unsure, ask the caller for clarification or offer to connect them to a human."
 	)
+
+	# Build conversation history for Gemini
+	history = dynamic_context.get("history", [])
+	contents = []
+	# Add system instruction as first part
+	contents.append({"role": "system", "parts": [{"text": system_instruction}]})
+	# Add all prior exchanges
+	for msg in history:
+		if msg["role"] == "user":
+			contents.append({"role": "user", "parts": [{"text": msg["content"]}]})
+		elif msg["role"] == "assistant":
+			contents.append({"role": "assistant", "parts": [{"text": msg["content"]}]})
+
 	payload = {
-		"contents": [
-			{
-				"parts": [
-					{"text": system_instruction},
-					{"text": transcript}
-				]
-			}
-		]
+		"contents": contents
 	}
 	headers = {
 		"Content-Type": "application/json",

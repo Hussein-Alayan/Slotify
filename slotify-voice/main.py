@@ -87,6 +87,9 @@ def receive_audio(call_id: int):
 @app.post("/incoming/end/{call_id}")
 def end_call(call_id: int):
     end_call_api(call_id)
+    # Clear conversation history and dynamic context for this call/session
+    update_dynamic_context(call_id, "history", [])
+    update_dynamic_context(call_id, "last_ai_response", None)
     return {"success": True}
 
 # -----------------------
@@ -115,6 +118,11 @@ async def websocket_call(websocket: WebSocket, session_id: str):
         if ai_result:
             ai_text = extract_gemini_text(ai_result)
             update_dynamic_context(session_id, "last_ai_response", ai_text)
+            # Append AI response to conversation history
+            dynamic_context = get_dynamic_context(session_id) or {}
+            history = dynamic_context.get("history", [])
+            history.append({"role": "assistant", "content": ai_text})
+            update_dynamic_context(session_id, "history", history)
             await websocket.send_text(f"AI: {ai_text}")
             if ai_text:
                 tts_audio = synthesize_speech(ai_text)
@@ -147,10 +155,11 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                 if is_final:
                     forward_transcript(session_id, transcript_clean)
 
-                    # Track user messages
-                    user_messages = dynamic_context.get("user_messages", [])
-                    user_messages.append(transcript_clean)
-                    update_dynamic_context(session_id, "user_messages", user_messages)
+                    # Track full conversation history
+                    history = dynamic_context.get("history", [])
+                    # Append user message
+                    history.append({"role": "user", "content": transcript_clean})
+                    update_dynamic_context(session_id, "history", history)
 
                     # Offload AI and TTS to background task
                     asyncio.create_task(handle_ai_and_tts(transcript_clean, session_id, static_context))
