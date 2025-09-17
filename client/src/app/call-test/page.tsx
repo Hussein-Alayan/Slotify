@@ -2,11 +2,11 @@
 // pages/call-test.tsx
 import { useEffect, useRef, useState, useCallback } from "react";
 // Helper to start a call and get a call_id from FastAPI
-async function fetchCallId(caller_phone = "test") {
+async function fetchCallId(caller_phone = "test", business_id = "") {
   const resp = await fetch("http://localhost:8001/incoming/start", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ caller_phone }),
+    body: JSON.stringify({ caller_phone, business_id }),
   });
   const data = await resp.json();
   return data.call_id;
@@ -25,6 +25,7 @@ async function fetchCallId(caller_phone = "test") {
 
 export default function CallTest() {
   const [callId, setCallId] = useState<number | null>(null);
+  const [businessId, setBusinessId] = useState("");
   // ...existing code...
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -80,8 +81,12 @@ export default function CallTest() {
 
   // ---- Start recording + open websocket ----
   async function startCall() {
-    // Get a real call_id from FastAPI
-    const newCallId = await fetchCallId();
+    // Get a real call_id from FastAPI, passing businessId
+    if (!businessId) {
+      alert("Please enter a business ID.");
+      return;
+    }
+    const newCallId = await fetchCallId("test", businessId);
     setCallId(newCallId);
     // create websocket
     const wsUrl = `ws://localhost:8001/ws/call/${newCallId}`;
@@ -224,18 +229,35 @@ export default function CallTest() {
       </div>
 
       <div style={{ marginTop: 12 }}>
-        {!isRecording ? (
-          <button onClick={startCall} style={{ padding: "8px 12px" }}>
-            Start Call (Mic → WS)
-          </button>
-        ) : (
-          <button
-            onClick={stopCall}
-            style={{ padding: "8px 12px", background: "#c33", color: "white" }}
-          >
-            End Call
-          </button>
-        )}
+        <label>
+          <strong>Business ID:</strong>
+          <input
+            type="text"
+            value={businessId}
+            onChange={(e) => setBusinessId(e.target.value)}
+            style={{ marginLeft: 8, padding: "4px 8px", width: 120 }}
+            placeholder="e.g. 1"
+            disabled={isRecording}
+          />
+        </label>
+        <div style={{ marginTop: 8 }}>
+          {!isRecording ? (
+            <button onClick={startCall} style={{ padding: "8px 12px" }}>
+              Start Call (Mic → WS)
+            </button>
+          ) : (
+            <button
+              onClick={stopCall}
+              style={{
+                padding: "8px 12px",
+                background: "#c33",
+                color: "white",
+              }}
+            >
+              End Call
+            </button>
+          )}
+        </div>
       </div>
 
       <section style={{ marginTop: 20 }}>
