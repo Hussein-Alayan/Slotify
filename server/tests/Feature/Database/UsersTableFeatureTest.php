@@ -10,7 +10,7 @@ class UsersTableFeatureTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function users_table_has_expected_columns()
     {
         $this->assertTrue(

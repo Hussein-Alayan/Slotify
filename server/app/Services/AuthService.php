@@ -37,11 +37,6 @@ class AuthService {
 		return compact('user', 'token');
 	}
 
-	public function logout($user)
-	{
-		$user->currentAccessToken()->delete();
-	}
-
 	public function me($user)
 	{
 		return $user;

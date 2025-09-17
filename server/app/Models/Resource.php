@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Resource extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'business_id',
         'type',
@@ -25,5 +27,10 @@ class Resource extends Model
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+    
+    public function services()
+    {
+        return $this->belongsToMany(Service::class);
     }
 }
