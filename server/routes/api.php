@@ -24,9 +24,10 @@ Route::prefix('v1')->group(function () {
 
 // Voice Call Assistant routes
 Route::prefix('voice')->group(function () {
-    Route::post('/log', [VoiceCallController::class, 'logCall']);
-    Route::post('/{id}/transcript', [VoiceCallController::class, 'updateTranscript']);
-    Route::post('/{id}/end', [VoiceCallController::class, 'endCall']);
+	Route::post('/log', [VoiceCallController::class, 'logCall']);
+	Route::post('/{id}/transcript', [VoiceCallController::class, 'updateTranscript']);
+	Route::post('/{id}/end', [VoiceCallController::class, 'endCall']);
+	Route::get('/business-context/{business}', [VoiceCallController::class, 'getBusinessContext']);
 });
 
 	// AI processing for n8n workflows (no auth required)

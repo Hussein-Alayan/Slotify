@@ -37,4 +37,13 @@ class VoiceCallController extends Controller
         $this->voiceCallService->endCall($id);
         return $this->successResponse();
     }
+    /**
+     * Return static business context (workflow JSON)
+     */
+    public function getBusinessContext($businessId)
+    {
+        $business = \App\Models\Business::findOrFail($businessId);
+        $workflow = $business->workflow ? json_decode($business->workflow, true) : [];
+        return $this->successResponse(['business_id' => $businessId, 'workflow' => $workflow]);
+    }
 }
