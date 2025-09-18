@@ -12,6 +12,7 @@ Route::prefix('v1')->group(function () {
 	// Service stats (no auth for testing)
 Route::post('/businesses/{business}/services', [\App\Http\Controllers\ServiceController::class, 'store']);
 Route::get('/businesses/{business}/services', [\App\Http\Controllers\ServiceController::class, 'index']);
+Route::patch('/businesses/{business}/services/{service}', [\App\Http\Controllers\ServiceController::class, 'update']);
 	Route::get('/businesses/{business}/total-services', [\App\Http\Controllers\BusinessStatsController::class, 'totalServices']);
 	Route::get('/businesses/{business}/active-services', [\App\Http\Controllers\BusinessStatsController::class, 'activeServices']);
 	Route::post('/register', [AuthController::class, 'register']);
