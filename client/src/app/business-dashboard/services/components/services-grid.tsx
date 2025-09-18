@@ -10,6 +10,8 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { fetchServices } from "@/store/services/servicesSlice";
 import AddServiceModal from "./add-service-modal";
 
+import type { Service } from "@/store/services/servicesSlice";
+
 export function ServicesGrid({ businessId }: { businessId: number }) {
   const dispatch = useAppDispatch();
   const {
@@ -19,13 +21,13 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
   } = useAppSelector((state) => state.services);
 
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [selectedService, setSelectedService] = React.useState(null);
+  const [selectedService, setSelectedService] = React.useState<Service | null>(null);
 
   React.useEffect(() => {
     dispatch(fetchServices(businessId));
   }, [dispatch, businessId]);
 
-  function handleEdit(service: any) {
+  function handleEdit(service: Service) {
     setSelectedService(service);
     setModalOpen(true);
   }

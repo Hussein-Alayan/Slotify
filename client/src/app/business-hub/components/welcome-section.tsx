@@ -10,7 +10,7 @@ export function WelcomeSection() {
             Welcome back, Hussein!
           </h2>
           <p className="text-gray-600 mb-4">
-            Ready to manage your businesses? Here's your dashboard overview.
+            Ready to manage your businesses? Here is your dashboard overview.
           </p>
 
           {/* Removed Active Businesses badge */}

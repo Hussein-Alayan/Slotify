@@ -80,13 +80,22 @@ export default function AddServiceModal({
     });
   }
 
-  async function buildPayload() {
-    const payload: any = {
+  type ServicePayload = {
+    name: string;
+    description?: string;
+    price: number;
+    duration_minutes: number;
+    status: "active" | "inactive";
+    photo_base64?: string;
+  };
+
+  async function buildPayload(): Promise<ServicePayload> {
+    const payload: ServicePayload = {
       name: title.trim(),
       description: description.trim() || undefined,
       price: price === "" ? 0 : Number(price),
       duration_minutes: duration === "" ? 0 : Math.round(Number(duration) * 60),
-      status: status ? "active" : ("inactive" as "active" | "inactive"),
+      status: status ? "active" : "inactive",
     };
     if (photo) {
       payload.photo_base64 = await fileToBase64(photo);

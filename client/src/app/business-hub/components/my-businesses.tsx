@@ -15,8 +15,9 @@ export function MyBusinesses() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUserBusinesses().then((data: Business[]) => {
-      setBusinesses(data);
+    fetchUserBusinesses().then((data) => {
+      // If using ApiResponse, data is the array
+      setBusinesses(data as Business[]);
       setLoading(false);
     });
   }, []);
@@ -29,14 +30,25 @@ export function MyBusinesses() {
         My Businesses
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {businesses.map((business) => (
-          <BusinessCard
-            key={business.id}
-            name={business.name}
-            category={business.industry}
-            status={business.status}
-          />
-        ))}
+        {businesses.map((business) => {
+          const allowedStatuses = ["Active", "Inactive", "Pending"] as const;
+          type AllowedStatus = (typeof allowedStatuses)[number];
+          const status = allowedStatuses.includes(
+            (business.status.charAt(0).toUpperCase() +
+              business.status.slice(1)) as AllowedStatus
+          )
+            ? ((business.status.charAt(0).toUpperCase() +
+                business.status.slice(1)) as AllowedStatus)
+            : "Pending";
+          return (
+            <BusinessCard
+              key={business.id}
+              name={business.name}
+              category={business.industry}
+              status={status}
+            />
+          );
+        })}
       </div>
     </div>
   );
