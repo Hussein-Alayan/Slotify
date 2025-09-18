@@ -1,73 +1,168 @@
 import React from "react";
-import { createService } from "@/lib/servicesAPI";
+import { createService, updateService } from "@/lib/servicesAPI";
+
+type Service = {
+  id?: number;
+  name?: string;
+  description?: string;
+  price?: number;
+  duration_minutes?: number;
+  status?: string;
+};
 
 type AddServiceModalProps = {
   open: boolean;
   onClose: () => void;
   businessId: number;
   onSuccess?: () => void;
+  service?: Service | null;
 };
 
-export function AddServiceModal({
-  open,
-  onClose,
-  businessId,
-  onSuccess,
-}: AddServiceModalProps) {
-  const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
-  const [price, setPrice] = React.useState("");
-  const [duration, setDuration] = React.useState("");
-  // Removed availableHours state
-  const [status, setStatus] = React.useState(false);
+export function AddServiceModal(props: AddServiceModalProps) {
+  const { open, onClose, businessId, onSuccess, service = null } = props;
 
+  // form state (strings for controlled inputs)
+  const [title, setTitle] = React.useState(service?.name || "");
+  const [description, setDescription] = React.useState(
+    service?.description || ""
+  );
+  const [price, setPrice] = React.useState(
+    service?.price != null ? String(service.price) : ""
+  );
+  // duration is displayed in hours in the UI, store as string "1", "1.5", etc.
+  const [duration, setDuration] = React.useState(
+    service?.duration_minutes ? String(service.duration_minutes / 60) : ""
+  );
+  const [status, setStatus] = React.useState(service?.status === "active");
+  const [photoFile, setPhotoFile] = React.useState<File | null>(null); // local file selected
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = React.useState<
+    Record<string, string>
+  >({});
+
+  // Reset/update form whenever the service prop or open changes
+  React.useEffect(() => {
+    setTitle(service?.name || "");
+    setDescription(service?.description || "");
+    setPrice(service?.price != null ? String(service.price) : "");
+    setDuration(
+      service?.duration_minutes ? String(service.duration_minutes / 60) : ""
+    );
+    setStatus(service?.status === "active");
+    setPhotoFile(null);
+    setError(null);
+    setValidationErrors({});
+  }, [service, open]);
+
+  // Basic client-side validation
+  function validate() {
+    const errors: Record<string, string> = {};
+    if (!title.trim()) errors.title = "Service title is required.";
+    if (duration && Number.isNaN(Number(duration)))
+      errors.duration = "Duration must be a number (hours).";
+    if (price && Number.isNaN(Number(price)))
+      errors.price = "Price must be a number.";
+    // If you want to require duration, uncomment next line:
+    // if (!duration) errors.duration = "Please select a duration.";
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
+  // Helper to build payload expected by your API
+  function buildPayload(): {
+    name: string;
+    description?: string;
+    price: number;
+    duration_minutes: number;
+    status: "active" | "inactive";
+  } {
+    return {
+      name: title.trim(),
+      description: description.trim() || undefined,
+      price: price === "" ? 0 : Number(price),
+      duration_minutes: duration === "" ? 0 : Math.round(Number(duration) * 60),
+      status: status ? "active" : "inactive",
+    };
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    if (!validate()) {
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await createService(businessId, {
-        name: title,
-        duration_minutes: Number(duration) * 60,
-        price: Number(price),
-        description,
-        status: status ? "active" : "inactive",
-      });
-      setLoading(false);
+      const payload = buildPayload();
+
+      // If you plan to support image upload, there are two common approaches:
+      // 1) upload file separately (e.g., /upload -> returns URL) then include URL in payload
+      // 2) send a multipart/form-data request with the file + fields
+      // This code keeps it simple and calls the JSON endpoints. Implement file upload on the backend if needed.
+      if (service && service.id) {
+        await updateService(businessId, service.id, payload);
+      } else {
+        await createService(businessId, payload);
+      }
+
+      // optional callback to parent
       if (onSuccess) onSuccess();
+
+      // reset & close
+      setLoading(false);
       onClose();
     } catch (err: unknown) {
       setLoading(false);
-      if (typeof err === "object" && err !== null && "response" in err) {
-        const errorObj = err as { response?: { data?: { message?: string } } };
-        setError(errorObj.response?.data?.message || "Failed to add service.");
+
+      // try to read a message from common axios-like shapes
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data
+      ) {
+        setError(
+          (err as { response?: { data?: { message?: string } } }).response?.data
+            ?.message || "Failed to save service."
+        );
       } else {
-        setError("Failed to add service.");
+        setError("Failed to save service.");
       }
     }
   }
 
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/10">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/10"
+      role="dialog"
+      aria-modal="true"
+      aria-label={service ? "Edit service" : "Add new service"}
+    >
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
         <button
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"
           onClick={onClose}
           aria-label="Close"
+          type="button"
         >
           &times;
         </button>
+
         <h2 className="text-2xl font-bold mb-6 text-gray-900">
-          Add New Service
+          {service ? "Edit Service" : "Add New Service"}
         </h2>
+
         {error && (
           <div className="mb-4 text-red-600 text-sm font-semibold">{error}</div>
         )}
-        <form onSubmit={handleSubmit}>
+
+        <form onSubmit={handleSubmit} noValidate>
           <div className="mb-4">
             <label className="block font-semibold mb-1 text-gray-900">
               Service Title
@@ -77,20 +172,18 @@ export function AddServiceModal({
               placeholder="Enter your service title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              aria-invalid={!!validationErrors.title}
+              aria-describedby={
+                validationErrors.title ? "title-error" : undefined
+              }
             />
+            {validationErrors.title && (
+              <div id="title-error" className="text-sm text-red-600 mt-1">
+                {validationErrors.title}
+              </div>
+            )}
           </div>
-          <div className="mb-4">
-            <label className="block font-semibold mb-1 text-gray-900">
-              Description
-            </label>
-            <textarea
-              className="w-full border rounded-lg px-4 py-2 text-gray-900"
-              rows={3}
-              placeholder="Describe your service in detail..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+
           <div className="flex gap-4 mb-4">
             <div className="flex-1">
               <label className="block font-semibold mb-1 text-gray-900">
@@ -104,8 +197,15 @@ export function AddServiceModal({
                 placeholder="$ 0.00"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
+                aria-invalid={!!validationErrors.price}
               />
+              {validationErrors.price && (
+                <div className="text-sm text-red-600 mt-1">
+                  {validationErrors.price}
+                </div>
+              )}
             </div>
+
             <div className="flex-1">
               <label className="block font-semibold mb-1 text-gray-900">
                 Duration (Hours)
@@ -114,25 +214,42 @@ export function AddServiceModal({
                 className="w-full border rounded-lg px-4 py-2 text-gray-900"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
+                aria-invalid={!!validationErrors.duration}
               >
                 <option value="">Select duration</option>
+                <option value="0.5">30 minutes</option>
                 <option value="1">1 hour</option>
+                <option value="1.5">1.5 hours</option>
                 <option value="2">2 hours</option>
                 <option value="3">3 hours</option>
-                {/* Add more options as needed */}
               </select>
+              {validationErrors.duration && (
+                <div className="text-sm text-red-600 mt-1">
+                  {validationErrors.duration}
+                </div>
+              )}
             </div>
           </div>
+
           <div className="mb-4">
             <label className="block font-semibold mb-1 text-gray-900">
               Service Photo
             </label>
-            <div className="border-dashed border-2 border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-gray-600">
-              <span className="mb-2">&#8682;</span>
-              <span>Click to upload or drag and drop</span>
-              <span className="text-xs mt-1">PNG, JPG, GIF up to 10MB</span>
+            {/* Simple file input. Backend upload not implemented here. */}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+            />
+            <div className="text-xs text-gray-500 mt-1">
+              PNG, JPG, GIF up to 10MB
             </div>
+            {/* TODO: If you want to upload the image, either:
+                - upload to an /upload endpoint first and include returned URL in payload, or
+                - send multipart/form-data in createService/updateService.
+            */}
           </div>
+
           <div className="mb-6">
             <label className="block font-semibold mb-1 text-gray-900">
               Service Status
@@ -146,22 +263,26 @@ export function AddServiceModal({
                 className="ml-2"
                 checked={status}
                 onChange={(e) => setStatus(e.target.checked)}
+                aria-label="Enable service"
               />
             </div>
           </div>
+
           <div className="flex justify-end gap-4">
             <button
               type="button"
               className="px-6 py-2 rounded-lg border font-semibold text-gray-900 bg-white hover:bg-gray-100"
               onClick={onClose}
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-lg font-semibold text-white bg-slate-900 hover:bg-slate-800"
+              className="px-6 py-2 rounded-lg font-semibold text-white bg-slate-900 hover:bg-slate-800 disabled:opacity-60"
+              disabled={loading}
             >
-              Save
+              {loading ? "Saving..." : service ? "Save Changes" : "Save"}
             </button>
           </div>
         </form>

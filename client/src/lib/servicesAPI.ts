@@ -1,3 +1,13 @@
+export async function updateService(businessId: number, serviceId: number, data: {
+  name: string;
+  duration_minutes: number;
+  price: number;
+  description?: string;
+  status: 'active' | 'inactive';
+}) {
+  const response = await api.put(`/v1/businesses/${businessId}/services/${serviceId}`, data);
+  return response.data;
+}
 export async function fetchServices(businessId: number) {
   const response = await api.get(`/v1/businesses/${businessId}/services`);
   return response.data;
