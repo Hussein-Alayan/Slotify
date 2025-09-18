@@ -122,9 +122,6 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
                   >
                     Edit
                   </Button>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
             </div>
