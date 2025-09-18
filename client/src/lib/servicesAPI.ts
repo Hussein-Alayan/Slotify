@@ -22,5 +22,5 @@ export async function createService(businessId: number, data: {
   status: 'active' | 'inactive';
 }) {
   const response = await api.post(`/v1/businesses/${businessId}/services`, data);
-  return response.data;
+  return response.data.data;
 }
