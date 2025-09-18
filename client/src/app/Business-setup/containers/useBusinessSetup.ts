@@ -93,8 +93,6 @@ export function useBusinessSetup() {
       description: "",
       duration: 30,
       price: 0,
-      maxClients: 1,
-      specialRules: "",
     },
   ]);
   const [staff, setStaff] = useState<StaffMember[]>([
@@ -141,8 +139,6 @@ export function useBusinessSetup() {
         description: "",
         duration: 30,
         price: 0,
-        maxClients: 1,
-        specialRules: "",
       },
     ]);
   };
