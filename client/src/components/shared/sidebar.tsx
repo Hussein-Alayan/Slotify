@@ -32,7 +32,7 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "bg-slate-900 text-white transition-all duration-300",
+        "bg-slate-900 text-white transition-all duration-300 sticky top-0 h-screen",
         isCollapsed ? "w-16" : "w-64"
       )}
     >
