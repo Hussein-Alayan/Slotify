@@ -11,12 +11,15 @@ export default function GoogleCallbackPage() {
     // Adjust parsing as needed for your backend's actual response
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
-    // Optionally, parse user info if provided
-    // const user = params.get("user");
+    const userName = params.get("user_name") || params.get("user");
 
     if (token) {
       // Store token (localStorage, cookie, or context)
       localStorage.setItem("auth_token", token);
+      // Store user name if available
+      if (userName) {
+        localStorage.setItem("user_name", userName);
+      }
       // Redirect to dashboard or home
       router.replace("/dashboard");
     } else {
