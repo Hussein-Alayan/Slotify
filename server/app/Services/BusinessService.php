@@ -52,6 +52,8 @@ class BusinessService
                         [
                             'type' => $resource['type'],
                             'availability' => $resource['availability'] ?? null,
+                            'role' => $resource['role'] ?? null,
+                            'special_skills' => $resource['specialSkills'] ?? null,
                         ]
                     );
                 }
