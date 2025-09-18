@@ -14,6 +14,7 @@ interface LoginResponse {
 }
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRedirectIfAuthenticated } from "@/hooks/useRedirectIfAuthenticated";
 import api, { csrf } from "@/lib/api";
 import { getErrorMessage } from "@/utils/errorMessage";
 import SigninForm from "../_components/SigninForm";
@@ -28,6 +29,9 @@ const SigninContainer: React.FC = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Redirect if already authenticated
+  useRedirectIfAuthenticated();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

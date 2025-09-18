@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import api, { csrf } from "@/lib/api";
 import { getErrorMessage } from "@/utils/errorMessage";
+import { useRedirectIfAuthenticated } from "@/hooks/useRedirectIfAuthenticated";
 import SignupForm from "../_components/SignupForm";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,6 +17,9 @@ const SignupContainer: React.FC = () => {
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated
+  useRedirectIfAuthenticated();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
