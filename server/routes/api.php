@@ -6,6 +6,7 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AIBookingController;
 use App\Http\Controllers\WhatsAppWebhookController;
+use App\Http\Controllers\ClientController;
 
 Route::prefix('v1')->group(function () {
 	// Service stats (no auth for testing)
@@ -39,6 +40,13 @@ Route::post('/resources/{resource}/services', [\App\Http\Controllers\ResourceCon
 		// Business management
 		Route::get('/businesses', [\App\Http\Controllers\BusinessController::class, 'index']);
 		Route::get('/businesses/{business}', [\App\Http\Controllers\BusinessController::class, 'show']);
+
+		// Client management
+		Route::get('/businesses/{business}/clients', [ClientController::class, 'index']);
+		Route::post('/businesses/{business}/clients', [ClientController::class, 'store']);
+		Route::get('/businesses/{business}/clients/{client}', [ClientController::class, 'show']);
+		Route::put('/businesses/{business}/clients/{client}', [ClientController::class, 'update']);
+		Route::delete('/businesses/{business}/clients/{client}', [ClientController::class, 'destroy']);
 	});
 
 	// Business stats (no auth for testing)
