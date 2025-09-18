@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
@@ -53,23 +53,50 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
       />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {(Array.isArray(services) ? services : []).map((service) => (
-          <Card key={service.id} className="overflow-hidden">
-            <div className="aspect-video bg-gray-200">
+          <Card
+            key={service.id}
+            className="bg-card text-card-foreground flex flex-col gap-0 rounded-xl border shadow-sm overflow-hidden"
+          >
+            <div
+              style={{
+                height: "160px",
+                width: "100%",
+                background: "#f3f4f6",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderTopLeftRadius: "12px",
+                borderTopRightRadius: "12px",
+                overflow: "hidden",
+              }}
+            >
               {service.photo_url ? (
                 <img
                   src={service.photo_url}
                   alt={service.name}
-                  className="w-full h-full object-cover"
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    objectFit: "cover",
+                    borderTopLeftRadius: "12px",
+                    borderTopRightRadius: "12px",
+                  }}
                 />
               ) : (
                 <img
                   src="/placeholder.svg"
                   alt={service.name}
-                  className="w-full h-full object-cover"
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    objectFit: "cover",
+                    borderTopLeftRadius: "12px",
+                    borderTopRightRadius: "12px",
+                  }}
                 />
               )}
             </div>
-            <CardContent className="p-6">
+            <div data-slot="card-content" className="p-6">
               <div className="flex items-start justify-between mb-2">
                 <h3 className="text-lg font-semibold text-gray-900">
                   {service.name}
@@ -100,7 +127,7 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
                   </Button>
                 </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
         ))}
       </div>
