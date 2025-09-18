@@ -8,7 +8,7 @@ import { MoreHorizontal } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { fetchServices } from "@/store/services/servicesSlice";
-import { AddServiceModal } from "./add-service-modal";
+import AddServiceModal from "./add-service-modal";
 
 export function ServicesGrid({ businessId }: { businessId: number }) {
   const dispatch = useAppDispatch();
@@ -55,9 +55,9 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
         {(Array.isArray(services) ? services : []).map((service) => (
           <Card key={service.id} className="overflow-hidden">
             <div className="aspect-video bg-gray-200">
-              {service.photoUrl ? (
+              {service.photo_url ? (
                 <img
-                  src={service.photoUrl}
+                  src={service.photo_url}
                   alt={service.name}
                   className="w-full h-full object-cover"
                 />

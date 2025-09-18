@@ -71,14 +71,27 @@ export default function AddServiceModal({
   }
 
   // API payload
-  function buildPayload() {
-    return {
+  async function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  }
+
+  async function buildPayload() {
+    const payload: any = {
       name: title.trim(),
       description: description.trim() || undefined,
       price: price === "" ? 0 : Number(price),
       duration_minutes: duration === "" ? 0 : Math.round(Number(duration) * 60),
       status: status ? "active" : ("inactive" as "active" | "inactive"),
     };
+    if (photo) {
+      payload.photo_base64 = await fileToBase64(photo);
+    }
+    return payload;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -89,7 +102,7 @@ export default function AddServiceModal({
     setLoading(true);
 
     try {
-      const payload = buildPayload();
+      const payload = await buildPayload();
 
       if (service && service.id) {
         await dispatch(

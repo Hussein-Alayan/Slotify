@@ -2,7 +2,7 @@
 
 import { ServicesHeader } from "../components/services-header";
 import React from "react";
-import { AddServiceModal } from "../components/add-service-modal";
+import AddServiceModal from "../components/add-service-modal";
 import { ServicesStats } from "../components/services-stats";
 import { ServicesFilters } from "../components/services-filters";
 import { ServicesGrid } from "../components/services-grid";
