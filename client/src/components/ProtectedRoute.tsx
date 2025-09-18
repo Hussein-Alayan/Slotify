@@ -1,19 +1,38 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+// ...existing code...
+import React, { useEffect } from "react";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+  const [authenticated, setAuthenticated] = React.useState<boolean | null>(
+    null
+  );
 
   useEffect(() => {
-    if (!token) {
-      router.replace("/auth/signin");
+    async function checkAuth() {
+      try {
+        const res = await fetch(
+          (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000") +
+            "/api/v1/me",
+          { credentials: "include" }
+        );
+        if (res.ok) {
+          setAuthenticated(true);
+        } else {
+          setAuthenticated(false);
+          router.replace("/auth/signin");
+        }
+      } catch {
+        setAuthenticated(false);
+        router.replace("/auth/signin");
+      }
     }
-  }, [token, router]);
+    checkAuth();
+  }, [router]);
 
-  if (!token) return null;
+  if (authenticated === null) return null;
+  if (!authenticated) return null;
 
   return <>{children}</>;
 }

@@ -1,5 +1,10 @@
-import { BusinessHubContainer } from "./containers/business-hub-container"
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { BusinessHubContainer } from "./containers/business-hub-container";
 
 export default function BusinessHubPage() {
-  return <BusinessHubContainer />
+  return (
+    <ProtectedRoute>
+      <BusinessHubContainer />
+    </ProtectedRoute>
+  );
 }

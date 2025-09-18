@@ -33,7 +33,6 @@ api.interceptors.response.use(
   error => {
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("auth_token");
         window.location.href = "/auth/signin";
       }
     }
