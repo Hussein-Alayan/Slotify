@@ -165,6 +165,33 @@ export default function AddServiceModal({
         )}
 
         <form onSubmit={handleSubmit} noValidate>
+          {/* Service Name */}
+          <div className="mb-4">
+            <label className="block font-semibold mb-1 text-gray-900">
+              Service Name
+            </label>
+            <input
+              type="text"
+              className="w-full border rounded-lg px-4 py-2 text-gray-900"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="Enter service name"
+            />
+          </div>
+          {/* Description */}
+          <div className="mb-4">
+            <label className="block font-semibold mb-1 text-gray-900">
+              Description
+            </label>
+            <textarea
+              className="w-full border rounded-lg px-4 py-2 text-gray-900"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              placeholder="Describe the service"
+            />
+          </div>
           {/* Service Photo */}
           <div className="mb-4">
             <label className="block font-semibold mb-1 text-gray-900">
