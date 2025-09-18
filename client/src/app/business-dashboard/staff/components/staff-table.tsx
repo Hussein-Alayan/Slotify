@@ -11,27 +11,13 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
-import { fetchServices } from "@/lib/servicesAPI";
+import React, { useState, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { fetchServices } from "@/store/services/servicesSlice";
 
 interface Service {
   id: string | number;
   name: string;
-}
-
-function extractServiceList(data: unknown): Service[] {
-  if (Array.isArray(data)) {
-    return data as Service[];
-  }
-  if (data && typeof data === "object") {
-    if (Array.isArray((data as { data?: unknown }).data)) {
-      return (data as { data: Service[] }).data;
-    }
-    if (Array.isArray((data as { services?: unknown }).services)) {
-      return (data as { services: Service[] }).services;
-    }
-  }
-  return [];
 }
 
 interface StaffMember {
@@ -44,8 +30,6 @@ interface StaffMember {
   phone: string;
   serviceId?: string;
 }
-
-// Fetch services from backend
 
 // Mock staff data
 const initialStaffData: StaffMember[] = [
@@ -87,25 +71,18 @@ const initialStaffData: StaffMember[] = [
   },
 ];
 
-export function StaffTable() {
+export default function StaffTable() {
   const [staffData, setStaffData] = useState(initialStaffData);
-  const [services, setServices] = useState<{ id: string; name: string }[]>([]);
+  const dispatch = useAppDispatch();
   const businessId = 3; // TODO: Replace with actual businessId from context/props
 
+  const services = useAppSelector((state) => state.services.items);
+  const error = useAppSelector((state) => state.services.error);
+
+  // Fetch services on mount
   useEffect(() => {
-    async function loadServices() {
-      try {
-        const data = await fetchServices(businessId);
-        const serviceList = extractServiceList(data);
-        setServices(
-          serviceList.map((s) => ({ id: s.id.toString(), name: s.name }))
-        );
-      } catch {
-        setServices([]);
-      }
-    }
-    loadServices();
-  }, []);
+    dispatch(fetchServices(businessId));
+  }, [dispatch, businessId]);
 
   // Handle service selection for a staff member
   const handleServiceChange = (id: string, serviceId: string) => {
@@ -117,6 +94,13 @@ export function StaffTable() {
   return (
     <Card className="p-6">
       <div className="overflow-x-auto">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+            {error === "Network Error"
+              ? "Unable to load services. Please check your connection."
+              : error}
+          </div>
+        )}
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200">
@@ -169,8 +153,11 @@ export function StaffTable() {
                       <SelectValue placeholder="Select service" />
                     </SelectTrigger>
                     <SelectContent>
-                      {services.map((service) => (
-                        <SelectItem key={service.id} value={service.id}>
+                      {services.map((service: Service) => (
+                        <SelectItem
+                          key={service.id}
+                          value={service.id.toString()}
+                        >
                           {service.name}
                         </SelectItem>
                       ))}
