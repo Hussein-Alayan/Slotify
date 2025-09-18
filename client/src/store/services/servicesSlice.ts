@@ -11,6 +11,7 @@ export interface Service {
   status: 'active' | 'inactive';
   created_at?: string;
   updated_at?: string;
+  photoUrl?: string;
 }
 
 interface ServicesState {

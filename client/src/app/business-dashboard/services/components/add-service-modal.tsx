@@ -10,8 +10,12 @@ type AddServiceModalProps = {
   service?: Service | null;
 };
 
-export function AddServiceModal(props: AddServiceModalProps) {
-  const { open, onClose, businessId, service = null } = props;
+export default function AddServiceModal({
+  open,
+  onClose,
+  businessId,
+  service = null,
+}: AddServiceModalProps) {
   const dispatch = useAppDispatch();
 
   // form state (strings for controlled inputs)
@@ -22,7 +26,6 @@ export function AddServiceModal(props: AddServiceModalProps) {
   const [price, setPrice] = React.useState(
     service?.price != null ? String(service.price) : ""
   );
-  // duration is displayed in hours in the UI, store as string "1", "1.5", etc.
   const [duration, setDuration] = React.useState(
     service?.duration_minutes ? String(service.duration_minutes / 60) : ""
   );
@@ -32,8 +35,15 @@ export function AddServiceModal(props: AddServiceModalProps) {
   const [validationErrors, setValidationErrors] = React.useState<
     Record<string, string>
   >({});
+  const [photo, setPhoto] = React.useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = React.useState<string>("");
 
-  // Reset/update form whenever the service prop or open changes
+  function handleFileChange(file: File) {
+    setPhoto(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  // Reset form when service changes or modal re-opens
   React.useEffect(() => {
     setTitle(service?.name || "");
     setDescription(service?.description || "");
@@ -44,9 +54,11 @@ export function AddServiceModal(props: AddServiceModalProps) {
     setStatus(service?.status === "active");
     setError(null);
     setValidationErrors({});
+    setPhoto(null);
+    setPhotoPreview("");
   }, [service, open]);
 
-  // Basic client-side validation
+  // Client-side validation
   function validate() {
     const errors: Record<string, string> = {};
     if (!title.trim()) errors.title = "Service title is required.";
@@ -54,36 +66,25 @@ export function AddServiceModal(props: AddServiceModalProps) {
       errors.duration = "Duration must be a number (hours).";
     if (price && Number.isNaN(Number(price)))
       errors.price = "Price must be a number.";
-    // If you want to require duration, uncomment next line:
-    // if (!duration) errors.duration = "Please select a duration.";
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   }
 
-  // Helper to build payload expected by your API
-  function buildPayload(): {
-    name: string;
-    description?: string;
-    price: number;
-    duration_minutes: number;
-    status: "active" | "inactive";
-  } {
+  // API payload
+  function buildPayload() {
     return {
       name: title.trim(),
       description: description.trim() || undefined,
       price: price === "" ? 0 : Number(price),
       duration_minutes: duration === "" ? 0 : Math.round(Number(duration) * 60),
-      status: status ? "active" : "inactive",
+      status: status ? "active" : ("inactive" as "active" | "inactive"),
     };
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
     setLoading(true);
 
@@ -99,21 +100,13 @@ export function AddServiceModal(props: AddServiceModalProps) {
           })
         );
       } else {
-        await dispatch(
-          addService({
-            businessId,
-            serviceData: payload,
-          })
-        );
+        await dispatch(addService({ businessId, serviceData: payload }));
       }
 
-      // reset & close
       setLoading(false);
       onClose();
     } catch (err: unknown) {
       setLoading(false);
-
-      // try to read a message from common axios-like shapes
       if (
         typeof err === "object" &&
         err !== null &&
@@ -140,6 +133,7 @@ export function AddServiceModal(props: AddServiceModalProps) {
       aria-label={service ? "Edit service" : "Add new service"}
     >
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+        {/* Close button */}
         <button
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"
           onClick={onClose}
@@ -158,27 +152,86 @@ export function AddServiceModal(props: AddServiceModalProps) {
         )}
 
         <form onSubmit={handleSubmit} noValidate>
+          {/* Service Photo */}
           <div className="mb-4">
             <label className="block font-semibold mb-1 text-gray-900">
-              Service Title
+              Service Photo
             </label>
-            <input
-              className="w-full border rounded-lg px-4 py-2 text-gray-900"
-              placeholder="Enter your service title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              aria-invalid={!!validationErrors.title}
-              aria-describedby={
-                validationErrors.title ? "title-error" : undefined
+            <div
+              className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition relative"
+              style={{ minHeight: 140 }}
+              onClick={() =>
+                document.getElementById("service-photo-input")?.click()
               }
-            />
-            {validationErrors.title && (
-              <div id="title-error" className="text-sm text-red-600 mt-1">
-                {validationErrors.title}
-              </div>
-            )}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                  handleFileChange(e.dataTransfer.files[0]);
+                }
+              }}
+            >
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Preview"
+                  className="max-h-32 mb-2 rounded"
+                />
+              ) : (
+                <>
+                  <div className="flex flex-col items-center justify-center">
+                    <svg
+                      width="40"
+                      height="40"
+                      fill="none"
+                      stroke="gray"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 16V4m0 0l-4 4m4-4l4 4" />
+                      <rect x="3" y="16" width="18" height="5" rx="2" />
+                    </svg>
+                    <span className="mt-2 text-gray-600">
+                      Click to upload or drag and drop
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1">
+                      PNG, JPG, GIF up to 10MB
+                    </span>
+                  </div>
+                </>
+              )}
+              <input
+                id="service-photo-input"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleFileChange(e.target.files[0]);
+                  }
+                }}
+              />
+              {photoPreview && (
+                <button
+                  type="button"
+                  className="absolute top-2 right-2 text-xs text-gray-500 hover:text-red-600"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPhoto(null);
+                    setPhotoPreview("");
+                  }}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
 
+          {/* Price & Duration */}
           <div className="flex gap-4 mb-4">
             <div className="flex-1">
               <label className="block font-semibold mb-1 text-gray-900">
@@ -226,28 +279,7 @@ export function AddServiceModal(props: AddServiceModalProps) {
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block font-semibold mb-1 text-gray-900">
-              Service Photo
-            </label>
-            {/* Simple file input. Backend upload not implemented here. */}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                // File handling placeholder - currently not implemented
-                console.log("File selected:", e.target.files?.[0]);
-              }}
-            />
-            <div className="text-xs text-gray-500 mt-1">
-              PNG, JPG, GIF up to 10MB
-            </div>
-            {/* TODO: If you want to upload the image, either:
-                - upload to an /upload endpoint first and include returned URL in payload, or
-                - send multipart/form-data in createService/updateService.
-            */}
-          </div>
-
+          {/* Service Status */}
           <div className="mb-6">
             <label className="block font-semibold mb-1 text-gray-900">
               Service Status
@@ -266,6 +298,7 @@ export function AddServiceModal(props: AddServiceModalProps) {
             </div>
           </div>
 
+          {/* Actions */}
           <div className="flex justify-end gap-4">
             <button
               type="button"

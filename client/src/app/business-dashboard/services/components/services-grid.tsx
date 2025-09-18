@@ -8,6 +8,7 @@ import { MoreHorizontal } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { fetchServices } from "@/store/services/servicesSlice";
+import { AddServiceModal } from "./add-service-modal";
 
 export function ServicesGrid({ businessId }: { businessId: number }) {
   const dispatch = useAppDispatch();
@@ -17,9 +18,22 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
     error,
   } = useAppSelector((state) => state.services);
 
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [selectedService, setSelectedService] = React.useState(null);
+
   React.useEffect(() => {
     dispatch(fetchServices(businessId));
   }, [dispatch, businessId]);
+
+  function handleEdit(service: any) {
+    setSelectedService(service);
+    setModalOpen(true);
+  }
+
+  function handleCloseModal() {
+    setModalOpen(false);
+    setSelectedService(null);
+  }
 
   if (loading) {
     return (
@@ -31,15 +45,29 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
   }
   return (
     <>
+      <AddServiceModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        businessId={businessId}
+        service={selectedService}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {(Array.isArray(services) ? services : []).map((service) => (
           <Card key={service.id} className="overflow-hidden">
             <div className="aspect-video bg-gray-200">
-              <img
-                src="/placeholder.svg"
-                alt={service.name}
-                className="w-full h-full object-cover"
-              />
+              {service.photoUrl ? (
+                <img
+                  src={service.photoUrl}
+                  alt={service.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src="/placeholder.svg"
+                  alt={service.name}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
@@ -61,7 +89,10 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
                   ${service.price}
                 </span>
                 <div className="flex items-center gap-2">
-                  <Button className="bg-slate-900 hover:bg-slate-800 text-white">
+                  <Button
+                    className="bg-slate-900 hover:bg-slate-800 text-white"
+                    onClick={() => handleEdit(service)}
+                  >
                     Edit
                   </Button>
                   <Button variant="ghost" size="sm">
