@@ -35,6 +35,10 @@ Route::post('/resources/{resource}/services', [\App\Http\Controllers\ResourceCon
 		Route::get('/me', [AuthController::class, 'me']);
 		// Business Profile setup
 		Route::post('/business-profile', [\App\Http\Controllers\BusinessController::class, 'storeOrUpdate']);
+		
+		// Business management
+		Route::get('/businesses', [\App\Http\Controllers\BusinessController::class, 'index']);
+		Route::get('/businesses/{business}', [\App\Http\Controllers\BusinessController::class, 'show']);
 	});
 
 	// Business stats (no auth for testing)
