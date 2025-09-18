@@ -19,6 +19,7 @@ class CreateServiceRequest extends FormRequest
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
+            'photo_base64' => 'nullable|string',
         ];
     }
 }
