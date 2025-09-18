@@ -1,25 +1,18 @@
 import React from "react";
-import { createService, updateService } from "@/lib/servicesAPI";
-
-type Service = {
-  id?: number;
-  name?: string;
-  description?: string;
-  price?: number;
-  duration_minutes?: number;
-  status?: string;
-};
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { addService, editService } from "@/store/services/servicesSlice";
+import type { Service } from "@/store/services/servicesSlice";
 
 type AddServiceModalProps = {
   open: boolean;
   onClose: () => void;
   businessId: number;
-  onSuccess?: () => void;
   service?: Service | null;
 };
 
 export function AddServiceModal(props: AddServiceModalProps) {
-  const { open, onClose, businessId, onSuccess, service = null } = props;
+  const { open, onClose, businessId, service = null } = props;
+  const dispatch = useAppDispatch();
 
   // form state (strings for controlled inputs)
   const [title, setTitle] = React.useState(service?.name || "");
@@ -34,7 +27,6 @@ export function AddServiceModal(props: AddServiceModalProps) {
     service?.duration_minutes ? String(service.duration_minutes / 60) : ""
   );
   const [status, setStatus] = React.useState(service?.status === "active");
-  const [photoFile, setPhotoFile] = React.useState<File | null>(null); // local file selected
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [validationErrors, setValidationErrors] = React.useState<
@@ -50,7 +42,6 @@ export function AddServiceModal(props: AddServiceModalProps) {
       service?.duration_minutes ? String(service.duration_minutes / 60) : ""
     );
     setStatus(service?.status === "active");
-    setPhotoFile(null);
     setError(null);
     setValidationErrors({});
   }, [service, open]);
@@ -99,18 +90,22 @@ export function AddServiceModal(props: AddServiceModalProps) {
     try {
       const payload = buildPayload();
 
-      // If you plan to support image upload, there are two common approaches:
-      // 1) upload file separately (e.g., /upload -> returns URL) then include URL in payload
-      // 2) send a multipart/form-data request with the file + fields
-      // This code keeps it simple and calls the JSON endpoints. Implement file upload on the backend if needed.
       if (service && service.id) {
-        await updateService(businessId, service.id, payload);
+        await dispatch(
+          editService({
+            businessId,
+            serviceId: service.id,
+            serviceData: payload,
+          })
+        );
       } else {
-        await createService(businessId, payload);
+        await dispatch(
+          addService({
+            businessId,
+            serviceData: payload,
+          })
+        );
       }
-
-      // optional callback to parent
-      if (onSuccess) onSuccess();
 
       // reset & close
       setLoading(false);
@@ -239,7 +234,10 @@ export function AddServiceModal(props: AddServiceModalProps) {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+              onChange={(e) => {
+                // File handling placeholder - currently not implemented
+                console.log("File selected:", e.target.files?.[0]);
+              }}
             />
             <div className="text-xs text-gray-500 mt-1">
               PNG, JPG, GIF up to 10MB
