@@ -1,36 +1,43 @@
-import { BusinessCard } from "./business-card"
+"use client";
+import { useEffect, useState } from "react";
+import { fetchUserBusinesses } from "@/lib/businessAPI";
+import { BusinessCard } from "./business-card";
 
-const mockBusinesses = [
-  {
-    id: 1,
-    name: "Tech Solutions Inc.",
-    category: "Software Development",
-    status: "Active" as const,
-  },
-  {
-    id: 2,
-    name: "Creative Studio",
-    category: "Design & Marketing",
-    status: "Active" as const,
-  },
-  {
-    id: 3,
-    name: "Consulting Pro",
-    category: "Business Consulting",
-    status: "Pending" as const,
-  },
-]
+type Business = {
+  id: number;
+  name: string;
+  industry: string;
+  status: string;
+};
 
 export function MyBusinesses() {
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUserBusinesses().then((data: Business[]) => {
+      setBusinesses(data);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">My Businesses</h3>
-
+      <h3 className="text-xl font-semibold text-gray-900 mb-6">
+        My Businesses
+      </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockBusinesses.map((business) => (
-          <BusinessCard key={business.id} name={business.name} category={business.category} status={business.status} />
+        {businesses.map((business) => (
+          <BusinessCard
+            key={business.id}
+            name={business.name}
+            category={business.industry}
+            status={business.status}
+          />
         ))}
       </div>
     </div>
-  )
+  );
 }
