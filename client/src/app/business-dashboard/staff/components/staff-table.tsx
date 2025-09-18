@@ -11,7 +11,28 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchServices } from "@/lib/servicesAPI";
+
+interface Service {
+  id: string | number;
+  name: string;
+}
+
+function extractServiceList(data: unknown): Service[] {
+  if (Array.isArray(data)) {
+    return data as Service[];
+  }
+  if (data && typeof data === "object") {
+    if (Array.isArray((data as { data?: unknown }).data)) {
+      return (data as { data: Service[] }).data;
+    }
+    if (Array.isArray((data as { services?: unknown }).services)) {
+      return (data as { services: Service[] }).services;
+    }
+  }
+  return [];
+}
 
 interface StaffMember {
   id: string;
@@ -24,13 +45,7 @@ interface StaffMember {
   serviceId?: string;
 }
 
-// Mock services for dropdown
-const mockServices = [
-  { id: "1", name: "Haircut" },
-  { id: "2", name: "Massage" },
-  { id: "3", name: "Consultation" },
-  { id: "4", name: "Training" },
-];
+// Fetch services from backend
 
 // Mock staff data
 const initialStaffData: StaffMember[] = [
@@ -74,6 +89,23 @@ const initialStaffData: StaffMember[] = [
 
 export function StaffTable() {
   const [staffData, setStaffData] = useState(initialStaffData);
+  const [services, setServices] = useState<{ id: string; name: string }[]>([]);
+  const businessId = 3; // TODO: Replace with actual businessId from context/props
+
+  useEffect(() => {
+    async function loadServices() {
+      try {
+        const data = await fetchServices(businessId);
+        const serviceList = extractServiceList(data);
+        setServices(
+          serviceList.map((s) => ({ id: s.id.toString(), name: s.name }))
+        );
+      } catch {
+        setServices([]);
+      }
+    }
+    loadServices();
+  }, []);
 
   // Handle service selection for a staff member
   const handleServiceChange = (id: string, serviceId: string) => {
@@ -137,7 +169,7 @@ export function StaffTable() {
                       <SelectValue placeholder="Select service" />
                     </SelectTrigger>
                     <SelectContent>
-                      {mockServices.map((service) => (
+                      {services.map((service) => (
                         <SelectItem key={service.id} value={service.id}>
                           {service.name}
                         </SelectItem>
