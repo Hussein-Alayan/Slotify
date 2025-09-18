@@ -43,6 +43,7 @@ export function MyBusinesses() {
           return (
             <BusinessCard
               key={business.id}
+              id={business.id}
               name={business.name}
               category={business.industry}
               status={status}
