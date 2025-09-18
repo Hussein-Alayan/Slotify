@@ -12,8 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import React, { useState, useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
 import { fetchServices } from "@/store/services/servicesSlice";
+import { useBusinessContext } from "@/contexts/BusinessContext";
 
 interface Service {
   id: string | number;
@@ -74,7 +75,7 @@ const initialStaffData: StaffMember[] = [
 export default function StaffTable() {
   const [staffData, setStaffData] = useState(initialStaffData);
   const dispatch = useAppDispatch();
-  const businessId = 3; // TODO: Replace with actual businessId from context/props
+  const { businessId } = useBusinessContext();
 
   const services = useAppSelector((state) => state.services.items);
   const error = useAppSelector((state) => state.services.error);

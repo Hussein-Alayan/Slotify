@@ -12,22 +12,43 @@ import {
   Settings,
   Menu,
 } from "lucide-react";
+import { useBusinessContext } from "@/contexts/BusinessContext";
 
-const navigation = [
-  {
-    name: "Dashboard",
-    href: "/business-dashboard/dashboard",
-    icon: LayoutDashboard,
-  },
-  { name: "Services", href: "/business-dashboard/services", icon: Briefcase },
-  { name: "Staff", href: "/business-dashboard/staff", icon: UserCheck },
-  { name: "Clients", href: "/business-dashboard/clients", icon: Users },
-  { name: "Settings", href: "/business-dashboard/settings", icon: Settings },
-];
+function getNavigationLinks(businessId: number) {
+  return [
+    {
+      name: "Dashboard",
+      href: `/business-dashboard/${businessId}/dashboard`,
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Services",
+      href: `/business-dashboard/${businessId}/services`,
+      icon: Briefcase,
+    },
+    {
+      name: "Staff",
+      href: `/business-dashboard/${businessId}/staff`,
+      icon: UserCheck,
+    },
+    {
+      name: "Clients",
+      href: `/business-dashboard/${businessId}/clients`,
+      icon: Users,
+    },
+    {
+      name: "Settings",
+      href: `/business-dashboard/${businessId}/settings`,
+      icon: Settings,
+    },
+  ];
+}
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { businessId } = useBusinessContext();
+  const navigation = getNavigationLinks(businessId);
 
   return (
     <div

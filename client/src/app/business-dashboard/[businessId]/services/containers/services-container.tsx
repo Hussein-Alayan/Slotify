@@ -6,6 +6,7 @@ import AddServiceModal from "../components/add-service-modal";
 import { ServicesStats } from "../components/services-stats";
 import { ServicesFilters } from "../components/services-filters";
 import { ServicesGrid } from "../components/services-grid";
+import { useBusinessContext } from "@/contexts/BusinessContext";
 
 export function ServicesContainer({
   totalServices,
@@ -15,8 +16,7 @@ export function ServicesContainer({
   activeServices: number;
 }) {
   const [modalOpen, setModalOpen] = React.useState(false);
-  // TODO: Replace with actual businessId from context or props
-  const businessId = 3;
+  const { businessId } = useBusinessContext();
 
   return (
     <div className="p-6">
