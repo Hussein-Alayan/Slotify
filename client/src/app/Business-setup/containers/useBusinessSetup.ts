@@ -103,7 +103,6 @@ export function useBusinessSetup() {
       name: "",
       role: "",
       specialSkills: "",
-      maxAppointments: 10,
       availability: { ...defaultWorkingHours },
     },
   ]);
@@ -165,7 +164,6 @@ export function useBusinessSetup() {
         name: "",
         role: "",
         specialSkills: "",
-        maxAppointments: 10,
         availability: { ...defaultWorkingHours },
       },
     ]);
