@@ -5,50 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal } from "lucide-react";
-import { fetchServices } from "@/lib/servicesAPI";
-
-type Service = {
-  id: number;
-  name: string;
-  description?: string;
-  price: number;
-  status: string;
-  image?: string;
-};
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { fetchServices } from "@/store/services/servicesSlice";
 
 export function ServicesGrid({ businessId }: { businessId: number }) {
-  const [services, setServices] = React.useState<Service[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const {
+    items: services,
+    loading,
+    error,
+  } = useAppSelector((state) => state.services);
 
   React.useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetchServices(businessId)
-      .then((data: any) => {
-        // If backend returns { success: true, data: [...] }, extract data.data
-        if (Array.isArray(data?.data)) {
-          setServices(data.data);
-        } else if (Array.isArray(data)) {
-          setServices(data);
-        } else if (Array.isArray(data?.services)) {
-          setServices(data.services);
-        } else {
-          setServices([]);
-        }
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        setLoading(false);
-        if (typeof err === "object" && err !== null && "message" in err) {
-          setError(
-            (err as { message?: string }).message || "Failed to fetch services."
-          );
-        } else {
-          setError("Failed to fetch services.");
-        }
-      });
-  }, [businessId]);
+    dispatch(fetchServices(businessId));
+  }, [dispatch, businessId]);
 
   if (loading) {
     return (
@@ -61,11 +32,11 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        {services.map((service) => (
+        {(Array.isArray(services) ? services : []).map((service) => (
           <Card key={service.id} className="overflow-hidden">
             <div className="aspect-video bg-gray-200">
               <img
-                src={service.image || "/placeholder.svg"}
+                src="/placeholder.svg"
                 alt={service.name}
                 className="w-full h-full object-cover"
               />
