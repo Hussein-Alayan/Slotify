@@ -2,8 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function LandingHeader() {
+  const router = useRouter();
   return (
     <header className="bg-white border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,6 +27,7 @@ export function LandingHeader() {
             <Button
               variant="ghost"
               className="text-muted-foreground hover:text-foreground"
+              onClick={() => router.push("/auth/signin")}
             >
               Sign In
             </Button>
