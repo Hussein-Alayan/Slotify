@@ -1,3 +1,4 @@
+Route::post('/resources/{resource}/services', [\App\Http\Controllers\ResourceController::class, 'assignServices']);
 <?php
 
 use Illuminate\Support\Facades\Route;
