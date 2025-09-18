@@ -1,4 +1,17 @@
 "use client";
+interface LoginResponse {
+  data: {
+    user: {
+      id: number;
+      name: string;
+      email: string;
+      created_at: string;
+      updated_at: string;
+    };
+    token: string;
+  };
+  success: boolean;
+}
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import api, { csrf } from "@/lib/api";
@@ -26,9 +39,16 @@ const SigninContainer: React.FC = () => {
     setLoading(true);
     try {
       await csrf();
-      await api.post("/v1/login", { email, password });
+      const response = await api.post<LoginResponse>("/v1/login", {
+        email,
+        password,
+      });
       setLoading(false);
-      router.push("/Business-setup");
+      // Save user name to localStorage if available in response
+      if (response.data.data.user.name) {
+        localStorage.setItem("user_name", response.data.data.user.name);
+      }
+      router.push("/business-hub");
     } catch (err: unknown) {
       setLoading(false);
       setError(getErrorMessage(err, "Login failed."));
