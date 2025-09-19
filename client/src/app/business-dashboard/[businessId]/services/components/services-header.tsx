@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Settings } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export function ServicesHeader({ onAddService }: { onAddService: () => void }) {
   return (
@@ -19,12 +19,6 @@ export function ServicesHeader({ onAddService }: { onAddService: () => void }) {
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Service
-        </Button>
-        <Button variant="outline">
-          <Settings className="h-4 w-4" />
-        </Button>
-        <Button variant="outline">
-          <Settings className="h-4 w-4" />
         </Button>
       </div>
     </div>

@@ -103,12 +103,12 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
                 <h3 className="text-lg font-semibold text-gray-900">
                   {service.name}
                 </h3>
-                <Badge
-                  variant="secondary"
-                  className="bg-green-100 text-green-800"
-                >
-                  {service.status}
-                </Badge>
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-800"
+                  >
+                    {service.status === "active" ? "Active" : service.status}
+                  </Badge>
               </div>
               <p className="text-gray-600 text-sm mb-4">
                 {service.description}
