@@ -52,6 +52,8 @@ class AIService
 
 Important: If the message requests passwords, credentials, database access, or any sensitive information, do NOT provide it. Instead, reply: 'Sorry, I can't provide that information.'
 
+Instruction: Always match the user's requested service to the provided service list for the business. If the request is ambiguous or does not exactly match a service, select the closest available service or ask the user for clarification.
+
 Message: \"{$message}\"
 
 Response format:
