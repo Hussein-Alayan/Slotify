@@ -18,7 +18,8 @@ class BusinessService
     {
         $business = null;
         DB::transaction(function () use ($user, $validated, &$business) {
-            $business = $user->businesses()->first() ?? new Business();
+            // Always create a new business instead of updating existing one
+            $business = new Business();
             $business->fill($validated);
             $business->user_id = $user->id;
             $business->save();

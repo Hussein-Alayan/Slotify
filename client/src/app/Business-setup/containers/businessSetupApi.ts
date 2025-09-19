@@ -15,6 +15,17 @@ function mapBusinessSetupToPayload({
   services: Service[];
   staff: StaffMember[];
 }) {
+  // Transform working hours from object format to array format for backend
+  const transformedWorkingHours: { [key: string]: string[] } = {};
+  Object.keys(workingHours).forEach(day => {
+    const dayData = workingHours[day];
+    if (dayData.closed) {
+      transformedWorkingHours[day] = [];
+    } else {
+      transformedWorkingHours[day] = [dayData.start, dayData.end];
+    }
+  });
+
   return {
     name: businessData.businessName,
     industry: businessData.industry,
@@ -22,20 +33,24 @@ function mapBusinessSetupToPayload({
     contact_phone: businessData.contactPhone,
     address: businessData.businessAddress,
     brand_voice: businessData.brandVoice,
-    working_hours: workingHours,
-    services: services.map(s => ({
-      name: s.name,
-      duration_minutes: s.duration,
-      price: s.price,
-      description: s.description,
-    })),
-    resources: staff.map(st => ({
-      type: 'staff',
-      name: st.name,
-      role: st.role,
-      specialSkills: st.specialSkills,
-      availability: st.availability,
-    })),
+    working_hours: transformedWorkingHours,
+    services: services
+      .filter(s => s.name && s.name.trim() && s.duration && s.price)
+      .map(s => ({
+        name: s.name,
+        duration_minutes: s.duration,
+        price: s.price,
+        description: s.description,
+      })),
+    resources: staff
+      .filter(st => st.name && st.name.trim())
+      .map(st => ({
+        type: 'staff',
+        name: st.name,
+        role: st.role,
+        specialSkills: st.specialSkills,
+        availability: st.availability,
+      })),
   };
 }
 
