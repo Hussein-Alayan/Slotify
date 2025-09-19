@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Edit, UserX } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import { useBusinessContext } from "@/contexts/BusinessContext";
-import { getStaff, Staff } from "@/lib/staffAPI";
+import { getStaff, deleteStaff, Staff } from "@/lib/staffAPI";
 import { AddStaffModal } from "./add-staff-modal";
 
 // Delete Confirmation Modal Component
@@ -118,13 +118,12 @@ export default function StaffTable() {
 
     setIsDeleting(true);
     try {
-      // TODO: Add delete API call here
-      console.log("Deleting staff:", deletingStaff.name);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Temporary delay
+      await deleteStaff(businessId, deletingStaff.id);
       handleDeleteModalClose();
       fetchStaffData(); // Refresh the staff list
     } catch (error) {
       console.error("Failed to delete staff:", error);
+      setError("Failed to delete staff. Please try again.");
     } finally {
       setIsDeleting(false);
     }

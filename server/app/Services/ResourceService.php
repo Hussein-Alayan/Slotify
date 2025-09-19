@@ -67,4 +67,21 @@ class ResourceService
         
         return $resource;
     }
+
+    public function deleteStaff($resourceId)
+    {
+        $resource = Resource::findOrFail($resourceId);
+        
+        if ($resource->type !== 'staff') {
+            throw new \Exception('Only staff resources can be deleted via this method.');
+        }
+
+        // Detach all services first (cascade cleanup)
+        $resource->services()->detach();
+        
+        // Delete the staff resource
+        $resource->delete();
+        
+        return ['success' => true, 'message' => 'Staff member deleted successfully'];
+    }
 }

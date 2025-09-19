@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\ResourceService;
 use App\Traits\ApiResponseTrait;
+use App\Models\Business;
+use App\Models\Resource;
 
 class ResourceController extends Controller{
 
@@ -57,6 +59,20 @@ class ResourceController extends Controller{
             return $this->successResponse($resource);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
+
+    public function destroy(Business $business, Resource $resource)
+    {
+        try {
+            if ($resource->business_id !== $business->id) {
+                return response()->json(['error' => 'Resource does not belong to this business'], 403);
+            }
+
+            $result = $this->resourceService->deleteStaff($resource->id);
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 }

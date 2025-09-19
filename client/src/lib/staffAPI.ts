@@ -108,3 +108,13 @@ export async function createStaff(
 
   return response.data.data;
 }
+
+export async function deleteStaff(
+  businessId: number,
+  staffId: number
+): Promise<{ success: boolean; message: string }> {
+  const response = await api.delete<
+    ApiResponse<{ success: boolean; message: string }>
+  >(`/v1/businesses/${businessId}/resources/${staffId}`);
+  return response.data.data;
+}
