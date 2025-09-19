@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 use App\Services\ResourceService;
 use App\Traits\ApiResponseTrait;
 
-class ResourceController extends Controller
-{
-    use ApiResponseTrait;
+class ResourceController extends Controller{
 
+
+    use ApiResponseTrait;
     protected $resourceService;
 
     public function __construct(ResourceService $resourceService)
@@ -22,6 +22,15 @@ class ResourceController extends Controller
         try {
             $result = $this->resourceService->assignServices($resourceId, $request->input('service_ids', []));
             return $this->successResponse($result);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
+    public function store(\App\Http\Requests\CreateResourceRequest $request)
+    {
+        try {
+            $resource = $this->resourceService->createStaff($request->validated());
+            return $this->successResponse($resource, 201);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);
         }
