@@ -60,7 +60,10 @@ export function Sidebar() {
       <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           {!isCollapsed && (
-            <span className="text-xl font-semibold">Business</span>
+            <span className="text-xl font-semibold">
+              {/* TODO: Replace with real business name from context/API */}
+              Business Name
+            </span>
           )}
         </div>
         <button
