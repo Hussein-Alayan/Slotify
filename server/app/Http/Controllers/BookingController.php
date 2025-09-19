@@ -134,4 +134,15 @@ class BookingController extends Controller
         $bookings = $this->bookingService->getClientBookings($clientId);
         return $this->successResponse(BookingResource::collection($bookings));
     }
+
+    /**
+     * Get bookings for a business by date
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
+    public function getBusinessBookingsByDate($businessId)
+    {
+        $date = request()->query('date');
+        $bookings = $this->bookingService->getBusinessBookingsByDate($businessId, $date);
+        return $this->successResponse(BookingResource::collection($bookings));
+    }
 }
