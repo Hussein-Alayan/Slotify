@@ -4,7 +4,9 @@ import { DashboardHeader } from "../components/dashboard-header";
 import { StatsGrid } from "../components/stats-grid";
 import { ScheduleCard } from "../components/schedule-card";
 import { ActivityCard } from "../components/activity-card";
-import { QuickActions } from "../components/quick-actions";
+import AddClientModal from "../../clients/components/add-client-modal";
+import { useState } from "react";
+import { useParams } from "next/navigation";
 
 export function DashboardContainer({
   totalClients,
@@ -13,9 +15,12 @@ export function DashboardContainer({
   totalClients: number;
   totalBookings: number;
 }) {
+  const params = useParams();
+  const businessId = Number(params.businessId);
+  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   return (
     <div className="p-6 space-y-6">
-      <DashboardHeader />
+      <DashboardHeader onAddClient={() => setIsAddClientModalOpen(true)} />
       <StatsGrid totalClients={totalClients} totalBookings={totalBookings} />
 
       {/* Main Content Grid */}
@@ -23,8 +28,12 @@ export function DashboardContainer({
         <ScheduleCard />
         <ActivityCard />
       </div>
-
-      <QuickActions />
+    
+      <AddClientModal
+        open={isAddClientModalOpen}
+        onClose={() => setIsAddClientModalOpen(false)}
+        businessId={businessId}
+      />
     </div>
   );
 }

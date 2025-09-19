@@ -3,12 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Plus, Download } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 import { ClientFilters } from "../components/client-filters";
 import { ClientList } from "../components/client-list";
 import { ClientStats } from "../components/client-stats";
 import { ClientActivity } from "../components/client-activity";
+import AddClientModal from "../components/add-client-modal";
 
 export function ClientContainer() {
+  const params = useParams();
+  const businessId = Number(params.businessId);
+  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   return (
     <div className="p-6">
       {/* Header */}
@@ -27,7 +33,10 @@ export function ClientContainer() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => setIsAddClientModalOpen(true)}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Client
           </Button>
@@ -53,6 +62,12 @@ export function ClientContainer() {
           </div>
         </div>
       </div>
+
+      <AddClientModal
+        open={isAddClientModalOpen}
+        onClose={() => setIsAddClientModalOpen(false)}
+        businessId={businessId}
+      />
     </div>
   );
 }
