@@ -9,12 +9,67 @@ import { useBusinessContext } from "@/contexts/BusinessContext";
 import { getStaff, Staff } from "@/lib/staffAPI";
 import { AddStaffModal } from "./add-staff-modal";
 
+// Delete Confirmation Modal Component
+interface DeleteConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  staffName: string;
+  isDeleting: boolean;
+}
+
+function DeleteConfirmationModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  staffName,
+  isDeleting,
+}: DeleteConfirmationModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/10">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Delete Staff Member
+        </h3>
+        <p className="text-gray-600 mb-6">
+          Are you sure you want to delete{" "}
+          <span className="font-medium">{staffName}</span>? This action cannot
+          be undone.
+        </p>
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            className="px-4 py-2 rounded-lg border font-medium text-gray-700 bg-white hover:bg-gray-50"
+            onClick={onClose}
+            disabled={isDeleting}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="px-4 py-2 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StaffTable() {
   const [staffData, setStaffData] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deletingStaff, setDeletingStaff] = useState<Staff | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { businessId } = useBusinessContext();
 
   const fetchStaffData = useCallback(async () => {
@@ -46,6 +101,33 @@ export default function StaffTable() {
 
   const handleStaffUpdated = () => {
     fetchStaffData(); // Refresh the staff list
+  };
+
+  const handleDeleteClick = (staff: Staff) => {
+    setDeletingStaff(staff);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteModalClose = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingStaff(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingStaff) return;
+
+    setIsDeleting(true);
+    try {
+      // TODO: Add delete API call here
+      console.log("Deleting staff:", deletingStaff.name);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Temporary delay
+      handleDeleteModalClose();
+      fetchStaffData(); // Refresh the staff list
+    } catch (error) {
+      console.error("Failed to delete staff:", error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -200,6 +282,7 @@ export default function StaffTable() {
                       variant="ghost"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
+                      onClick={() => handleDeleteClick(staff)}
                     >
                       <UserX className="h-4 w-4" />
                     </Button>
@@ -218,6 +301,15 @@ export default function StaffTable() {
         businessId={businessId}
         staff={editingStaff || undefined}
         onStaffUpdated={handleStaffUpdated}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteModalClose}
+        onConfirm={handleDeleteConfirm}
+        staffName={deletingStaff?.name || ""}
+        isDeleting={isDeleting}
       />
     </Card>
   );
