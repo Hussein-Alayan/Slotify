@@ -1,4 +1,6 @@
+
 import api from './api';
+
 
 export interface Appointment {
   id: number;
@@ -43,6 +45,14 @@ export async function fetchAppointments(
   const response = await api.get<ApiResponse<Appointment[]>>(
     `/v1/businesses/${businessId}/bookings/by-date`,
     { params }
+  );
+  return response.data.data;
+}
+
+// Fetch all appointments for a business (no date filtering)
+export async function fetchAllAppointments(businessId: number): Promise<Appointment[]> {
+  const response = await api.get<ApiResponse<Appointment[]>>(
+    `/v1/businesses/${businessId}/bookings`
   );
   return response.data.data;
 }

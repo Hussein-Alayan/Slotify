@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchAppointments, Appointment } from "@/lib/appointmentsAPI";
+import {
+  fetchAppointments,
+  fetchAllAppointments,
+  Appointment,
+} from "@/lib/appointmentsAPI";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar, Filter } from "lucide-react";
-
 
 export function AppointmentsTable({ businessId }: { businessId: number }) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -28,20 +31,32 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
   // Only send date param for 'today', otherwise fetch all
   useEffect(() => {
     setLoading(true);
-    let params = {};
-    if (timeFilter === "today") {
-      const today = new Date().toISOString().slice(0, 10);
-      params = { date: today };
+    if (timeFilter === "all") {
+      fetchAllAppointments(businessId)
+        .then((data) => {
+          setAppointments(data);
+          setLoading(false);
+        })
+        .catch(() => {
+          setError("Failed to fetch appointments");
+          setLoading(false);
+        });
+    } else {
+      let params = {};
+      if (timeFilter === "today") {
+        const today = new Date().toISOString().slice(0, 10);
+        params = { date: today };
+      }
+      fetchAppointments(businessId, params)
+        .then((data) => {
+          setAppointments(data);
+          setLoading(false);
+        })
+        .catch(() => {
+          setError("Failed to fetch appointments");
+          setLoading(false);
+        });
     }
-    fetchAppointments(businessId, params)
-      .then((data) => {
-        setAppointments(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Failed to fetch appointments");
-        setLoading(false);
-      });
   }, [businessId, timeFilter]);
 
   // Get unique services and clients for filter options
@@ -116,7 +131,7 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
     <Card className="col-span-full">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 mb-4">
             <Calendar className="h-5 w-5" />
             Appointments
           </CardTitle>
