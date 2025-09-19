@@ -3,8 +3,8 @@ import api from "./api";
 // Type definitions
 type TotalServicesResponse = { success: boolean; data: { total_services: number } };
 type ActiveServicesResponse = { success: boolean; data: { active_services: number } };
-type TotalBookingsResponse = { total_bookings: number };
-type TotalClientsResponse = { total_clients: number };
+type TotalBookingsResponse = { success: boolean; data: { total_bookings: number } };
+type TotalClientsResponse = { success: boolean; data: { total_clients: number } };
 
 // Fetch total services for a business
 export async function getTotalServices(businessId: string | number) {
@@ -21,13 +21,13 @@ export async function getActiveServices(businessId: string | number) {
 // Fetch total bookings for a business
 export async function getTotalBookings(businessId: string | number) {
 	const res = await api.get<TotalBookingsResponse>(`/v1/businesses/${businessId}/total-bookings`);
-	return res.data.total_bookings;
+	return res.data.data.total_bookings;
 }
 
 // Fetch total clients for a business
 export async function getTotalClients(businessId: string | number) {
 	const res = await api.get<TotalClientsResponse>(`/v1/businesses/${businessId}/total-clients`);
-	return res.data.total_clients;
+	return res.data.data.total_clients;
 }
 
 // Unified function to get all business stats
