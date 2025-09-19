@@ -157,6 +157,16 @@ class BookingService
             ->get();
     }
 
+    // Get bookings for a business by date
+    public function getBusinessBookingsByDate(int $businessId, $date)
+    {
+        return Booking::where('business_id', $businessId)
+            ->whereDate('start_time', $date)
+            ->with(['client', 'service', 'resource'])
+            ->orderBy('start_time')
+            ->get();
+    }
+
     // Private method to validate availability
     private function validateAvailability(
         int $businessId,
