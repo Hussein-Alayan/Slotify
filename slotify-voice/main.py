@@ -22,6 +22,8 @@ from services.context import (
     update_dynamic_context
 )
 from models.schemas import StartCallRequest
+from utils.rate_limiter import booking_rate_limiter
+from utils.error_handler import safe_async_call, handle_websocket_error, validate_booking_data
 
 LARAVEL_API = "http://localhost:8000/api/v1/voice"
 
@@ -82,10 +84,27 @@ def end_call(call_id: str):
 # -----------------------
 @app.websocket("/ws/call/{session_id}")
 async def websocket_call(websocket: WebSocket, session_id: str):
-    await websocket.accept()
-    stt_session = STTSession()
-    stt_session.start()
-    greeting_sent = False
+    try:
+        print(f"WebSocket connection attempt for session: {session_id}")
+        await websocket.accept()
+        print(f"WebSocket accepted for session: {session_id}")
+        
+        stt_session = STTSession()
+        print(f"STTSession created for session: {session_id}")
+        
+        stt_session.start()
+        print(f"STTSession started for session: {session_id}")
+        
+        greeting_sent = False
+    except Exception as e:
+        print(f"Error during WebSocket initialization for session {session_id}: {e}")
+        import traceback
+        traceback.print_exc()
+        try:
+            await websocket.close()
+        except:
+            pass
+        return
 
     async def handle_ai_and_tts(session_id, static_context):
         try:
@@ -157,9 +176,13 @@ async def websocket_call(websocket: WebSocket, session_id: str):
             print("AI finished responding")
         except Exception as e:
             print(f"AI task error: {e}")
+            # Initialize variables if they don't exist
+            ai_buffer = locals().get('ai_buffer', '')
+            dynamic_context = locals().get('dynamic_context') or get_dynamic_context(session_id) or {}
+            
             # Try to send any accumulated response even if there was an error
             try:
-                if 'ai_buffer' in locals() and ai_buffer.strip():
+                if ai_buffer and ai_buffer.strip():
                     tts_text = ai_buffer.strip()
                     print(f"Sending complete response to TTS after error: {repr(tts_text)}")
                     tts_audio = synthesize_speech(tts_text)
@@ -167,10 +190,9 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                     await websocket.send_text(ai_buffer)
                     
                     # Save to history
-                    if 'dynamic_context' in locals():
-                        history = dynamic_context.get("history", [])
-                        history.append({"role": "assistant", "content": ai_buffer})
-                        update_dynamic_context(session_id, "history", history)
+                    history = dynamic_context.get("history", [])
+                    history.append({"role": "assistant", "content": ai_buffer})
+                    update_dynamic_context(session_id, "history", history)
             except Exception as inner_e:
                 print(f"Error sending response after main error: {inner_e}")
                     
@@ -178,67 +200,150 @@ async def websocket_call(websocket: WebSocket, session_id: str):
 
     try:
         while True:
-            chunk = await websocket.receive_bytes()
-            stt_session.chunk_queue.put(chunk)
+            try:
+                chunk = await websocket.receive_bytes()
+                stt_session.chunk_queue.put(chunk)
 
-            static_context = get_static_context(session_id) or {}
-            dynamic_context = get_dynamic_context(session_id) or {}
+                static_context = get_static_context(session_id) or {}
+                dynamic_context = get_dynamic_context(session_id) or {}
 
-            # Send greeting once
-            if not greeting_sent:
-                business_name = static_context.get("name", "this business")
-                greeting_text = f"Welcome to {business_name}, how can I help you?"
-                tts_audio = synthesize_speech(greeting_text)
-                await websocket.send_bytes(tts_audio)
-                greeting_sent = True
+                # Send greeting once
+                if not greeting_sent:
+                    business_name = static_context.get("name", "this business")
+                    greeting_text = f"Welcome to {business_name}, how can I help you?"
+                    try:
+                        tts_audio = synthesize_speech(greeting_text)
+                        await websocket.send_bytes(tts_audio)
+                        greeting_sent = True
+                    except Exception as e:
+                        print(f"Error in greeting TTS for session {session_id}: {e}")
+                        greeting_sent = True  # Skip greeting on error
 
-            while not stt_session.transcript_queue.empty():
-                transcript, is_final = stt_session.transcript_queue.get()
-                transcript_clean = transcript.strip()
-                if not transcript_clean or len(transcript_clean) < 2:
-                    continue
-                await websocket.send_text(transcript_clean)
+                while not stt_session.transcript_queue.empty():
+                    transcript, is_final = stt_session.transcript_queue.get()
+                    transcript_clean = transcript.strip()
+                    if not transcript_clean or len(transcript_clean) < 2:
+                        continue
+                    await websocket.send_text(transcript_clean)
 
-                if is_final:
+                    if is_final:
+                        try:
+                            # LLM intent detection and entity extraction
+                            from services.intent import detect_intent_llm
+                            from services.booking import create_booking, get_service_mapping
+                            
+                            print(f"[DEBUG] Transcript received: {transcript_clean}")
+                            business_id = static_context.get("id") or static_context.get("business_id")
+                            
+                            # Safe service mapping with timeout
+                            service_mapping = {}
+                            if business_id:
+                                try:
+                                    service_mapping = get_service_mapping(business_id)
+                                except Exception as e:
+                                    print(f"[ERROR] Service mapping failed: {e}")
+                            
+                            result = await detect_intent_llm(transcript_clean, service_mapping=service_mapping)
+                            print(f"[DEBUG] LLM intent result: {result}")
+                            intent = result.get("intent")
+                            entities = result.get("entities", {})
 
-                    # LLM intent detection and entity extraction
-                    from services.intent import detect_intent_llm
-                    from services.booking import create_booking, get_service_mapping
-                    print(f"[DEBUG] Transcript received: {transcript_clean}")
-                    business_id = static_context.get("id") or static_context.get("business_id")
-                    service_mapping = get_service_mapping(business_id) if business_id else {}
-                    result = await detect_intent_llm(transcript_clean, service_mapping=service_mapping)
-                    print(f"[DEBUG] LLM intent result: {result}")
-                    intent = result.get("intent")
-                    entities = result.get("entities", {})
+                            # Handle booking intent with rate limiting
+                            booking_response = None
+                            if intent == "booking":
+                                # Check rate limiting
+                                can_book, reason = booking_rate_limiter.can_attempt_booking(session_id)
+                                if not can_book:
+                                    print(f"[RATE_LIMIT] Booking blocked for session {session_id}: {reason}")
+                                    await websocket.send_text(f"Sorry, {reason}")
+                                else:
+                                    # Validate booking data
+                                    is_valid, error_msg = validate_booking_data(
+                                        business_id, 
+                                        entities.get('date'), 
+                                        entities.get('time'), 
+                                        entities.get('service_id')
+                                    )
+                                    
+                                    if not is_valid:
+                                        print(f"[VALIDATION] Booking validation failed: {error_msg}")
+                                        await websocket.send_text(f"I need more information: {error_msg}")
+                                        booking_rate_limiter.record_attempt(session_id, success=False)
+                                    else:
+                                        # Attempt booking with error handling
+                                        try:
+                                            client_info = dynamic_context.get("client_info") if dynamic_context else None
+                                            print(f"[DEBUG] Calling create_booking with: business_id={business_id}, date={entities.get('date')}, time={entities.get('time')}, service_id={entities.get('service_id')}, client_info={client_info}")
+                                            
+                                            booking_response = create_booking(
+                                                business_id,
+                                                entities.get("date"),
+                                                entities.get("time"),
+                                                entities.get("service_id"),
+                                                client_info
+                                            )
+                                            
+                                            print(f"[DEBUG] Booking API response: {booking_response}")
+                                            update_dynamic_context(session_id, "last_booking_result", booking_response)
+                                            booking_rate_limiter.record_attempt(session_id, success=True)
+                                            
+                                        except Exception as booking_error:
+                                            print(f"[ERROR] Booking failed: {booking_error}")
+                                            booking_rate_limiter.record_attempt(session_id, success=False)
+                                            await websocket.send_text("Sorry, I couldn't complete your booking. Please try again later.")
 
-                    # Example: handle booking intent
-                    booking_response = None
-                    if intent == "booking":
-                        client_info = dynamic_context.get("client_info") if dynamic_context else None
-                        print(f"[DEBUG] Calling create_booking with: business_id={business_id}, date={entities.get('date')}, time={entities.get('time')}, service_id={entities.get('service_id')}, client_info={client_info}")
-                        booking_response = create_booking(
-                            business_id,
-                            entities.get("date"),
-                            entities.get("time"),
-                            entities.get("service_id"),
-                            client_info
-                        )
-                        print(f"[DEBUG] Booking API response: {booking_response}")
-                        update_dynamic_context(session_id, "last_booking_result", booking_response)
+                            # Safe transcript forwarding
+                            try:
+                                forward_transcript(session_id, transcript_clean)
+                            except Exception as e:
+                                print(f"[ERROR] Forward transcript failed: {e}")
+                            
+                            # Update context safely
+                            try:
+                                history = dynamic_context.get("history", [])
+                                history.append({"role": "user", "content": transcript_clean})
+                                update_dynamic_context(session_id, "history", history)
+                                update_dynamic_context(session_id, "last_user_message", transcript_clean)
+                            except Exception as e:
+                                print(f"[ERROR] Context update failed: {e}")
 
-                    forward_transcript(session_id, transcript_clean)
-                    history = dynamic_context.get("history", [])
-                    history.append({"role": "user", "content": transcript_clean})
-                    update_dynamic_context(session_id, "history", history)
-                    update_dynamic_context(session_id, "last_user_message", transcript_clean)
-
-                    # Spawn AI + TTS
-                    asyncio.create_task(handle_ai_and_tts(session_id, static_context))
+                            # Spawn AI + TTS safely
+                            try:
+                                asyncio.create_task(handle_ai_and_tts(session_id, static_context))
+                            except Exception as e:
+                                print(f"[ERROR] AI task creation failed: {e}")
+                                
+                        except Exception as intent_error:
+                            print(f"[ERROR] Intent processing failed: {intent_error}")
+                            await handle_websocket_error(websocket, session_id, intent_error)
+            except Exception as e:
+                print(f"Error processing WebSocket data for session {session_id}: {e}")
+                import traceback
+                traceback.print_exc()
+                # Continue the loop to handle more data
     except WebSocketDisconnect:
-        stt_session.stop()
+        print(f"WebSocket disconnected for session {session_id}")
+        try:
+            stt_session.stop()
+        except:
+            pass
         while not stt_session.transcript_queue.empty():
             transcript, is_final = stt_session.transcript_queue.get()
-            await websocket.send_text(transcript)
-            if is_final:
-                forward_transcript(session_id, transcript)
+            try:
+                await websocket.send_text(transcript)
+                if is_final:
+                    forward_transcript(session_id, transcript)
+            except:
+                break
+    except Exception as e:
+        print(f"Unexpected error in WebSocket for session {session_id}: {e}")
+        import traceback
+        traceback.print_exc()
+        try:
+            stt_session.stop()
+        except:
+            pass
+        try:
+            await websocket.close()
+        except:
+            pass

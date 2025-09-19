@@ -13,9 +13,13 @@ def fetch_static_context(business_id):
 		resp = requests.get(f"{LARAVEL_API}/business-context/{business_id}")
 		resp.raise_for_status()
 		data = resp.json()["data"]
-		# Return only the workflow field
-		return data.get("workflow", {})
+		# Return full business data including business_id and workflow
+		context = data.get("workflow", {})
+		context["business_id"] = business_id  # Ensure business_id is included
+		context["id"] = business_id  # Also add as 'id' for compatibility
+		return context
 	except Exception as e:
+		print(f"[ERROR] Failed to fetch static context for business {business_id}: {e}")
 		return None
 
 def cache_static_context(session_id, context):
