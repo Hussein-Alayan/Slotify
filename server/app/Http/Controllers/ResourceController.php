@@ -17,6 +17,20 @@ class ResourceController extends Controller{
         $this->resourceService = $resourceService;
     }
 
+    public function index(Request $request, $businessId)
+    {
+        try {
+            $type = $request->query('type', 'staff');
+            $query = \App\Models\Resource::with('services')
+                ->where('business_id', $businessId)
+                ->where('type', $type);
+            $resources = $query->get();
+            return $this->successResponse($resources);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
+
     public function assignServices(Request $request, $resourceId)
     {
         try {
