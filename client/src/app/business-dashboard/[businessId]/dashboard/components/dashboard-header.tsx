@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Users } from "lucide-react";
+import { Users } from "lucide-react";
 
 export function DashboardHeader({ onAddClient }: { onAddClient: () => void }) {
   return (
@@ -12,10 +12,6 @@ export function DashboardHeader({ onAddClient }: { onAddClient: () => void }) {
         </p>
       </div>
       <div className="flex gap-3">
-        <Button variant="outline">
-          <CalendarDays className="w-4 h-4 mr-2" />
-          View Calendar
-        </Button>
         <Button onClick={onAddClient}>
           <Users className="w-4 h-4 mr-2" />
           Add Client
