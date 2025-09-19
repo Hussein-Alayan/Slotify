@@ -1,3 +1,6 @@
 businessmanagementapp1/
 .history
 .env
+.github/copilot-instructions.md
+__pycache__/
+*.pyc
