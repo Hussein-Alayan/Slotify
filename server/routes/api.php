@@ -76,11 +76,12 @@ Route::prefix('voice')->group(function () {
 		Route::put('/bookings/{booking}', [BookingController::class, 'update']); // update booking
 		Route::delete('/bookings/{booking}', [BookingController::class, 'destroy']); // cancel booking
 		//use patch to reduce redandancy 
-		// Business-specific booking routes
-		Route::get('/businesses/{business}/availability', [BookingController::class, 'checkAvailability']); // check availability
-		Route::get('/resources/availability', [BookingController::class, 'checkResourceAvailability']); // check resource availability
-		Route::get('/businesses/{business}/bookings', [BookingController::class, 'getBusinessBookings']); // get business bookings
-		Route::post('/businesses/{business}/bookings', [BookingController::class, 'store']); // create booking for business
+	// Business-specific booking routes
+	Route::get('/businesses/{business}/availability', [BookingController::class, 'checkAvailability']); // check availability
+	Route::get('/resources/availability', [BookingController::class, 'checkResourceAvailability']); // check resource availability
+	Route::get('/businesses/{business}/bookings', [BookingController::class, 'getBusinessBookings']); // get business bookings
+	Route::get('/businesses/{business}/bookings/by-date', [BookingController::class, 'getBusinessBookingsByDate']); // get bookings by date
+	Route::post('/businesses/{business}/bookings', [BookingController::class, 'store']); // create booking for business
 		
 		// Client-specific booking routes
 	Route::get('/clients/{client}/bookings', [BookingController::class, 'getClientBookings']); // get client bookings
