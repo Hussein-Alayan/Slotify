@@ -2,7 +2,7 @@
 
 import { DashboardHeader } from "../components/dashboard-header";
 import { StatsGrid } from "../components/stats-grid";
-import { ScheduleCard } from "../components/schedule-card";
+import { AppointmentsTable } from "../components/appointments-table";
 import AddClientModal from "../../clients/components/add-client-modal";
 import { useState } from "react";
 import { useParams } from "next/navigation";
@@ -22,11 +22,10 @@ export function DashboardContainer({
       <DashboardHeader onAddClient={() => setIsAddClientModalOpen(true)} />
       <StatsGrid totalClients={totalClients} totalBookings={totalBookings} />
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-        <ScheduleCard />
-      </div>
+      {/* Appointments Table */}
+      <AppointmentsTable />
 
+      {/* Main Content Grid */}
       <AddClientModal
         open={isAddClientModalOpen}
         onClose={() => setIsAddClientModalOpen(false)}
