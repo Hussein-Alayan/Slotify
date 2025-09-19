@@ -6,9 +6,8 @@ import google.auth.transport.requests
 SERVICE_ACCOUNT_PATH = os.path.join(
     os.path.dirname(__file__),
     "..",
-    "venv",
     "config",
-    "n8n-integration-469209-a90c52dd16a5.json"
+    "google-stt-key.json"
 )
 
 PROJECT_ID = "n8n-integration-469209"

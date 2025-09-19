@@ -5,9 +5,8 @@ from google.cloud import texttospeech
 SERVICE_ACCOUNT_PATH = os.path.join(
     os.path.dirname(__file__),
     "..",
-    "venv",
     "config",
-    "n8n-integration-469209-a90c52dd16a5.json"
+    "google-stt-key.json"
 )
 
 def synthesize_speech(text: str, sample_rate: int = 16000, language_code: str = "en-US") -> bytes:
