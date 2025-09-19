@@ -23,7 +23,7 @@ export function DashboardContainer({
       <StatsGrid totalClients={totalClients} totalBookings={totalBookings} />
 
       {/* Appointments Table */}
-      <AppointmentsTable />
+      <AppointmentsTable businessId={businessId} />
 
       {/* Main Content Grid */}
       <AddClientModal

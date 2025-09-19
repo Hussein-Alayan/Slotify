@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchAppointments, Appointment } from "@/lib/appointmentsAPI";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,204 +14,64 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar, Filter } from "lucide-react";
 
-interface Client {
-  id: number;
-  name: string;
-  email: string | null;
-  phone: string;
-}
 
-interface Service {
-  id: number;
-  name: string;
-  duration: string | null;
-  price: string;
-}
-
-interface Resource {
-  id: number;
-  name: string | null;
-  type: string | null;
-}
-
-interface Appointment {
-  id: number;
-  business_id: number;
-  client_id: number;
-  service_id: number;
-  resource_id: number;
-  start_time: string;
-  end_time: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  client: Client;
-  service: Service;
-  resource: Resource;
-}
-
-// Static data based on the endpoint structure
-const mockAppointments: Appointment[] = [
-  {
-    id: 1,
-    business_id: 3,
-    client_id: 5,
-    service_id: 9,
-    resource_id: 1,
-    start_time: "2025-09-19T15:00:00.000000Z",
-    end_time: "2025-09-19T16:00:00.000000Z",
-    status: "confirmed",
-    created_at: "2025-09-19T07:44:51.000000Z",
-    updated_at: "2025-09-19T07:44:51.000000Z",
-    client: {
-      id: 5,
-      name: "H.A",
-      email: null,
-      phone: "+96170653458",
-    },
-    service: {
-      id: 9,
-      name: "Hair Cut",
-      duration: null,
-      price: "30.00",
-    },
-    resource: {
-      id: 1,
-      name: null,
-      type: null,
-    },
-  },
-  {
-    id: 2,
-    business_id: 3,
-    client_id: 5,
-    service_id: 9,
-    resource_id: 2,
-    start_time: "2025-09-19T15:00:00.000000Z",
-    end_time: "2025-09-19T16:00:00.000000Z",
-    status: "confirmed",
-    created_at: "2025-09-19T08:10:13.000000Z",
-    updated_at: "2025-09-19T08:10:13.000000Z",
-    client: {
-      id: 5,
-      name: "H.A",
-      email: null,
-      phone: "+96170653458",
-    },
-    service: {
-      id: 9,
-      name: "Hair Cut",
-      duration: null,
-      price: "30.00",
-    },
-    resource: {
-      id: 2,
-      name: null,
-      type: null,
-    },
-  },
-  {
-    id: 3,
-    business_id: 3,
-    client_id: 6,
-    service_id: 10,
-    resource_id: 1,
-    start_time: "2025-09-18T14:00:00.000000Z",
-    end_time: "2025-09-18T15:30:00.000000Z",
-    status: "completed",
-    created_at: "2025-09-18T06:30:00.000000Z",
-    updated_at: "2025-09-18T15:30:00.000000Z",
-    client: {
-      id: 6,
-      name: "Sarah M.",
-      email: "sarah@email.com",
-      phone: "+96171234567",
-    },
-    service: {
-      id: 10,
-      name: "Hair Styling",
-      duration: "90",
-      price: "45.00",
-    },
-    resource: {
-      id: 1,
-      name: "Chair 1",
-      type: "equipment",
-    },
-  },
-  {
-    id: 4,
-    business_id: 3,
-    client_id: 7,
-    service_id: 11,
-    resource_id: 3,
-    start_time: "2025-09-17T10:00:00.000000Z",
-    end_time: "2025-09-17T11:00:00.000000Z",
-    status: "cancelled",
-    created_at: "2025-09-16T12:00:00.000000Z",
-    updated_at: "2025-09-17T09:00:00.000000Z",
-    client: {
-      id: 7,
-      name: "John D.",
-      email: "john@email.com",
-      phone: "+96172345678",
-    },
-    service: {
-      id: 11,
-      name: "Beard Trim",
-      duration: "60",
-      price: "20.00",
-    },
-    resource: {
-      id: 3,
-      name: "Chair 2",
-      type: "equipment",
-    },
-  },
-];
-
-export function AppointmentsTable() {
-  const [timeFilter, setTimeFilter] = useState("all");
+export function AppointmentsTable({ businessId }: { businessId: number }) {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [timeFilter, setTimeFilter] = useState("today");
   const [serviceFilter, setServiceFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // Only send date param for 'today', otherwise fetch all
+  useEffect(() => {
+    setLoading(true);
+    let params = {};
+    if (timeFilter === "today") {
+      const today = new Date().toISOString().slice(0, 10);
+      params = { date: today };
+    }
+    fetchAppointments(businessId, params)
+      .then((data) => {
+        setAppointments(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to fetch appointments");
+        setLoading(false);
+      });
+  }, [businessId, timeFilter]);
+
   // Get unique services and clients for filter options
   const uniqueServices = Array.from(
-    new Set(mockAppointments.map((apt) => apt.service.name))
+    new Set(appointments.map((apt) => apt.service.name))
   );
   const uniqueClients = Array.from(
-    new Set(mockAppointments.map((apt) => apt.client.name))
+    new Set(appointments.map((apt) => apt.client.name))
   );
 
   // Filter appointments based on selected filters
-  const filteredAppointments = mockAppointments.filter((appointment) => {
+  const filteredAppointments = appointments.filter((appointment) => {
     const serviceMatch =
       serviceFilter === "all" || appointment.service.name === serviceFilter;
     const clientMatch =
       clientFilter === "all" || appointment.client.name === clientFilter;
 
-    // Time filter logic (simplified for static data)
+    // Time filter logic (frontend for week/month/all)
     let timeMatch = true;
-    if (timeFilter !== "all") {
-      const appointmentDate = new Date(appointment.start_time);
-      const now = new Date();
-
-      switch (timeFilter) {
-        case "today":
-          timeMatch = appointmentDate.toDateString() === now.toDateString();
-          break;
-        case "week":
-          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          timeMatch = appointmentDate >= weekAgo;
-          break;
-        case "month":
-          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          timeMatch = appointmentDate >= monthAgo;
-          break;
-      }
-    }
+    const appointmentDate = new Date(appointment.start_time);
+    const now = new Date();
+    if (timeFilter === "week") {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      timeMatch = appointmentDate >= weekAgo && appointmentDate <= now;
+    } else if (timeFilter === "month") {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      timeMatch = appointmentDate >= monthAgo && appointmentDate <= now;
+    } else if (timeFilter === "today") {
+      timeMatch = appointmentDate.toDateString() === now.toDateString();
+    } // 'all' returns all
 
     return serviceMatch && clientMatch && timeMatch;
   });
@@ -310,57 +171,67 @@ export function AppointmentsTable() {
       </CardHeader>
 
       <CardContent>
-        <div className="space-y-4">
-          {paginatedAppointments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No appointments found for the selected filters.
-            </div>
-          ) : (
-            paginatedAppointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <div className="text-sm font-medium">
-                      {formatDate(appointment.start_time)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatTime(appointment.start_time)} -{" "}
-                      {formatTime(appointment.end_time)}
-                    </div>
-                  </div>
-
-                  <div className="h-8 w-px bg-border" />
-
-                  <div>
-                    <div className="font-medium">{appointment.client.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {appointment.client.phone}
-                    </div>
-                  </div>
-
-                  <div className="h-8 w-px bg-border" />
-
-                  <div>
-                    <div className="font-medium">
-                      {appointment.service.name}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      ${appointment.service.price}
-                    </div>
-                  </div>
-                </div>
-
-                <Badge className={getStatusColor(appointment.status)}>
-                  {appointment.status.charAt(0).toUpperCase() +
-                    appointment.status.slice(1)}
-                </Badge>
+        {loading ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Loading appointments...
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
+          <div className="space-y-4">
+            {paginatedAppointments.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No appointments found for the selected filters.
               </div>
-            ))
-          )}
-        </div>
+            ) : (
+              paginatedAppointments.map((appointment) => (
+                <div
+                  key={appointment.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <div className="text-sm font-medium">
+                        {formatDate(appointment.start_time)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatTime(appointment.start_time)} -{" "}
+                        {formatTime(appointment.end_time)}
+                      </div>
+                    </div>
+
+                    <div className="h-8 w-px bg-border" />
+
+                    <div>
+                      <div className="font-medium">
+                        {appointment.client.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {appointment.client.phone}
+                      </div>
+                    </div>
+
+                    <div className="h-8 w-px bg-border" />
+
+                    <div>
+                      <div className="font-medium">
+                        {appointment.service.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        ${appointment.service.price}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Badge className={getStatusColor(appointment.status)}>
+                    {appointment.status.charAt(0).toUpperCase() +
+                      appointment.status.slice(1)}
+                  </Badge>
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
