@@ -49,4 +49,14 @@ class ResourceController extends Controller{
             return $this->errorResponse($e->getMessage(), 400);
         }
     }
+
+    public function update(\App\Http\Requests\UpdateResourceRequest $request, $businessId, $resourceId)
+    {
+        try {
+            $resource = $this->resourceService->updateStaff($resourceId, $request->validated());
+            return $this->successResponse($resource);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
 }

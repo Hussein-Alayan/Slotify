@@ -17,6 +17,7 @@ Route::patch('/businesses/{business}/services/{service}', [\App\Http\Controllers
 Route::post('/resources/{resource}/services', [\App\Http\Controllers\ResourceController::class, 'assignServices']);
 Route::get('/businesses/{business}/resources', [\App\Http\Controllers\ResourceController::class, 'index']);
 Route::post('/businesses/{business}/resources', [\App\Http\Controllers\ResourceController::class, 'store']);
+Route::patch('/businesses/{business}/resources/{resource}', [\App\Http\Controllers\ResourceController::class, 'update']);
 	Route::get('/businesses/{business}/total-services', [\App\Http\Controllers\BusinessStatsController::class, 'totalServices']);
 	Route::get('/businesses/{business}/active-services', [\App\Http\Controllers\BusinessStatsController::class, 'activeServices']);
 	Route::post('/register', [AuthController::class, 'register']);
