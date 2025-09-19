@@ -11,12 +11,12 @@ LARAVEL_API = "http://localhost:8000/api/v1"
 
 def forward_transcript(call_id, transcript):
 	requests.post(
-		f"http://localhost:8000/api/voice/{call_id}/transcript",
+		f"http://localhost:8000/api/v1/voice/{call_id}/transcript",
 		json={"transcript": transcript}
 	)
 
 def end_call_api(call_id):
-	requests.post(f"http://localhost:8000/api/voice/{call_id}/end")
+	requests.post(f"http://localhost:8000/api/v1/voice/{call_id}/end")
 
 def create_booking(business_id, date, time, service_id, client_info=None):
 	payload = {
