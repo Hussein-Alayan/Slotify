@@ -18,7 +18,6 @@ export type StaffMember = {
   name: string;
   role: string;
   specialSkills: string;
-  maxAppointments: number;
   availability: { [key: string]: Availability };
 };
 
@@ -107,22 +106,7 @@ export function StaffForm({
                     rows={2}
                   />
                 </div>
-                <div>
-                  <Label>Max Appointments per Day</Label>
-                  <Input
-                    type="number"
-                    placeholder="10"
-                    value={member.maxAppointments}
-                    onChange={(e) =>
-                      updateStaff(
-                        member.id,
-                        "maxAppointments",
-                        Number.parseInt(e.target.value)
-                      )
-                    }
-                    className="mt-1"
-                  />
-                </div>
+                {/* Max Appointments per Day removed */}
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-4">

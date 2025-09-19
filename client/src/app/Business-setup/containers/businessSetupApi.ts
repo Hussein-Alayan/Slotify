@@ -32,6 +32,8 @@ function mapBusinessSetupToPayload({
     resources: staff.map(st => ({
       type: 'staff',
       name: st.name,
+      role: st.role,
+      specialSkills: st.specialSkills,
       availability: st.availability,
     })),
   };

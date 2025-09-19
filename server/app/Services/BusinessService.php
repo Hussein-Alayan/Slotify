@@ -18,8 +18,9 @@ class BusinessService
     {
         $business = null;
         DB::transaction(function () use ($user, $validated, &$business) {
-            $business = $user->business ?? new Business();
+            $business = $user->businesses()->first() ?? new Business();
             $business->fill($validated);
+            $business->user_id = $user->id;
             $business->save();
 
             // Save working hours in booking_rules
@@ -52,6 +53,8 @@ class BusinessService
                         [
                             'type' => $resource['type'],
                             'availability' => $resource['availability'] ?? null,
+                            'role' => $resource['role'] ?? null,
+                            'special_skills' => $resource['specialSkills'] ?? null,
                         ]
                     );
                 }
@@ -63,5 +66,10 @@ class BusinessService
             $business->save();
         });
         return $business;
+    }
+
+    public function getUserBusinesses($user)
+    {
+        return $user->businesses()->with(['bookingRules', 'services', 'resources'])->get();
     }
 }

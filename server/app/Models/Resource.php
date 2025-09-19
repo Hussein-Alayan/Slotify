@@ -12,6 +12,8 @@ class Resource extends Model
         'business_id',
         'type',
         'name',
+        'role',
+        'special_skills',
         'availability',
     ];
 

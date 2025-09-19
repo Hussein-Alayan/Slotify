@@ -9,6 +9,7 @@ class Business extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'user_id',
         'name',
         'industry',
         'contact_email',
@@ -25,6 +26,11 @@ class Business extends Model
     protected $casts = [
         'business_hours' => 'array',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function services()
     {

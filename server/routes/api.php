@@ -6,9 +6,17 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AIBookingController;
 use App\Http\Controllers\WhatsAppWebhookController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\VoiceCallController;
 
 Route::prefix('v1')->group(function () {
+	// Service stats (no auth for testing)
+Route::post('/businesses/{business}/services', [\App\Http\Controllers\ServiceController::class, 'store']);
+Route::get('/businesses/{business}/services', [\App\Http\Controllers\ServiceController::class, 'index']);
+Route::patch('/businesses/{business}/services/{service}', [\App\Http\Controllers\ServiceController::class, 'update']);
+Route::post('/resources/{resource}/services', [\App\Http\Controllers\ResourceController::class, 'assignServices']);
+	Route::get('/businesses/{business}/total-services', [\App\Http\Controllers\BusinessStatsController::class, 'totalServices']);
+	Route::get('/businesses/{business}/active-services', [\App\Http\Controllers\BusinessStatsController::class, 'activeServices']);
 	Route::post('/register', [AuthController::class, 'register']);
 	Route::post('/login', [AuthController::class, 'login']);
 
@@ -35,9 +43,24 @@ Route::prefix('voice')->group(function () {
 
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::get('/me', [AuthController::class, 'me']);
-
 		// Business Profile setup
 		Route::post('/business-profile', [\App\Http\Controllers\BusinessController::class, 'storeOrUpdate']);
+		
+		// Business management
+		Route::get('/businesses', [\App\Http\Controllers\BusinessController::class, 'index']);
+		Route::get('/businesses/{business}', [\App\Http\Controllers\BusinessController::class, 'show']);
+
+		// Client management
+		Route::get('/businesses/{business}/clients', [ClientController::class, 'index']);
+		Route::post('/businesses/{business}/clients', [ClientController::class, 'store']);
+		Route::get('/businesses/{business}/clients/{client}', [ClientController::class, 'show']);
+		Route::put('/businesses/{business}/clients/{client}', [ClientController::class, 'update']);
+		Route::delete('/businesses/{business}/clients/{client}', [ClientController::class, 'destroy']);
+	});
+
+	// Business stats (no auth for testing)
+	Route::get('/businesses/{business}/total-clients', [\App\Http\Controllers\BusinessStatsController::class, 'totalClients']);
+	Route::get('/businesses/{business}/total-bookings', [\App\Http\Controllers\BusinessStatsController::class, 'totalBookings']);
 
 		// Conversation routes
 		Route::post('/conversations', [ConversationController::class, 'startConversation']); // start new conversation
@@ -57,6 +80,5 @@ Route::prefix('voice')->group(function () {
 		Route::post('/businesses/{business}/bookings', [BookingController::class, 'store']); // create booking for business
 		
 		// Client-specific booking routes
-		Route::get('/clients/{client}/bookings', [BookingController::class, 'getClientBookings']); // get client bookings
-	});
+	Route::get('/clients/{client}/bookings', [BookingController::class, 'getClientBookings']); // get client bookings
 });

@@ -12,8 +12,6 @@ export type Service = {
   description: string;
   duration: number;
   price: number;
-  maxClients: number;
-  specialRules: string;
 };
 
 type ServicesFormProps = {
@@ -117,22 +115,7 @@ export function ServicesForm({
                     className="mt-1"
                   />
                 </div>
-                <div>
-                  <Label>Max Clients per Slot</Label>
-                  <Input
-                    type="number"
-                    placeholder="1"
-                    value={service.maxClients}
-                    onChange={(e) =>
-                      updateService(
-                        service.id,
-                        "maxClients",
-                        Number.parseInt(e.target.value)
-                      )
-                    }
-                    className="mt-1"
-                  />
-                </div>
+                {/* Max Clients per Slot removed */}
               </div>
               <div className="mb-4">
                 <Label>Description</Label>
@@ -146,18 +129,7 @@ export function ServicesForm({
                   rows={2}
                 />
               </div>
-              <div>
-                <Label>Special Rules (Optional)</Label>
-                <Textarea
-                  placeholder="e.g., Age limit, prerequisites, special requirements"
-                  value={service.specialRules}
-                  onChange={(e) =>
-                    updateService(service.id, "specialRules", e.target.value)
-                  }
-                  className="mt-1"
-                  rows={2}
-                />
-              </div>
+              {/* Special Rules removed */}
             </CardContent>
           </Card>
         ))}
