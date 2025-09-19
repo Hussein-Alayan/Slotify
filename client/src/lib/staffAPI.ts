@@ -46,6 +46,30 @@ export async function getStaff(businessId: number): Promise<Staff[]> {
   return response.data.data;
 }
 
+export async function updateStaff(
+  businessId: number,
+  staffId: number,
+  data: Partial<CreateStaffPayload>
+): Promise<Staff> {
+  // Map client availability to server format if provided
+  const payload: Record<string, unknown> = { ...data };
+  if (data.availability) {
+    const mappedAvailability: Staff["availability"] = Object.entries(
+      data.availability
+    ).reduce((acc, [day, [start, end]]) => {
+      acc[day] = { start, end, closed: false };
+      return acc;
+    }, {} as Staff["availability"]);
+    payload.availability = mappedAvailability;
+  }
+
+  const response = await api.patch<ApiResponse<Staff>>(
+    `/v1/businesses/${businessId}/resources/${staffId}`,
+    payload
+  );
+  return response.data.data;
+}
+
 
 export type CreateStaffPayload = {
   name: string;

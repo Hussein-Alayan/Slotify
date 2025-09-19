@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { fetchServices } from "@/lib/servicesAPI";
-import { createStaff } from "@/lib/staffAPI";
+import { createStaff, updateStaff, Staff } from "@/lib/staffAPI";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 // ...existing code...
@@ -12,6 +12,8 @@ interface AddStaffModalProps {
   isOpen: boolean;
   onClose: () => void;
   businessId: number;
+  staff?: Staff; // Optional: if provided, modal is in edit mode
+  onStaffUpdated?: () => void; // Callback to refresh staff list
 }
 
 // Simple, readable availability shape
@@ -25,16 +27,22 @@ export function AddStaffModal({
   isOpen,
   onClose,
   businessId,
+  staff,
+  onStaffUpdated,
 }: AddStaffModalProps) {
-  const weekDays = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  const isEditMode = !!staff;
+  const weekDays = useMemo(
+    () => [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ],
+    []
+  );
 
   // Form state (simple and explicit)
   const [formData, setFormData] = useState({
@@ -75,8 +83,55 @@ export function AddStaffModal({
         }
         setServices(items);
       });
+
+      // Pre-fill form if editing
+      if (isEditMode && staff) {
+        setFormData({
+          name: staff.name || "",
+          role: staff.role || "",
+          special_skills: staff.special_skills || "",
+        });
+
+        // Pre-fill availability
+        const newAvailability: Record<string, DayAvailability> = {};
+        weekDays.forEach((day) => {
+          const dayKey = day.toLowerCase().substring(0, 3);
+          const staffDay =
+            staff.availability?.[dayKey] || staff.availability?.[day];
+
+          if (staffDay && !staffDay.closed) {
+            newAvailability[day] = {
+              checked: true,
+              start: staffDay.start,
+              end: staffDay.end,
+            };
+          } else {
+            newAvailability[day] = {
+              checked: false,
+              start: "09:00",
+              end: "17:00",
+            };
+          }
+        });
+        setAvailabilityState(newAvailability);
+
+        // Pre-fill selected services
+        if (staff.services) {
+          setSelectedServiceIds(staff.services.map((s) => s.id));
+        }
+      } else {
+        // Reset form for create mode
+        setFormData({ name: "", role: "", special_skills: "" });
+        setAvailabilityState(
+          weekDays.reduce((acc, day) => {
+            acc[day] = { checked: false, start: "09:00", end: "17:00" };
+            return acc;
+          }, {} as Record<string, DayAvailability>)
+        );
+        setSelectedServiceIds([]);
+      }
     }
-  }, [isOpen, businessId]);
+  }, [isOpen, businessId, isEditMode, staff, weekDays]);
 
   // Don't render when modal is closed (hooks already declared)
   if (!isOpen) return null;
@@ -126,16 +181,23 @@ export function AddStaffModal({
     setLoading(true);
     setError(null);
     const payload = buildPayload();
+
     try {
-      await createStaff(businessId, payload);
+      if (isEditMode && staff) {
+        await updateStaff(businessId, staff.id, payload);
+        onStaffUpdated?.(); // Refresh staff list
+      } else {
+        await createStaff(businessId, payload);
+      }
       onClose();
     } catch (err: unknown) {
       if (err && typeof err === "object" && "message" in err) {
         setError(
-          (err as { message?: string }).message || "Failed to add staff member."
+          (err as { message?: string }).message ||
+            `Failed to ${isEditMode ? "update" : "add"} staff member.`
         );
       } else {
-        setError("Failed to add staff member.");
+        setError(`Failed to ${isEditMode ? "update" : "add"} staff member.`);
       }
     } finally {
       setLoading(false);
@@ -161,7 +223,7 @@ export function AddStaffModal({
         </button>
 
         <h2 className="text-2xl font-bold mb-6 text-gray-900">
-          Add New Staff Member
+          {isEditMode ? "Edit Staff Member" : "Add New Staff Member"}
         </h2>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -310,7 +372,13 @@ export function AddStaffModal({
               className="px-6 py-2 rounded-lg font-semibold text-white bg-slate-900 hover:bg-slate-800"
               disabled={loading}
             >
-              {loading ? "Adding..." : "Add Staff Member"}
+              {loading
+                ? isEditMode
+                  ? "Updating..."
+                  : "Adding..."
+                : isEditMode
+                ? "Save Changes"
+                : "Add Staff Member"}
             </button>
           </div>
         </form>

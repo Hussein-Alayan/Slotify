@@ -4,31 +4,49 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Edit, UserX } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useBusinessContext } from "@/contexts/BusinessContext";
 import { getStaff, Staff } from "@/lib/staffAPI";
+import { AddStaffModal } from "./add-staff-modal";
 
 export default function StaffTable() {
   const [staffData, setStaffData] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { businessId } = useBusinessContext();
 
-  useEffect(() => {
-    async function fetchStaff() {
-      setLoading(true);
-      setError(null);
-      try {
-        const staff = await getStaff(businessId);
-        setStaffData(staff);
-      } catch {
-        setError("Failed to load staff data.");
-      } finally {
-        setLoading(false);
-      }
+  const fetchStaffData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const staff = await getStaff(businessId);
+      setStaffData(staff);
+    } catch {
+      setError("Failed to load staff data.");
+    } finally {
+      setLoading(false);
     }
-    if (businessId) fetchStaff();
   }, [businessId]);
+
+  useEffect(() => {
+    if (businessId) fetchStaffData();
+  }, [businessId, fetchStaffData]);
+
+  const handleEditClick = (staff: Staff) => {
+    setEditingStaff(staff);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false);
+    setEditingStaff(null);
+  };
+
+  const handleStaffUpdated = () => {
+    fetchStaffData(); // Refresh the staff list
+  };
 
   return (
     <Card className="p-6">
@@ -171,7 +189,11 @@ export default function StaffTable() {
                 </td>
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditClick(staff)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
@@ -188,6 +210,15 @@ export default function StaffTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Edit Staff Modal */}
+      <AddStaffModal
+        isOpen={isEditModalOpen}
+        onClose={handleEditModalClose}
+        businessId={businessId}
+        staff={editingStaff || undefined}
+        onStaffUpdated={handleStaffUpdated}
+      />
     </Card>
   );
 }
