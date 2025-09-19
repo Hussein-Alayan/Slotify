@@ -3,7 +3,6 @@
 import { DashboardHeader } from "../components/dashboard-header";
 import { StatsGrid } from "../components/stats-grid";
 import { ScheduleCard } from "../components/schedule-card";
-import { ActivityCard } from "../components/activity-card";
 import AddClientModal from "../../clients/components/add-client-modal";
 import { useState } from "react";
 import { useParams } from "next/navigation";
@@ -24,11 +23,10 @@ export function DashboardContainer({
       <StatsGrid totalClients={totalClients} totalBookings={totalBookings} />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         <ScheduleCard />
-        <ActivityCard />
       </div>
-    
+
       <AddClientModal
         open={isAddClientModalOpen}
         onClose={() => setIsAddClientModalOpen(false)}
