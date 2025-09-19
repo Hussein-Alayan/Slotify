@@ -18,6 +18,14 @@ class ResourceService
             'special_skills' => $data['special_skills'] ?? null,
             'availability'   => $data['availability'] ?? null,
         ]);
+
+        // Assign service(s) if provided
+        if (isset($data['service_id'])) {
+            $resource->services()->sync([$data['service_id']]);
+        } elseif (isset($data['service_ids']) && is_array($data['service_ids'])) {
+            $resource->services()->sync($data['service_ids']);
+        }
+
         return $resource;
     }
     public function assignServices($resourceId, array $serviceIds)

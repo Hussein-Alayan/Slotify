@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
+import { createStaff } from "@/lib/staffAPI";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,18 +17,21 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface AddStaffModalProps {
   isOpen: boolean;
   onClose: () => void;
+  businessId: number;
 }
 
-export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    role: "",
-    skills: "",
-    resources: "",
-  });
+// Simple, readable availability shape
+type DayAvailability = {
+  checked: boolean;
+  start: string; // "HH:MM"
+  end: string; // "HH:MM"
+};
 
+export function AddStaffModal({
+  isOpen,
+  onClose,
+  businessId,
+}: AddStaffModalProps) {
   const weekDays = [
     "Monday",
     "Tuesday",
@@ -38,7 +42,69 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
     "Sunday",
   ];
 
+  // Form state (simple and explicit)
+  const [formData, setFormData] = useState({
+    name: "",
+    role: "",
+    special_skills: "",
+  });
+
+  // Availability state per day
+  const [availabilityState, setAvailabilityState] = useState<
+    Record<string, DayAvailability>
+  >(
+    weekDays.reduce((acc, day) => {
+      acc[day] = { checked: false, start: "09:00", end: "17:00" };
+      return acc;
+    }, {} as Record<string, DayAvailability>)
+  );
+
+  // Hooks must always run in the same order -> place before any early return
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Don't render when modal is closed (hooks already declared)
   if (!isOpen) return null;
+
+  // Build the payload that your backend expects
+  const buildPayload = () => {
+    const availability: Record<string, [string, string]> = {};
+    Object.entries(availabilityState).forEach(
+      ([day, { checked, start, end }]) => {
+        if (checked) availability[day] = [start, end];
+      }
+    );
+
+    return {
+      name: formData.name,
+      role: formData.role,
+      special_skills: formData.special_skills,
+      availability,
+      type: "staff",
+      business_id: businessId,
+    };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const payload = buildPayload();
+    try {
+      await createStaff(businessId, payload);
+      onClose();
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "message" in err) {
+        setError(
+          (err as { message?: string }).message || "Failed to add staff member."
+        );
+      } else {
+        setError("Failed to add staff member.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -62,16 +128,12 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
           Add New Staff Member
         </h2>
 
-        <form
-          className="space-y-6"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onClose();
-          }}
-        >
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
           {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900">Basic Information</h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Full Name</Label>
@@ -85,50 +147,18 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
                   className="mt-1"
                 />
               </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder="Enter email address"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="Enter phone number"
-                  className="mt-1"
-                />
-              </div>
+
               <div>
                 <Label htmlFor="role">Role</Label>
-                <Select
+                <Input
+                  id="role"
                   value={formData.role}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, role: value })
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hairdresser">Hairdresser</SelectItem>
-                    <SelectItem value="doctor">Doctor</SelectItem>
-                    <SelectItem value="trainer">Fitness Trainer</SelectItem>
-                    <SelectItem value="therapist">Massage Therapist</SelectItem>
-                    <SelectItem value="receptionist">Receptionist</SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="Enter role (e.g. Hairdresser, Doctor)"
+                  className="mt-1"
+                />
               </div>
             </div>
           </div>
@@ -137,12 +167,14 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900">Skills & Services</h3>
             <div>
-              <Label htmlFor="skills">Skills/Services They Can Provide</Label>
+              <Label htmlFor="special_skills">
+                Skills/Services They Can Provide
+              </Label>
               <Textarea
-                id="skills"
-                value={formData.skills}
+                id="special_skills"
+                value={formData.special_skills}
                 onChange={(e) =>
-                  setFormData({ ...formData, skills: e.target.value })
+                  setFormData({ ...formData, special_skills: e.target.value })
                 }
                 placeholder="List the services this staff member can provide"
                 rows={3}
@@ -158,35 +190,50 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
               {weekDays.map((day) => (
                 <div key={day} className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <Checkbox id={day} />
+                    <Checkbox
+                      id={day}
+                      checked={availabilityState[day].checked}
+                      onCheckedChange={(checked) =>
+                        setAvailabilityState((prev) => ({
+                          ...prev,
+                          [day]: { ...prev[day], checked: checked as boolean },
+                        }))
+                      }
+                    />
                     <Label htmlFor={day} className="w-20">
                       {day}
                     </Label>
                   </div>
+
                   <div className="flex items-center space-x-2">
-                    <Input type="time" className="w-32" defaultValue="09:00" />
+                    <Input
+                      type="time"
+                      className="w-32"
+                      value={availabilityState[day].start}
+                      onChange={(e) =>
+                        setAvailabilityState((prev) => ({
+                          ...prev,
+                          [day]: { ...prev[day], start: e.target.value },
+                        }))
+                      }
+                    />
+
                     <span className="text-gray-500">to</span>
-                    <Input type="time" className="w-32" defaultValue="17:00" />
+
+                    <Input
+                      type="time"
+                      className="w-32"
+                      value={availabilityState[day].end}
+                      onChange={(e) =>
+                        setAvailabilityState((prev) => ({
+                          ...prev,
+                          [day]: { ...prev[day], end: e.target.value },
+                        }))
+                      }
+                    />
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Linked Resources */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900">Linked Resources</h3>
-            <div>
-              <Label htmlFor="resources">Assigned Resources</Label>
-              <Input
-                id="resources"
-                value={formData.resources}
-                onChange={(e) =>
-                  setFormData({ ...formData, resources: e.target.value })
-                }
-                placeholder="e.g., Room 2, Laser Machine A"
-                className="mt-1"
-              />
             </div>
           </div>
 
@@ -202,8 +249,9 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
             <button
               type="submit"
               className="px-6 py-2 rounded-lg font-semibold text-white bg-slate-900 hover:bg-slate-800"
+              disabled={loading}
             >
-              Add Staff Member
+              {loading ? "Adding..." : "Add Staff Member"}
             </button>
           </div>
         </form>

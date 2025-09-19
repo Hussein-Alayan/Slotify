@@ -20,6 +20,9 @@ class CreateResourceRequest extends FormRequest
             'special_skills' => 'nullable|string|max:255',
             'availability' => 'nullable|array',
             'business_id' => 'required|exists:businesses,id',
+            'service_id' => 'nullable|integer|exists:services,id',
+            'service_ids' => 'nullable|array',
+            'service_ids.*' => 'integer|exists:services,id',
         ];
     }
 }
