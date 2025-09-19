@@ -17,7 +17,7 @@ Route::post('/resources/{resource}/services', [\App\Http\Controllers\ResourceCon
 	Route::get('/businesses/{business}/total-services', [\App\Http\Controllers\BusinessStatsController::class, 'totalServices']);
 	Route::get('/businesses/{business}/active-services', [\App\Http\Controllers\BusinessStatsController::class, 'activeServices']);
 	Route::post('/register', [AuthController::class, 'register']);
-	Route::post('/login', [AuthController::class, 'login']);
+	Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 	// Google Auth routes
 	Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
@@ -31,6 +31,9 @@ Route::post('/resources/{resource}/services', [\App\Http\Controllers\ResourceCon
 
 	// AI processing for n8n workflows (no auth required)
 	Route::post('/ai/process-message', [AIBookingController::class, 'processMessage']);
+
+	// Business workflow (public access)
+	Route::get('/businesses/{business}/workflow', [\App\Http\Controllers\BusinessController::class, 'workflow']);
 
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::get('/me', [AuthController::class, 'me']);

@@ -49,4 +49,9 @@ class BusinessController extends Controller
             return $this->errorResponse('Business not found or could not be created.', 404);
         }
     }
+
+    public function workflow(Request $request, Business $business)
+    {
+        return $this->successResponse(json_decode($business->workflow, true));
+    }
 }
