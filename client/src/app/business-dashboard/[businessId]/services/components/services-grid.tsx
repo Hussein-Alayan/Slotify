@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { fetchServices } from "@/store/services/servicesSlice";
@@ -21,7 +21,9 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
   } = useAppSelector((state) => state.services);
 
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [selectedService, setSelectedService] = React.useState<Service | null>(null);
+  const [selectedService, setSelectedService] = React.useState<Service | null>(
+    null
+  );
 
   React.useEffect(() => {
     dispatch(fetchServices(businessId));
@@ -61,40 +63,38 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
           >
             <div
               style={{
-                height: "160px",
+                position: "relative",
                 width: "100%",
+                height: "160px",
                 background: "#f3f4f6",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
                 borderTopLeftRadius: "12px",
                 borderTopRightRadius: "12px",
                 overflow: "hidden",
               }}
             >
               {service.photo_url ? (
-                <img
+                <Image
                   src={service.photo_url}
                   alt={service.name}
+                  fill
                   style={{
-                    height: "100%",
-                    width: "100%",
                     objectFit: "cover",
                     borderTopLeftRadius: "12px",
                     borderTopRightRadius: "12px",
                   }}
+                  priority
                 />
               ) : (
-                <img
+                <Image
                   src="/placeholder.svg"
                   alt={service.name}
+                  fill
                   style={{
-                    height: "100%",
-                    width: "100%",
                     objectFit: "cover",
                     borderTopLeftRadius: "12px",
                     borderTopRightRadius: "12px",
                   }}
+                  priority
                 />
               )}
             </div>
@@ -103,12 +103,12 @@ export function ServicesGrid({ businessId }: { businessId: number }) {
                 <h3 className="text-lg font-semibold text-gray-900">
                   {service.name}
                 </h3>
-                  <Badge
-                    variant="secondary"
-                    className="bg-green-100 text-green-800"
-                  >
-                    {service.status === "active" ? "Active" : service.status}
-                  </Badge>
+                <Badge
+                  variant="secondary"
+                  className="bg-green-100 text-green-800"
+                >
+                  {service.status === "active" ? "Active" : service.status}
+                </Badge>
               </div>
               <p className="text-gray-600 text-sm mb-4">
                 {service.description}

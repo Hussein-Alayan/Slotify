@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,13 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface AddStaffModalProps {
@@ -46,14 +38,37 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
     "Sunday",
   ];
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Add New Staff Member</DialogTitle>
-        </DialogHeader>
+  if (!isOpen) return null;
 
-        <div className="space-y-6">
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/10"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Add new staff member"
+    >
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-xl p-6 relative overflow-y-auto max-h-[80vh]">
+        {/* Close button */}
+        <button
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"
+          onClick={onClose}
+          aria-label="Close"
+          type="button"
+        >
+          &times;
+        </button>
+
+        <h2 className="text-2xl font-bold mb-6 text-gray-900">
+          Add New Staff Member
+        </h2>
+
+        <form
+          className="space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onClose();
+          }}
+        >
           {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900">Basic Information</h3>
@@ -67,6 +82,7 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Enter full name"
+                  className="mt-1"
                 />
               </div>
               <div>
@@ -79,6 +95,7 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
                     setFormData({ ...formData, email: e.target.value })
                   }
                   placeholder="Enter email address"
+                  className="mt-1"
                 />
               </div>
               <div>
@@ -90,6 +107,7 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
                     setFormData({ ...formData, phone: e.target.value })
                   }
                   placeholder="Enter phone number"
+                  className="mt-1"
                 />
               </div>
               <div>
@@ -128,6 +146,7 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
                 }
                 placeholder="List the services this staff member can provide"
                 rows={3}
+                className="mt-1"
               />
             </div>
           </div>
@@ -166,25 +185,29 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
                   setFormData({ ...formData, resources: e.target.value })
                 }
                 placeholder="e.g., Room 2, Laser Machine A"
+                className="mt-1"
               />
             </div>
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onClose}
-            className="flex items-center gap-2 font-bold"
-          >
-            Add Staff Member
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          {/* Actions */}
+          <div className="flex justify-end gap-4 mt-6">
+            <button
+              type="button"
+              className="px-6 py-2 rounded-lg border font-semibold text-gray-900 bg-white hover:bg-gray-100"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 rounded-lg font-semibold text-white bg-slate-900 hover:bg-slate-800"
+            >
+              Add Staff Member
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
