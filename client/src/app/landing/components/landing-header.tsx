@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -12,9 +13,14 @@ export function LandingHeader() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <Image
+              src="/logos/Dark-noText.svg"
+              alt="Slotify Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+              priority
+            />
             <span className="text-xl font-semibold text-foreground">
               Slotify
             </span>
