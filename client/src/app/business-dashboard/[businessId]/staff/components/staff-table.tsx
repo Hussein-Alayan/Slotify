@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Edit, UserX } from "lucide-react";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
+import useSWR, { mutate } from "swr";
 import { useBusinessContext } from "@/contexts/BusinessContext";
 import { getStaff, deleteStaff, Staff } from "@/lib/staffAPI";
 import { AddStaffModal } from "./add-staff-modal";
@@ -62,9 +63,6 @@ function DeleteConfirmationModal({
 }
 
 export default function StaffTable() {
-  const [staffData, setStaffData] = useState<Staff[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deletingStaff, setDeletingStaff] = useState<Staff | null>(null);
@@ -72,22 +70,13 @@ export default function StaffTable() {
   const [isDeleting, setIsDeleting] = useState(false);
   const { businessId } = useBusinessContext();
 
-  const fetchStaffData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const staff = await getStaff(businessId);
-      setStaffData(staff);
-    } catch {
-      setError("Failed to load staff data.");
-    } finally {
-      setLoading(false);
-    }
-  }, [businessId]);
-
-  useEffect(() => {
-    if (businessId) fetchStaffData();
-  }, [businessId, fetchStaffData]);
+  const {
+    data: staffData = [],
+    error,
+    isLoading: loading,
+  } = useSWR<Staff[]>(`/businesses/${businessId}/resources?type=staff`, () =>
+    getStaff(businessId)
+  );
 
   const handleEditClick = (staff: Staff) => {
     setEditingStaff(staff);
@@ -100,7 +89,8 @@ export default function StaffTable() {
   };
 
   const handleStaffUpdated = () => {
-    fetchStaffData(); // Refresh the staff list
+    // Refresh the staff list using SWR mutate
+    mutate(`/businesses/${businessId}/resources?type=staff`);
   };
 
   const handleDeleteClick = (staff: Staff) => {
@@ -120,10 +110,10 @@ export default function StaffTable() {
     try {
       await deleteStaff(businessId, deletingStaff.id);
       handleDeleteModalClose();
-      fetchStaffData(); // Refresh the staff list
+      // Refresh the staff list using SWR mutate
+      mutate(`/businesses/${businessId}/resources?type=staff`);
     } catch (error) {
       console.error("Failed to delete staff:", error);
-      setError("Failed to delete staff. Please try again.");
     } finally {
       setIsDeleting(false);
     }
@@ -135,7 +125,7 @@ export default function StaffTable() {
         {loading && <div className="mb-4">Loading staff...</div>}
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-            {error}
+            Failed to load staff data.
           </div>
         )}
         <table className="w-full">

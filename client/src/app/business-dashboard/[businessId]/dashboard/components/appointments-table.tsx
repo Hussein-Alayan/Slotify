@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import {
   fetchAppointments,
   fetchAllAppointments,
@@ -19,45 +20,35 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar, Filter } from "lucide-react";
 
 export function AppointmentsTable({ businessId }: { businessId: number }) {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [timeFilter, setTimeFilter] = useState("today");
+  const [timeFilter, setTimeFilter] = useState("week");
   const [serviceFilter, setServiceFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Only send date param for 'today', otherwise fetch all
-  useEffect(() => {
-    setLoading(true);
+  // Create SWR key based on timeFilter
+  const swrKey =
+    timeFilter === "all"
+      ? [`/businesses/${businessId}/appointments/all`, businessId]
+      : [`/businesses/${businessId}/appointments`, businessId, timeFilter];
+
+  // SWR data fetching based on time filter
+  const {
+    data: appointments = [],
+    error,
+    isLoading: loading,
+  } = useSWR<Appointment[]>(swrKey, () => {
     if (timeFilter === "all") {
-      fetchAllAppointments(businessId)
-        .then((data) => {
-          setAppointments(data);
-          setLoading(false);
-        })
-        .catch(() => {
-          setError("Failed to fetch appointments");
-          setLoading(false);
-        });
+      return fetchAllAppointments(businessId);
     } else {
       let params = {};
       if (timeFilter === "today") {
         const today = new Date().toISOString().slice(0, 10);
         params = { date: today };
       }
-      fetchAppointments(businessId, params)
-        .then((data) => {
-          setAppointments(data);
-          setLoading(false);
-        })
-        .catch(() => {
-          setError("Failed to fetch appointments");
-          setLoading(false);
-        });
+      return fetchAppointments(businessId, params);
     }
-  }, [businessId, timeFilter]);
+  });
 
   // Get unique services and clients for filter options
   const uniqueServices = Array.from(
@@ -191,7 +182,9 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
             Loading appointments...
           </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
+          <div className="text-center py-8 text-red-500">
+            Failed to fetch appointments
+          </div>
         ) : (
           <div className="space-y-4">
             {paginatedAppointments.length === 0 ? (
