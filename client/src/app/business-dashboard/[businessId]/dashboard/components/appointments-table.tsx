@@ -33,27 +33,35 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
       ? [`/businesses/${businessId}/appointments/all`, businessId]
       : [`/businesses/${businessId}/appointments`, businessId, timeFilter];
 
-  // SWR data fetching based on time filter
+  // SWR data fetching based on time filter with auto-refresh
   const {
     data: appointments = [],
     error,
     isLoading: loading,
-  } = useSWR<Appointment[]>(swrKey, () => {
-    if (
-      timeFilter === "all" ||
-      timeFilter === "week" ||
-      timeFilter === "month"
-    ) {
-      return fetchAllAppointments(businessId);
-    } else {
-      let params = {};
-      if (timeFilter === "today") {
-        const today = new Date().toISOString().slice(0, 10);
-        params = { date: today };
+  } = useSWR<Appointment[]>(
+    swrKey,
+    () => {
+      if (
+        timeFilter === "all" ||
+        timeFilter === "week" ||
+        timeFilter === "month"
+      ) {
+        return fetchAllAppointments(businessId);
+      } else {
+        let params = {};
+        if (timeFilter === "today") {
+          const today = new Date().toISOString().slice(0, 10);
+          params = { date: today };
+        }
+        return fetchAppointments(businessId, params);
       }
-      return fetchAppointments(businessId, params);
+    },
+    {
+      refreshInterval: 30000, // Auto-refresh every 30 seconds
+      refreshWhenHidden: false, // Don't refresh when tab is hidden
+      refreshWhenOffline: false, // Don't refresh when offline
     }
-  });
+  );
 
   // Get unique services and clients for filter options
   const uniqueServices = Array.from(
