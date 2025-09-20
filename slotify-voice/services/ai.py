@@ -47,13 +47,31 @@ async def stream_gemini_response(static_context: dict, dynamic_context: dict, se
         return
 
     business_name = static_context.get("name", "this business")
+    
+    # Extract actual services from business context
+    services = static_context.get("services", [])
+    service_names = [service.get("name", "") for service in services if service.get("name")] if services else []
+    services_text = ", ".join(service_names) if service_names else "various services"
+    
+    # Extract business hours if available
+    business_hours = static_context.get("business_hours", "")
+    hours_text = f" Our hours are {business_hours}." if business_hours else ""
+    
+    # Extract staff information if available
+    resources = static_context.get("resources", [])
+    staff_names = [resource.get("name", "") for resource in resources if resource.get("name")] if resources else []
+    staff_text = f" Our team includes {', '.join(staff_names)}." if staff_names else ""
+    
     system_instruction = (
         f"You are an AI assistant handling a real-time phone call for {business_name}. "
+        f"We offer these services: {services_text}.{hours_text}{staff_text} "
         "Your job is to help callers book appointments, answer questions about services, staff, and hours, "
         "and provide helpful information using the provided business context and current bookings. "
         "Keep responses concise, natural, and conversational—never more than 1-2 sentences unless asked for detail. "
-        "Do not invent information or bookings; only use what is provided. "
-        "If you are unsure, ask the caller for clarification or offer to connect them to a human. "
+        "IMPORTANT: Only mention services we actually offer. Do not invent or assume services not in our list. "
+        "When asked about services, specifically mention our available services by name. "
+            "After listing services, always ask: 'Which service and time would you like to book?' "
+        "If you are unsure about something not provided in the context, ask the caller for clarification or offer to connect them to a human. "
         "IMPORTANT: If there's a recent booking result in the context, respond based on that result. "
         "For successful bookings, confirm with details (service, date, time, booking ID). "
         "For failed bookings, explain the issue and offer alternatives."

@@ -88,6 +88,10 @@ def end_call(call_id: str):
 # -----------------------
 @app.websocket("/ws/call/{session_id}")
 async def websocket_call(websocket: WebSocket, session_id: str):
+    greeting_sent = False
+    stt_session = None
+    background_tasks = set()  # Track background tasks for cleanup
+    
     try:
         print(f"WebSocket connection attempt for session: {session_id}")
         await websocket.accept()
@@ -205,6 +209,11 @@ async def websocket_call(websocket: WebSocket, session_id: str):
     try:
         while True:
             try:
+                # Check if websocket is still connected before trying to receive
+                if websocket.client_state.value != 1:  # 1 = CONNECTED
+                    print(f"WebSocket no longer connected for session {session_id}, breaking loop")
+                    break
+                    
                 chunk = await websocket.receive_bytes()
                 stt_session.chunk_queue.put(chunk)
 
@@ -340,7 +349,9 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                                     update_dynamic_context(session_id, "last_user_message", transcript_clean)
                                     
                                     # AI response with booking context
-                                    asyncio.create_task(handle_ai_and_tts(session_id, static_context))
+                                    task = asyncio.create_task(handle_ai_and_tts(session_id, static_context))
+                                    background_tasks.add(task)
+                                    task.add_done_callback(background_tasks.discard)
                                 except Exception as e:
                                     print(f"[ERROR] Booking context update failed: {e}")
                             
@@ -354,7 +365,9 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                                     update_dynamic_context(session_id, "last_user_message", transcript_clean)
                                     
                                     # Normal AI response
-                                    asyncio.create_task(handle_ai_and_tts(session_id, static_context))
+                                    task = asyncio.create_task(handle_ai_and_tts(session_id, static_context))
+                                    background_tasks.add(task)
+                                    task.add_done_callback(background_tasks.discard)
                                 except Exception as e:
                                     print(f"[ERROR] AI task creation failed: {e}")
 
@@ -367,34 +380,69 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                         except Exception as intent_error:
                             print(f"[ERROR] Intent processing failed: {intent_error}")
                             await handle_websocket_error(websocket, session_id, intent_error)
+            except WebSocketDisconnect:
+                print(f"WebSocket disconnect detected for session {session_id}")
+                break  # Break the inner loop to exit the main while loop
             except Exception as e:
                 print(f"Error processing WebSocket data for session {session_id}: {e}")
                 import traceback
                 traceback.print_exc()
-                # Continue the loop to handle more data
+                # Check if the error is related to disconnection
+                if "disconnect" in str(e).lower() or "cannot call 'receive'" in str(e).lower():
+                    print(f"Connection-related error detected, breaking loop for session {session_id}")
+                    break
+                # Continue the loop to handle more data if it's not a connection error
     except WebSocketDisconnect:
         print(f"WebSocket disconnected for session {session_id}")
-        try:
-            stt_session.stop()
-        except:
-            pass
-        while not stt_session.transcript_queue.empty():
-            transcript, is_final = stt_session.transcript_queue.get()
-            try:
-                await websocket.send_text(transcript)
-                if is_final:
-                    forward_transcript(session_id, transcript)
-            except:
-                break
     except Exception as e:
         print(f"Unexpected error in WebSocket for session {session_id}: {e}")
         import traceback
         traceback.print_exc()
+    finally:
+        # Cleanup operations
+        print(f"Cleaning up WebSocket session {session_id}")
+        
+        # Cancel all background tasks
+        for task in background_tasks:
+            if not task.done():
+                print(f"Cancelling background task for session {session_id}")
+                task.cancel()
+        
+        # Wait for tasks to be cancelled (with timeout)
+        if background_tasks:
+            try:
+                await asyncio.wait_for(
+                    asyncio.gather(*background_tasks, return_exceptions=True), 
+                    timeout=2.0
+                )
+            except asyncio.TimeoutError:
+                print(f"Some background tasks didn't cancel in time for session {session_id}")
+            except Exception as e:
+                print(f"Error cancelling background tasks: {e}")
+        
         try:
             stt_session.stop()
-        except:
-            pass
+        except Exception as e:
+            print(f"Error stopping STT session: {e}")
+        
+        # Process any remaining transcripts without trying to send via WebSocket
         try:
-            await websocket.close()
-        except:
-            pass
+            while not stt_session.transcript_queue.empty():
+                transcript, is_final = stt_session.transcript_queue.get()
+                if is_final and transcript.strip():
+                    try:
+                        forward_transcript(session_id, transcript.strip())
+                    except Exception as e:
+                        print(f"Error forwarding final transcript: {e}")
+                        break
+        except Exception as e:
+            print(f"Error processing remaining transcripts: {e}")
+        
+        # Ensure WebSocket is closed
+        try:
+            if websocket.client_state.value == 1:  # Still connected
+                await websocket.close()
+        except Exception as e:
+            print(f"Error closing WebSocket: {e}")
+            
+        print(f"WebSocket session {session_id} cleanup completed")
