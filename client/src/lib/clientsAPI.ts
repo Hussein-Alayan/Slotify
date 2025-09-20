@@ -32,6 +32,7 @@ export interface Client {
   created_at: string;
   updated_at: string;
   bookings: Booking[];
+  last_whatsapp_activity?: string | null;
 }
 
 export async function createClient(businessId: number, data: {

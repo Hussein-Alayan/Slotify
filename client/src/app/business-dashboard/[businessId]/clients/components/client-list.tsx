@@ -6,9 +6,11 @@ import { fetchClients, Client } from "@/lib/clientsAPI";
 export function ClientList({
   businessId,
   searchQuery,
+  dateRange,
 }: {
   businessId: number;
   searchQuery: string;
+  dateRange: string;
 }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,13 +32,32 @@ export function ClientList({
     loadClients();
   }, [businessId]);
 
+  // Date filter logic
+  const now = new Date();
+  function isInRange(dateStr: string | null | undefined) {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    switch (dateRange) {
+      case "day":
+        return now.getTime() - date.getTime() <= 24 * 60 * 60 * 1000;
+      case "week":
+        return now.getTime() - date.getTime() <= 7 * 24 * 60 * 60 * 1000;
+      case "month":
+        return now.getTime() - date.getTime() <= 30 * 24 * 60 * 60 * 1000;
+      case "all-time":
+      default:
+        return true;
+    }
+  }
+
   const filteredClients = clients.filter((client) => {
     const q = searchQuery.toLowerCase();
-    return (
+    const matchesSearch =
       client.name.toLowerCase().includes(q) ||
       (client.email && client.email.toLowerCase().includes(q)) ||
-      client.phone.toLowerCase().includes(q)
-    );
+      client.phone.toLowerCase().includes(q);
+    const matchesDate = isInRange(client.last_whatsapp_activity);
+    return matchesSearch && matchesDate;
   });
 
   return (

@@ -14,11 +14,12 @@ export function ClientContainer() {
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState("all-time");
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchQuery(searchInput);
-    }, 300);
+    }, 500);
     return () => clearTimeout(handler);
   }, [searchInput]);
   return (
@@ -53,8 +54,14 @@ export function ClientContainer() {
         <ClientFilters
           searchQuery={searchInput}
           setSearchQuery={setSearchInput}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
         />
-        <ClientList businessId={businessId} searchQuery={searchQuery} />
+        <ClientList
+          businessId={businessId}
+          searchQuery={searchQuery}
+          dateRange={dateRange}
+        />
       </div>
 
       <AddClientModal

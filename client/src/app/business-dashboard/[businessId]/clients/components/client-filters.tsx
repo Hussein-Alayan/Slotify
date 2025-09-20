@@ -13,9 +13,13 @@ import {
 export function ClientFilters({
   searchQuery,
   setSearchQuery,
+  dateRange,
+  setDateRange,
 }: {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
+  dateRange: string;
+  setDateRange: (r: string) => void;
 }) {
   return (
     <div className="flex items-center gap-4 mb-6">
@@ -28,14 +32,19 @@ export function ClientFilters({
           className="pl-10"
         />
       </div>
-      <Select defaultValue="last-30-days">
+      <Select
+        value={dateRange}
+        onValueChange={setDateRange}
+        defaultValue="all-time"
+      >
         <SelectTrigger className="w-40">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="last-30-days">Last 30 days</SelectItem>
-          <SelectItem value="last-60-days">Last 60 days</SelectItem>
-          <SelectItem value="last-90-days">Last 90 days</SelectItem>
+          <SelectItem value="day">Last 24 hours</SelectItem>
+          <SelectItem value="week">Last 7 days</SelectItem>
+          <SelectItem value="month">Last 30 days</SelectItem>
+          <SelectItem value="all-time">All Time</SelectItem>
         </SelectContent>
       </Select>
       <div className="text-sm text-gray-600">Sort by:</div>
