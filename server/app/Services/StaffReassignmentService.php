@@ -83,13 +83,26 @@ class StaffReassignmentService
                 $reassignmentResult = $this->reassignSingleBooking($booking);
                 
                 if ($reassignmentResult['success']) {
+                    // Update booking status to indicate it was reassigned
+                    $booking->update([
+                        'status' => 'reassigned',
+                        'cancellation_reason' => 'Reassigned due to staff absence'
+                    ]);
+                    
                     $successfulReassignments[] = [
-                        'booking' => $booking,
+                        'booking' => $booking->fresh(),
                         'new_staff' => $reassignmentResult['new_staff']
                     ];
                 } else {
+                    // Mark booking as cancelled when it cannot be reassigned
+                    $booking->update([
+                        'status' => 'cancelled',
+                        'cancellation_reason' => 'Staff unavailable - ' . $reassignmentResult['reason'],
+                        'cancelled_at' => now()
+                    ]);
+                    
                     $conflicts[] = [
-                        'booking' => $booking,
+                        'booking' => $booking->fresh(),
                         'reason' => $reassignmentResult['reason']
                     ];
                 }
@@ -136,8 +149,11 @@ class StaffReassignmentService
             // Use simple assignment logic - pick the first available staff
             $newStaff = $availableStaff->first();
 
-            // Update the booking
-            $booking->update(['resource_id' => $newStaff->id]);
+            // Update the booking with new staff and add a note about reassignment
+            $booking->update([
+                'resource_id' => $newStaff->id,
+                'cancellation_reason' => 'Reassigned due to staff absence'
+            ]);
 
             DB::commit();
 
