@@ -28,7 +28,7 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
 
   // Create SWR key based on timeFilter
   const swrKey =
-    timeFilter === "all"
+    timeFilter === "all" || timeFilter === "week" || timeFilter === "month"
       ? [`/businesses/${businessId}/appointments/all`, businessId]
       : [`/businesses/${businessId}/appointments`, businessId, timeFilter];
 
@@ -38,7 +38,11 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
     error,
     isLoading: loading,
   } = useSWR<Appointment[]>(swrKey, () => {
-    if (timeFilter === "all") {
+    if (
+      timeFilter === "all" ||
+      timeFilter === "week" ||
+      timeFilter === "month"
+    ) {
       return fetchAllAppointments(businessId);
     } else {
       let params = {};
@@ -70,11 +74,22 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
     const appointmentDate = new Date(appointment.start_time);
     const now = new Date();
     if (timeFilter === "week") {
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      timeMatch = appointmentDate >= weekAgo && appointmentDate <= now;
+      // Get Monday of current week
+      const dayOfWeek = now.getDay(); // 0 (Sun) - 6 (Sat)
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + mondayOffset);
+      monday.setHours(0, 0, 0, 0);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23, 59, 59, 999);
+      timeMatch = appointmentDate >= monday && appointmentDate <= sunday;
     } else if (timeFilter === "month") {
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      timeMatch = appointmentDate >= monthAgo && appointmentDate <= now;
+      // Get first and last day of current month
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      lastDay.setHours(23, 59, 59, 999);
+      timeMatch = appointmentDate >= firstDay && appointmentDate <= lastDay;
     } else if (timeFilter === "today") {
       timeMatch = appointmentDate.toDateString() === now.toDateString();
     } // 'all' returns all
@@ -141,8 +156,8 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
             <SelectContent>
               <SelectItem value="all">All Time</SelectItem>
               <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">Last Week</SelectItem>
-              <SelectItem value="month">Last Month</SelectItem>
+              <SelectItem value="week">Current Week</SelectItem>
+              <SelectItem value="month">Current Month</SelectItem>
             </SelectContent>
           </Select>
 
