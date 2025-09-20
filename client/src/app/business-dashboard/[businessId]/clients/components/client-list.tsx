@@ -40,10 +40,10 @@ export function ClientList() {
       <Card>
         <CardContent className="p-0">
           <div className="border-b px-6 py-4">
-            <div className="grid grid-cols-10 gap-4 text-sm font-medium text-gray-600">
-              <div className="col-span-4">Client List</div>
-              <div className="col-span-2 text-center">Bookings</div>
-              <div className="col-span-2 text-center">Last visit</div>
+            <div className="grid grid-cols-8 gap-4 text-sm font-medium text-gray-600">
+              <div className="col-span-3">Client List</div>
+              <div className="col-span-2 text-center">Phone Number</div>
+              <div className="col-span-1 text-center">Bookings</div>
               <div className="col-span-2 text-center">Actions</div>
             </div>
           </div>
@@ -53,8 +53,8 @@ export function ClientList() {
               key={client.id}
               className="border-b last:border-b-0 px-6 py-4 hover:bg-gray-50"
             >
-              <div className="grid grid-cols-10 gap-4 items-center">
-                <div className="col-span-4 flex items-center gap-3">
+              <div className="grid grid-cols-8 gap-4 items-center">
+                <div className="col-span-3 flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                     <User className="h-5 w-5 text-gray-600" />
                   </div>
@@ -63,23 +63,18 @@ export function ClientList() {
                       {client.name}
                     </div>
                     <div className="text-sm text-gray-500">{client.email}</div>
-                    <div className="text-sm text-gray-500">{client.phone}</div>
                   </div>
                 </div>
                 <div className="col-span-2 text-center">
+                  <div className="text-sm text-gray-900">{client.phone}</div>
+                </div>
+                <div className="col-span-1 text-center">
                   <div className="text-lg font-semibold">
                     {client.totalBookings}
                   </div>
                   <div className="text-xs text-gray-500">Total Bookings</div>
                 </div>
-                <div className="col-span-2 text-center">
-                  <div className="text-sm">Last visit:</div>
-                  <div className="text-sm font-medium">{client.lastVisit}</div>
-                </div>
                 <div className="col-span-2 flex items-center justify-center gap-2">
-                  <Button size="sm" variant="ghost">
-                    <Eye className="h-4 w-4" />
-                  </Button>
                   <Button size="sm" variant="ghost">
                     <Edit className="h-4 w-4" />
                   </Button>
