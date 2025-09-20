@@ -15,6 +15,7 @@ export function ClientContainer() {
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState("all-time");
+  const [sortBy, setSortBy] = useState("last-activity");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -56,11 +57,14 @@ export function ClientContainer() {
           setSearchQuery={setSearchInput}
           dateRange={dateRange}
           setDateRange={setDateRange}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
         />
         <ClientList
           businessId={businessId}
           searchQuery={searchQuery}
           dateRange={dateRange}
+          sortBy={sortBy}
         />
       </div>
 

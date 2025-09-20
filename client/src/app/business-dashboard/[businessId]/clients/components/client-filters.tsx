@@ -15,11 +15,15 @@ export function ClientFilters({
   setSearchQuery,
   dateRange,
   setDateRange,
+  sortBy,
+  setSortBy,
 }: {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   dateRange: string;
   setDateRange: (r: string) => void;
+  sortBy: string;
+  setSortBy: (s: string) => void;
 }) {
   return (
     <div className="flex items-center gap-4 mb-6">
@@ -48,7 +52,7 @@ export function ClientFilters({
         </SelectContent>
       </Select>
       <div className="text-sm text-gray-600">Sort by:</div>
-      <Select defaultValue="last-activity">
+      <Select value={sortBy} onValueChange={setSortBy}>
         <SelectTrigger className="w-40">
           <SelectValue />
         </SelectTrigger>

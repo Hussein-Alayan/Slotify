@@ -7,10 +7,12 @@ export function ClientList({
   businessId,
   searchQuery,
   dateRange,
+  sortBy,
 }: {
   businessId: number;
   searchQuery: string;
   dateRange: string;
+  sortBy: string;
 }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ export function ClientList({
     }
   }
 
-  const filteredClients = clients.filter((client) => {
+  let filteredClients = clients.filter((client) => {
     const q = searchQuery.toLowerCase();
     const matchesSearch =
       client.name.toLowerCase().includes(q) ||
@@ -59,6 +61,27 @@ export function ClientList({
     const matchesDate = isInRange(client.last_whatsapp_activity);
     return matchesSearch && matchesDate;
   });
+
+  // Sorting logic
+  if (sortBy === "last-activity") {
+    filteredClients = filteredClients.sort((a, b) => {
+      const aDate = a.last_whatsapp_activity
+        ? new Date(a.last_whatsapp_activity).getTime()
+        : 0;
+      const bDate = b.last_whatsapp_activity
+        ? new Date(b.last_whatsapp_activity).getTime()
+        : 0;
+      return bDate - aDate;
+    });
+  } else if (sortBy === "name") {
+    filteredClients = filteredClients.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  } else if (sortBy === "bookings") {
+    filteredClients = filteredClients.sort(
+      (a, b) => b.bookings.length - a.bookings.length
+    );
+  }
 
   return (
     <>
