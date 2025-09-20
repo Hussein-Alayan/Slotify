@@ -37,7 +37,7 @@ export function ClientList({
   // Date filter logic
   const now = new Date();
   function isInRange(dateStr: string | null | undefined) {
-    if (!dateStr) return false;
+    if (!dateStr) return dateRange === "all-time";
     const date = new Date(dateStr);
     switch (dateRange) {
       case "day":
@@ -88,10 +88,11 @@ export function ClientList({
       <Card>
         <CardContent className="p-0">
           <div className="border-b px-6 py-4">
-            <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-600">
+            <div className="grid grid-cols-5 gap-4 text-sm font-medium text-gray-600">
               <div>Name</div>
               <div className="text-center">Phone</div>
               <div className="text-center">Email</div>
+              <div className="text-center">WhatsApp Activity</div>
               <div className="text-center">Total Bookings</div>
             </div>
           </div>
@@ -111,13 +112,18 @@ export function ClientList({
                 key={client.id}
                 className="border-b last:border-b-0 px-6 py-4 hover:bg-gray-50"
               >
-                <div className="grid grid-cols-4 gap-4 items-center">
+                <div className="grid grid-cols-5 gap-4 items-center">
                   <div className="font-medium text-gray-900">{client.name}</div>
                   <div className="text-center text-sm text-gray-900">
                     {client.phone}
                   </div>
                   <div className="text-center text-sm text-gray-500">
                     {client.email || "-"}
+                  </div>
+                  <div className="text-center text-sm text-gray-500">
+                    {client.last_whatsapp_activity
+                      ? new Date(client.last_whatsapp_activity).toLocaleString()
+                      : "-"}
                   </div>
                   <div className="text-center text-lg font-semibold">
                     {client.bookings.length}
