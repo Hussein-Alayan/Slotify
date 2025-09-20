@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { ClientFilters } from "../components/client-filters";
 import { ClientList } from "../components/client-list";
 import AddClientModal from "../components/add-client-modal";
+import { Plus } from "lucide-react";
 
 export function ClientContainer() {
   const params = useParams();
@@ -72,4 +73,3 @@ export function ClientContainer() {
     </div>
   );
 }
-import { Plus, Download } from "lucide-react";

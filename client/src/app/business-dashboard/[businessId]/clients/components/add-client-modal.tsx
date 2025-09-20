@@ -53,9 +53,15 @@ export default function AddClientModal({
       mutate([`/businesses/${businessId}/clients`, businessId]);
       setLoading(false);
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setLoading(false);
-      setError(err?.message || "Failed to add client.");
+      if (err && typeof err === "object" && "message" in err) {
+        setError(
+          (err as { message?: string }).message || "Failed to add client."
+        );
+      } else {
+        setError("Failed to add client.");
+      }
     }
   }
 
