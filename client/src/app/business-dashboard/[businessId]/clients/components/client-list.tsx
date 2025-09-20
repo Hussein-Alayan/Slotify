@@ -1,8 +1,9 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { fetchClients, Client } from "@/lib/clientsAPI";
+
 export function ClientList({
   businessId,
   searchQuery,
@@ -14,25 +15,13 @@ export function ClientList({
   dateRange: string;
   sortBy: string;
 }) {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadClients() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchClients(businessId);
-        setClients(data);
-      } catch {
-        setError("Failed to load clients");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadClients();
-  }, [businessId]);
+  const {
+    data: clients = [],
+    error,
+    isLoading,
+  } = useSWR<Client[]>([`/businesses/${businessId}/clients`, businessId], () =>
+    fetchClients(businessId)
+  );
 
   // Date filter logic
   const now = new Date();
@@ -96,18 +85,20 @@ export function ClientList({
               <div className="text-center">Total Bookings</div>
             </div>
           </div>
-          {loading ? (
+          {isLoading ? (
             <div className="px-6 py-4 text-center text-gray-500">
               Loading clients...
             </div>
           ) : error ? (
-            <div className="px-6 py-4 text-center text-red-500">{error}</div>
+            <div className="px-6 py-4 text-center text-red-500">
+              Failed to load clients
+            </div>
           ) : filteredClients.length === 0 ? (
             <div className="px-6 py-4 text-center text-gray-500">
               No clients found.
             </div>
           ) : (
-            filteredClients.map((client) => (
+            filteredClients.map((client: Client) => (
               <div
                 key={client.id}
                 className="border-b last:border-b-0 px-6 py-4 hover:bg-gray-50"

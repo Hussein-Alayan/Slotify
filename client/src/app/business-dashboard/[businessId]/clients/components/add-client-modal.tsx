@@ -1,4 +1,5 @@
 import React from "react";
+import { mutate } from "swr";
 import { createClient } from "@/lib/clientsAPI";
 
 interface AddClientModalProps {
@@ -48,6 +49,8 @@ export default function AddClientModal({
     setLoading(true);
     try {
       await createClient(businessId, { name, phone, email });
+      // Refresh client list after adding
+      mutate([`/businesses/${businessId}/clients`, businessId]);
       setLoading(false);
       onClose();
     } catch (err: any) {

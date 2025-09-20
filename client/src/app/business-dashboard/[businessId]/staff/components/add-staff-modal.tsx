@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { mutate } from "swr";
 import { fetchServices } from "@/lib/servicesAPI";
 import { createStaff, updateStaff, Staff } from "@/lib/staffAPI";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// ...existing code...
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface AddStaffModalProps {
@@ -185,11 +185,18 @@ export function AddStaffModal({
     try {
       if (isEditMode && staff) {
         await updateStaff(businessId, staff.id, payload);
-        onStaffUpdated?.(); // Refresh staff list
       } else {
         await createStaff(businessId, payload);
       }
-      onClose();
+
+      // Refresh staff list using both methods for reliability
+      onStaffUpdated?.(); // Refresh staff list
+      mutate(`/businesses/${businessId}/resources?type=staff`);
+
+      // Small delay to ensure refresh completes before closing
+      setTimeout(() => {
+        onClose();
+      }, 100);
     } catch (err: unknown) {
       if (err && typeof err === "object" && "message" in err) {
         setError(
