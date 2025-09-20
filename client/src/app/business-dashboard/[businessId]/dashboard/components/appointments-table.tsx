@@ -23,6 +23,7 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
   const [timeFilter, setTimeFilter] = useState("week");
   const [serviceFilter, setServiceFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -97,10 +98,22 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
     return serviceMatch && clientMatch && timeMatch;
   });
 
+  // Sort appointments based on selected sort order
+  const sortedAppointments = [...filteredAppointments].sort((a, b) => {
+    const dateA = new Date(a.start_time).getTime();
+    const dateB = new Date(b.start_time).getTime();
+
+    if (sortOrder === "newest") {
+      return dateB - dateA; // Newest first (descending)
+    } else {
+      return dateA - dateB; // Oldest first (ascending)
+    }
+  });
+
   // Pagination
-  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedAppointments.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedAppointments = filteredAppointments.slice(
+  const paginatedAppointments = sortedAppointments.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -190,6 +203,16 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
               ))}
             </SelectContent>
           </Select>
+
+          <Select value={sortOrder} onValueChange={setSortOrder}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
 
@@ -274,8 +297,8 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
           <div className="flex items-center justify-between mt-6">
             <div className="text-sm text-muted-foreground">
               Showing {startIndex + 1} to{" "}
-              {Math.min(startIndex + itemsPerPage, filteredAppointments.length)}{" "}
-              of {filteredAppointments.length} appointments
+              {Math.min(startIndex + itemsPerPage, sortedAppointments.length)}{" "}
+              of {sortedAppointments.length} appointments
             </div>
 
             <div className="flex items-center gap-2">
