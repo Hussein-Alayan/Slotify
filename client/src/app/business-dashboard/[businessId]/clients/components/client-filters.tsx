@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import {
@@ -11,9 +10,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function ClientFilters() {
-  const [searchQuery, setSearchQuery] = useState("");
-
+export function ClientFilters({
+  searchQuery,
+  setSearchQuery,
+}: {
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+}) {
   return (
     <div className="flex items-center gap-4 mb-6">
       <div className="relative flex-1">
@@ -25,16 +28,6 @@ export function ClientFilters() {
           className="pl-10"
         />
       </div>
-      <Select defaultValue="all-status">
-        <SelectTrigger className="w-40">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all-status">All Status</SelectItem>
-          <SelectItem value="active">Active</SelectItem>
-          <SelectItem value="inactive">Inactive</SelectItem>
-        </SelectContent>
-      </Select>
       <Select defaultValue="last-30-days">
         <SelectTrigger className="w-40">
           <SelectValue />

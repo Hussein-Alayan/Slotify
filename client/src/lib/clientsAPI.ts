@@ -5,6 +5,22 @@ interface ApiResponse<T> {
   success: boolean;
 }
 
+export interface Booking {
+  id: number;
+  business_id: number;
+  client_id: number;
+  service_id: number;
+  resource_id: number;
+  start_time: string;
+  end_time: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  source: string;
+  cancellation_reason?: string | null;
+  cancelled_at?: string | null;
+}
+
 export interface Client {
   id: number;
   business_id: number;
@@ -15,6 +31,7 @@ export interface Client {
   normalized_phone: string;
   created_at: string;
   updated_at: string;
+  bookings: Booking[];
 }
 
 export async function createClient(businessId: number, data: {

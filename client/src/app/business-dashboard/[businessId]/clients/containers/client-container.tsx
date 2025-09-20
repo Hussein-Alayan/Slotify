@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ClientFilters } from "../components/client-filters";
 import { ClientList } from "../components/client-list";
 import AddClientModal from "../components/add-client-modal";
@@ -12,6 +12,15 @@ export function ClientContainer() {
   const params = useParams();
   const businessId = Number(params.businessId);
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
   return (
     <div className="p-6">
       {/* Header */}
@@ -41,8 +50,11 @@ export function ClientContainer() {
       </div>
 
       <div className="w-full">
-        <ClientFilters />
-        <ClientList />
+        <ClientFilters
+          searchQuery={searchInput}
+          setSearchQuery={setSearchInput}
+        />
+        <ClientList businessId={businessId} searchQuery={searchQuery} />
       </div>
 
       <AddClientModal
