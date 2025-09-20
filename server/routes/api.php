@@ -19,6 +19,12 @@ Route::get('/businesses/{business}/resources', [\App\Http\Controllers\ResourceCo
 Route::post('/businesses/{business}/resources', [\App\Http\Controllers\ResourceController::class, 'store']);
 Route::patch('/businesses/{business}/resources/{resource}', [\App\Http\Controllers\ResourceController::class, 'update']);
 Route::delete('/businesses/{business}/resources/{resource}', [\App\Http\Controllers\ResourceController::class, 'destroy']);
+
+// Absence management routes
+Route::post('/businesses/{business}/resources/{resource}/absent', [\App\Http\Controllers\ResourceController::class, 'markAbsent']);
+Route::post('/businesses/{business}/resources/{resource}/present', [\App\Http\Controllers\ResourceController::class, 'markPresent']);
+Route::get('/businesses/{business}/resources/{resource}/absence-impact', [\App\Http\Controllers\ResourceController::class, 'getAbsenceImpact']);
+Route::get('/businesses/{business}/absent-staff', [\App\Http\Controllers\ResourceController::class, 'getAbsentStaff']);
 	Route::get('/businesses/{business}/total-services', [\App\Http\Controllers\BusinessStatsController::class, 'totalServices']);
 	Route::get('/businesses/{business}/active-services', [\App\Http\Controllers\BusinessStatsController::class, 'activeServices']);
 	Route::post('/register', [AuthController::class, 'register']);
