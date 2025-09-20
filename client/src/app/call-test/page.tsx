@@ -1,6 +1,22 @@
 "use client";
-// pages/call-test.tsx
+
 import { useEffect, useRef, useState, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Phone,
+  PhoneCall,
+  PhoneOff,
+  Mic,
+  MicOff,
+  Calendar,
+  Building2,
+  User,
+  MessageSquare,
+} from "lucide-react";
 // Helper to start a call and get a call_id from FastAPI
 async function fetchCallId(
   caller_phone = "test",
@@ -28,22 +44,10 @@ async function fetchCallId(
   return data.call_id;
 }
 
-/**
- * Simple call simulator page
- * - Captures mic audio
- * - Downsamples to 16kHz LINEAR16 PCM
- * - Streams PCM chunks over WebSocket to FastAPI: ws://localhost:8001/ws/call/{sessionId}
- * - Displays transcripts received from the server in real time
- *
- * Keep it simple and readable — you can replace sessionId with a real value or
- * call your /incoming/start endpoint first to get a call_id and use that value.
- */
-
 export default function CallTest() {
   const [callId, setCallId] = useState<number | null>(null);
   const [businessId, setBusinessId] = useState("");
   const [clientId, setClientId] = useState("");
-  // ...existing code...
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
@@ -237,84 +241,197 @@ export default function CallTest() {
   }, [stopCall]);
 
   return (
-    <div style={{ padding: 20, fontFamily: "system-ui, sans-serif" }}>
-      <h1>Slotify — Real-time Call Simulator</h1>
+    <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 overflow-hidden">
+      <div className="h-full max-w-6xl mx-auto flex flex-col gap-4">
+        {/* Header - Compact */}
+        <Card className="bg-white shadow-lg border-0 flex-shrink-0">
+          <CardHeader className="pb-3 pt-4">
+            <CardTitle className="flex items-center gap-3 text-xl font-bold text-gray-900">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <Phone className="h-5 w-5 text-white" />
+              </div>
+              Slotify Voice Booking
+              <span className="text-sm font-normal text-gray-600 ml-2">
+                Call a business to book your appointment through AI
+              </span>
+            </CardTitle>
+          </CardHeader>
+        </Card>
 
-      <div>
-        <strong>Call ID:</strong>{" "}
-        {callId ? callId : <span style={{ color: "#888" }}>Not started</span>}
-      </div>
+        {/* Main Content - Two Column Layout */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+          {/* Left Column - Call Setup */}
+          <Card className="bg-white shadow-lg border-0 flex flex-col">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Building2 className="h-5 w-5 text-blue-600" />
+                Call Setup
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col gap-4">
+              {/* Call Status */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2 rounded-full ${
+                      callId ? "bg-green-100" : "bg-gray-100"
+                    }`}
+                  >
+                    {callId ? (
+                      <PhoneCall className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <PhoneOff className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 text-sm">
+                      Call Status
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {callId ? `Connected - ID: ${callId}` : "Not connected"}
+                    </p>
+                  </div>
+                </div>
+                {callId && (
+                  <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                    Active
+                  </Badge>
+                )}
+              </div>
 
-      <div style={{ marginTop: 12 }}>
-        <label>
-          <strong>Business ID:</strong>
-          <input
-            type="text"
-            value={businessId}
-            onChange={(e) => setBusinessId(e.target.value)}
-            style={{ marginLeft: 8, padding: "4px 8px", width: 120 }}
-            placeholder="e.g. 3"
-            disabled={isRecording}
-          />
-        </label>
-        <label style={{ marginLeft: 16 }}>
-          <strong>Client ID:</strong>
-          <input
-            type="text"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            style={{ marginLeft: 8, padding: "4px 8px", width: 120 }}
-            placeholder="e.g. 1 (optional)"
-            disabled={isRecording}
-          />
-        </label>
-        <div style={{ marginTop: 8 }}>
-          {!isRecording ? (
-            <button onClick={startCall} style={{ padding: "8px 12px" }}>
-              Start Call (Mic → WS)
-            </button>
-          ) : (
-            <button
-              onClick={stopCall}
-              style={{
-                padding: "8px 12px",
-                background: "#c33",
-                color: "white",
-              }}
-            >
-              End Call
-            </button>
-          )}
+              {/* Business and Client Info */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="business-id"
+                    className="flex items-center gap-1 text-xs font-medium"
+                  >
+                    <Building2 className="h-3 w-3 text-blue-600" />
+                    Business ID *
+                  </Label>
+                  <Input
+                    id="business-id"
+                    type="text"
+                    value={businessId}
+                    onChange={(e) => setBusinessId(e.target.value)}
+                    placeholder="e.g., 3"
+                    disabled={isRecording}
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="client-id"
+                    className="flex items-center gap-1 text-xs font-medium"
+                  >
+                    <User className="h-3 w-3 text-blue-600" />
+                    Client ID (Optional)
+                  </Label>
+                  <Input
+                    id="client-id"
+                    type="text"
+                    value={clientId}
+                    onChange={(e) => setClientId(e.target.value)}
+                    placeholder="e.g., 1"
+                    disabled={isRecording}
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 h-8 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Call Controls */}
+              <div className="flex justify-center pt-2">
+                {!isRecording ? (
+                  <Button
+                    onClick={startCall}
+                    size="lg"
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
+                  >
+                    <PhoneCall className="h-4 w-4 mr-2" />
+                    Start Call
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={stopCall}
+                    size="lg"
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
+                  >
+                    <PhoneOff className="h-4 w-4 mr-2" />
+                    End Call
+                  </Button>
+                )}
+              </div>
+
+              {/* Recording Indicator */}
+              {isRecording && (
+                <div className="flex items-center justify-center gap-2 p-2 bg-red-50 rounded-lg border border-red-200">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <Mic className="h-3 w-3 text-red-600" />
+                  <span className="text-xs font-medium text-red-700">
+                    Recording...
+                  </span>
+                </div>
+              )}
+
+              {/* Technical Info */}
+              <div className="mt-auto pt-2 border-t border-gray-100">
+                <div className="flex items-start gap-2">
+                  <div className="p-1 bg-blue-100 rounded">
+                    <Calendar className="h-3 w-3 text-blue-600" />
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    <p className="font-medium text-gray-900 mb-1">Connection</p>
+                    <p>
+                      WS:{" "}
+                      <code className="bg-gray-100 px-1 rounded text-xs">
+                        ws://localhost:8001/ws/call/{callId || "{id}"}
+                      </code>
+                    </p>
+                    <p>Format: PCM LINEAR16 @ 16kHz</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Right Column - Live Transcript */}
+          <Card className="bg-white shadow-lg border-0 flex flex-col">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MessageSquare className="h-5 w-5 text-blue-600" />
+                Live Conversation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 min-h-0">
+              <div className="h-full overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
+                {transcript ? (
+                  <div className="space-y-2">
+                    {transcript.split("\n").map((line, index) => (
+                      <div
+                        key={index}
+                        className="p-2 bg-white rounded-lg shadow-sm border-l-4 border-blue-500"
+                      >
+                        <p className="text-gray-800 leading-relaxed text-sm">
+                          {line}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <MessageSquare className="h-10 w-10 mb-2 text-gray-300" />
+                    <p className="text-center text-sm">
+                      No conversation yet — start a call and speak into your
+                      microphone
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      <section style={{ marginTop: 20 }}>
-        <h3>Live transcript</h3>
-        <div
-          style={{
-            whiteSpace: "pre-wrap",
-            minHeight: 120,
-            border: "1px solid #ddd",
-            padding: 12,
-            borderRadius: 6,
-            background: "#fafafa",
-          }}
-        >
-          {transcript || (
-            <span style={{ color: "#888" }}>
-              No transcript yet — speak into your mic.
-            </span>
-          )}
-        </div>
-      </section>
-
-      <section style={{ marginTop: 20 }}>
-        <small>
-          Notes: WebSocket URL is{" "}
-          <code>ws://localhost:8001/ws/call/{callId || "{call_id}"}</code>. Make
-          sure FastAPI server is running and accepts PCM LINEAR16 @ 16kHz.
-        </small>
-      </section>
     </div>
   );
 }
