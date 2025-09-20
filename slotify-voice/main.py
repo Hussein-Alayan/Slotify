@@ -117,7 +117,7 @@ async def websocket_call(websocket: WebSocket, session_id: str):
             buffer = ""
             ai_buffer = ""
             import json
-            async for chunk in stream_gemini_response(static_context, dynamic_context):
+            async for chunk in stream_gemini_response(static_context, dynamic_context, session_id):
                 if not chunk or not chunk.strip():
                     continue
                 buffer += chunk
@@ -279,14 +279,22 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                             intent = result.get("intent")
                             entities = result.get("entities", {})
 
-                            # Handle booking intent with rate limiting
-                            booking_response = None
+                            # Handle different intents
                             if intent == "booking":
+                                # Immediate TTS acknowledgment for booking attempts
+                                acknowledgment_text = "Let me see what we have available..."
+                                try:
+                                    tts_audio = synthesize_speech(acknowledgment_text)
+                                    await websocket.send_bytes(tts_audio)
+                                    await websocket.send_text(acknowledgment_text)
+                                except Exception as e:
+                                    print(f"[ERROR] TTS acknowledgment failed: {e}")
+                                
                                 # Check rate limiting
                                 can_book, reason = booking_rate_limiter.can_attempt_booking(session_id)
                                 if not can_book:
                                     print(f"[RATE_LIMIT] Booking blocked for session {session_id}: {reason}")
-                                    await websocket.send_text(f"Sorry, {reason}")
+                                    update_dynamic_context(session_id, "last_booking_result", {"error": reason})
                                 else:
                                     # Validate booking data
                                     client_id = dynamic_context.get("client_id") if dynamic_context else None
@@ -300,12 +308,11 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                                     
                                     if not is_valid:
                                         print(f"[VALIDATION] Booking validation failed: {error_msg}")
-                                        await websocket.send_text(f"I need more information: {error_msg}")
+                                        update_dynamic_context(session_id, "last_booking_result", {"error": error_msg})
                                         booking_rate_limiter.record_attempt(session_id, success=False)
                                     else:
                                         # Attempt booking with error handling
                                         try:
-                                            client_id = dynamic_context.get("client_id") if dynamic_context else None
                                             print(f"[DEBUG] Calling create_booking with: business_id={business_id}, date={entities.get('date')}, time={entities.get('time')}, service_id={entities.get('service_id')}, client_id={client_id}")
                                             
                                             booking_response = create_booking(
@@ -322,29 +329,40 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                                             
                                         except Exception as booking_error:
                                             print(f"[ERROR] Booking failed: {booking_error}")
+                                            update_dynamic_context(session_id, "last_booking_result", {"error": str(booking_error)})
                                             booking_rate_limiter.record_attempt(session_id, success=False)
-                                            await websocket.send_text("Sorry, I couldn't complete your booking. Please try again later.")
+                                
+                                # Update context and generate AI response with booking result
+                                try:
+                                    history = dynamic_context.get("history", [])
+                                    history.append({"role": "user", "content": transcript_clean})
+                                    update_dynamic_context(session_id, "history", history)
+                                    update_dynamic_context(session_id, "last_user_message", transcript_clean)
+                                    
+                                    # AI response with booking context
+                                    asyncio.create_task(handle_ai_and_tts(session_id, static_context))
+                                except Exception as e:
+                                    print(f"[ERROR] Booking context update failed: {e}")
+                            
+                            else:
+                                # For non-booking intents (service_inquiry, general_question, etc.)
+                                # Let AI handle immediately - no booking process needed
+                                try:
+                                    history = dynamic_context.get("history", [])
+                                    history.append({"role": "user", "content": transcript_clean})
+                                    update_dynamic_context(session_id, "history", history)
+                                    update_dynamic_context(session_id, "last_user_message", transcript_clean)
+                                    
+                                    # Normal AI response
+                                    asyncio.create_task(handle_ai_and_tts(session_id, static_context))
+                                except Exception as e:
+                                    print(f"[ERROR] AI task creation failed: {e}")
 
                             # Safe transcript forwarding
                             try:
                                 forward_transcript(session_id, transcript_clean)
                             except Exception as e:
                                 print(f"[ERROR] Forward transcript failed: {e}")
-                            
-                            # Update context safely
-                            try:
-                                history = dynamic_context.get("history", [])
-                                history.append({"role": "user", "content": transcript_clean})
-                                update_dynamic_context(session_id, "history", history)
-                                update_dynamic_context(session_id, "last_user_message", transcript_clean)
-                            except Exception as e:
-                                print(f"[ERROR] Context update failed: {e}")
-
-                            # Spawn AI + TTS safely
-                            try:
-                                asyncio.create_task(handle_ai_and_tts(session_id, static_context))
-                            except Exception as e:
-                                print(f"[ERROR] AI task creation failed: {e}")
                                 
                         except Exception as intent_error:
                             print(f"[ERROR] Intent processing failed: {intent_error}")

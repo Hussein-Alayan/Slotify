@@ -32,7 +32,7 @@ def get_access_token():
         raise
 
 
-async def stream_gemini_response(static_context: dict, dynamic_context: dict):
+async def stream_gemini_response(static_context: dict, dynamic_context: dict, session_id: str | None = None):
     endpoint = (
         f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/"
         f"{PROJECT_ID}/locations/{LOCATION}/publishers/google/models/{MODEL_ID}:streamGenerateContent"
@@ -53,13 +53,34 @@ async def stream_gemini_response(static_context: dict, dynamic_context: dict):
         "and provide helpful information using the provided business context and current bookings. "
         "Keep responses concise, natural, and conversational—never more than 1-2 sentences unless asked for detail. "
         "Do not invent information or bookings; only use what is provided. "
-        "If you are unsure, ask the caller for clarification or offer to connect them to a human."
+        "If you are unsure, ask the caller for clarification or offer to connect them to a human. "
+        "IMPORTANT: If there's a recent booking result in the context, respond based on that result. "
+        "For successful bookings, confirm with details (service, date, time, booking ID). "
+        "For failed bookings, explain the issue and offer alternatives."
     )
 
     history = dynamic_context.get("history", [])
+    booking_result = dynamic_context.get("last_booking_result")
 
     # Always start with system instruction
     contents = [{"role": "user", "parts": [{"text": system_instruction}]}]
+
+    # Include booking result if available
+    if booking_result:
+        if "error" in booking_result:
+            booking_context = f"BOOKING FAILED: {booking_result['error']}. Please help the customer understand what went wrong and offer alternatives."
+        else:
+            booking_context = f"BOOKING SUCCESSFUL: {booking_result}. Please confirm the booking details to the customer including the booking ID and appointment details."
+        
+        contents.append({
+            "role": "user", 
+            "parts": [{"text": booking_context}]
+        })
+        
+        # Clear booking result after using it to prevent stale data
+        if session_id:
+            from services.context import update_dynamic_context
+            update_dynamic_context(session_id, "last_booking_result", None)
 
     # Append conversation history
     for msg in history:
