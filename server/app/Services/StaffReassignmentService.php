@@ -12,10 +12,12 @@ use Exception;
 class StaffReassignmentService
 {
     protected BookingService $bookingService;
+    protected N8nNotificationService $n8nService;
 
-    public function __construct(BookingService $bookingService)
+    public function __construct(BookingService $bookingService, N8nNotificationService $n8nService)
     {
         $this->bookingService = $bookingService;
+        $this->n8nService = $n8nService;
     }
 
     /**
@@ -89,6 +91,12 @@ class StaffReassignmentService
                         'cancellation_reason' => 'Reassigned due to staff absence'
                     ]);
                     
+                    // Send reassignment notification
+                    $this->n8nService->sendBookingReassignmentNotification(
+                        $booking->fresh()->load(['client', 'service', 'business']), 
+                        $reassignmentResult['new_staff']
+                    );
+                    
                     $successfulReassignments[] = [
                         'booking' => $booking->fresh(),
                         'new_staff' => $reassignmentResult['new_staff']
@@ -100,6 +108,12 @@ class StaffReassignmentService
                         'cancellation_reason' => 'Staff unavailable - ' . $reassignmentResult['reason'],
                         'cancelled_at' => now()
                     ]);
+                    
+                    // Send cancellation notification
+                    $this->n8nService->sendBookingCancellationNotification(
+                        $booking->fresh()->load(['client', 'service', 'business']), 
+                        'Staff unavailable - ' . $reassignmentResult['reason']
+                    );
                     
                     $conflicts[] = [
                         'booking' => $booking->fresh(),
