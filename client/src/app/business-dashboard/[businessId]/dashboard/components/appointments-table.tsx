@@ -244,6 +244,17 @@ export function AppointmentsTable({ businessId }: { businessId: number }) {
                         ${appointment.service.price}
                       </div>
                     </div>
+
+                    <div className="h-8 w-px bg-border" />
+
+                    <div>
+                      <div className="font-medium">
+                        {appointment.resource?.name || "Unassigned"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Staff Member
+                      </div>
+                    </div>
                   </div>
 
                   <Badge className={getStatusColor(appointment.status)}>

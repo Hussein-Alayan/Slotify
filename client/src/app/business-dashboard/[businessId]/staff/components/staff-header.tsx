@@ -1,11 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar, List } from "lucide-react";
+import { Plus, UserX, List } from "lucide-react";
 
 interface StaffHeaderProps {
-  viewMode: "table" | "calendar";
-  onViewModeChange: (mode: "table" | "calendar") => void;
+  viewMode: "table" | "absence";
+  onViewModeChange: (mode: "table" | "absence") => void;
   onAddStaff: () => void;
 }
 
@@ -34,16 +34,16 @@ export function StaffHeader({
             className="flex items-center gap-2"
           >
             <List className="h-4 w-4" />
-            Table View
+            Staff Table
           </Button>
           <Button
-            variant={viewMode === "calendar" ? "default" : "outline"}
+            variant={viewMode === "absence" ? "default" : "outline"}
             size="sm"
-            onClick={() => onViewModeChange("calendar")}
+            onClick={() => onViewModeChange("absence")}
             className="flex items-center gap-2"
           >
-            <Calendar className="h-4 w-4" />
-            Calendar View
+            <UserX className="h-4 w-4" />
+            Absence Management
           </Button>
         </div>
 

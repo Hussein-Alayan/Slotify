@@ -60,11 +60,10 @@ class StaffReassignmentService
         return Booking::where('resource_id', $staff->id)
             ->where('status', '!=', 'cancelled')
             ->where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('booking_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                      ->orWhere(function ($subQuery) use ($startDate, $endDate) {
-                          $subQuery->where('booking_date', '>=', $startDate->format('Y-m-d'))
-                                   ->where('booking_date', '<=', $endDate->format('Y-m-d'));
-                      });
+                $query->whereBetween('start_time', [
+                    $startDate->startOfDay()->toDateTimeString(),
+                    $endDate->endOfDay()->toDateTimeString()
+                ]);
             })
             ->with(['service', 'client'])
             ->get();
@@ -120,9 +119,9 @@ class StaffReassignmentService
             // Get available staff for this service at this time
             $availableStaff = $this->getAvailableStaff(
                 $booking->service,
-                $booking->booking_date,
-                $booking->start_time,
-                $booking->end_time,
+                $booking->start_time->format('Y-m-d'),
+                $booking->start_time->format('H:i:s'),
+                $booking->end_time->format('H:i:s'),
                 $booking->resource_id // Exclude the absent staff
             );
 
@@ -158,20 +157,20 @@ class StaffReassignmentService
      */
     protected function getAvailableStaff($service, string $date, string $startTime, string $endTime, ?int $excludeStaffId = null): Collection
     {
+        // Convert date and time strings to proper datetime strings
+        $requestedStart = Carbon::parse($date . ' ' . $startTime);
+        $requestedEnd = Carbon::parse($date . ' ' . $endTime);
+
         $query = Resource::whereHas('services', function ($query) use ($service) {
             $query->where('services.id', $service->id);
         })
         ->where('is_absent', false)
-        ->whereDoesntHave('bookings', function ($query) use ($date, $startTime, $endTime) {
-            $query->where('booking_date', $date)
-                  ->where('status', '!=', 'cancelled')
-                  ->where(function ($timeQuery) use ($startTime, $endTime) {
-                      $timeQuery->whereBetween('start_time', [$startTime, $endTime])
-                                ->orWhereBetween('end_time', [$startTime, $endTime])
-                                ->orWhere(function ($overlapQuery) use ($startTime, $endTime) {
-                                    $overlapQuery->where('start_time', '<=', $startTime)
-                                                 ->where('end_time', '>=', $endTime);
-                                });
+        ->whereDoesntHave('bookings', function ($query) use ($requestedStart, $requestedEnd) {
+            $query->where('status', '!=', 'cancelled')
+                  ->where(function ($timeQuery) use ($requestedStart, $requestedEnd) {
+                      // Check for time overlap: bookings that would conflict
+                      $timeQuery->where('start_time', '<', $requestedEnd)
+                                ->where('end_time', '>', $requestedStart);
                   });
         });
 
@@ -201,7 +200,9 @@ class StaffReassignmentService
             'total_affected_bookings' => $affectedBookings->count(),
             'services_affected' => $affectedBookings->pluck('service.name')->unique()->values(),
             'clients_affected' => $affectedBookings->pluck('client.name')->unique()->values(),
-            'bookings_by_date' => $affectedBookings->groupBy('booking_date')->map->count()
+            'bookings_by_date' => $affectedBookings->groupBy(function ($booking) {
+                return $booking->start_time->format('Y-m-d');
+            })->map->count()
         ];
 
         return $summary;
@@ -214,9 +215,9 @@ class StaffReassignmentService
     {
         $availableStaff = $this->getAvailableStaff(
             $booking->service,
-            $booking->booking_date,
-            $booking->start_time,
-            $booking->end_time,
+            $booking->start_time->format('Y-m-d'),
+            $booking->start_time->format('H:i:s'),
+            $booking->end_time->format('H:i:s'),
             $booking->resource_id
         );
 

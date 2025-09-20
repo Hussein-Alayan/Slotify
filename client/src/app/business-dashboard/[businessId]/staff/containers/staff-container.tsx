@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { StaffHeader } from "../components/staff-header";
 import StaffTable from "../components/staff-table";
-import { StaffCalendar } from "../components/staff-calendar";
+import { AbsenceManagement } from "../components/absence-management";
 import { AddStaffModal } from "../components/add-staff-modal";
 import { useBusinessContext } from "@/contexts/BusinessContext";
 
 export function StaffContainer() {
-  const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
+  const [viewMode, setViewMode] = useState<"table" | "absence">("table");
   const [isAddStaffModalOpen, setIsAddStaffModalOpen] = useState(false);
   const { businessId } = useBusinessContext();
 
@@ -20,7 +20,7 @@ export function StaffContainer() {
         onAddStaff={() => setIsAddStaffModalOpen(true)}
       />
 
-      {viewMode === "table" ? <StaffTable /> : <StaffCalendar />}
+      {viewMode === "table" ? <StaffTable /> : <AbsenceManagement />}
 
       <AddStaffModal
         isOpen={isAddStaffModalOpen}

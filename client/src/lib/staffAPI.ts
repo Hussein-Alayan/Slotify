@@ -37,6 +37,11 @@ export interface Staff {
   created_at: string;
   updated_at: string;
   services?: Service[];
+  // Absence tracking fields
+  is_absent: boolean;
+  absence_reason: string | null;
+  absence_start: string | null;
+  absence_end: string | null;
 }
 
 export async function getStaff(businessId: number): Promise<Staff[]> {
@@ -116,5 +121,92 @@ export async function deleteStaff(
   const response = await api.delete<
     ApiResponse<{ success: boolean; message: string }>
   >(`/v1/businesses/${businessId}/resources/${staffId}`);
+  return response.data.data;
+}
+
+// Absence management functions
+export interface AbsenceData {
+  reason: string;
+  start_date: string;
+  end_date: string;
+}
+
+export interface Booking {
+  id: number;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  service?: {
+    id: number;
+    name: string;
+  };
+  client?: {
+    id: number;
+    name: string;
+  };
+}
+
+export interface AbsenceResult {
+  staff: Staff;
+  affected_bookings_count: number;
+  successfully_reassigned: Array<{ booking: Booking; new_staff: Staff }>;
+  failed_reassignments: Array<{ booking: Booking; error: string }>;
+  conflicts: Array<{ booking: Booking; reason: string }>;
+}
+
+export interface AbsenceImpact {
+  staff_name: string;
+  absence_period: {
+    start: string;
+    end: string;
+  };
+  total_affected_bookings: number;
+  services_affected: string[];
+  clients_affected: string[];
+  bookings_by_date: Record<string, number>;
+}
+
+export async function markStaffAbsent(
+  businessId: number,
+  staffId: number,
+  absenceData: AbsenceData
+): Promise<AbsenceResult> {
+  const response = await api.post<ApiResponse<AbsenceResult>>(
+    `/v1/businesses/${businessId}/resources/${staffId}/absent`,
+    absenceData
+  );
+  return response.data.data;
+}
+
+export async function markStaffPresent(
+  businessId: number,
+  staffId: number
+): Promise<{ message: string; staff: Staff }> {
+  const response = await api.post<ApiResponse<{ message: string; staff: Staff }>>(
+    `/v1/businesses/${businessId}/resources/${staffId}/present`
+  );
+  return response.data.data;
+}
+
+export async function getAbsenceImpact(
+  businessId: number,
+  staffId: number,
+  startDate?: string,
+  endDate?: string
+): Promise<AbsenceImpact> {
+  const params = new URLSearchParams();
+  if (startDate) params.append('start_date', startDate);
+  if (endDate) params.append('end_date', endDate);
+  
+  const response = await api.get<ApiResponse<AbsenceImpact>>(
+    `/v1/businesses/${businessId}/resources/${staffId}/absence-impact?${params}`
+  );
+  return response.data.data;
+}
+
+export async function getAbsentStaff(businessId: number): Promise<Staff[]> {
+  const response = await api.get<ApiResponse<Staff[]>>(
+    `/v1/businesses/${businessId}/absent-staff`
+  );
   return response.data.data;
 }

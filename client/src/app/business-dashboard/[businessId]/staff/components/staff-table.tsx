@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Edit, UserX } from "lucide-react";
+import { Edit, UserX, UserCheck } from "lucide-react";
 import React, { useState } from "react";
 import useSWR, { mutate } from "swr";
 import { useBusinessContext } from "@/contexts/BusinessContext";
@@ -138,6 +138,9 @@ export default function StaffTable() {
                 Role
               </th>
               <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                Status
+              </th>
+              <th className="text-left py-3 px-4 font-semibold text-gray-900">
                 Availability
               </th>
               <th className="text-left py-3 px-4 font-semibold text-gray-900">
@@ -158,6 +161,19 @@ export default function StaffTable() {
                   <div className="font-medium text-gray-900">{staff.name}</div>
                 </td>
                 <td className="py-4 px-4 text-gray-700">{staff.role || "-"}</td>
+                <td className="py-4 px-4">
+                  {staff.is_absent ? (
+                    <Badge className="bg-red-100 text-red-800 border border-red-200">
+                      <UserX className="h-3 w-3 mr-1" />
+                      Absent
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-green-100 text-green-800 border border-green-200">
+                      <UserCheck className="h-3 w-3 mr-1" />
+                      Present
+                    </Badge>
+                  )}
+                </td>
                 <td className="py-4 px-4 text-gray-700">
                   {/* Compact availability: group consecutive days with same hours */}
                   {(() => {
