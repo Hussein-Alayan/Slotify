@@ -54,4 +54,11 @@ class BusinessController extends Controller
     {
         return $this->successResponse(json_decode($business->workflow, true));
     }
+
+    public function publicList(Request $request)
+    {
+        // Get all businesses with just id and name for public dropdown
+        $businesses = Business::select('id', 'name')->get();
+        return $this->successResponse($businesses);
+    }
 }

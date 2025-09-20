@@ -53,6 +53,9 @@ Route::prefix('voice')->group(function () {
 
 	// Business workflow (public access)
 	Route::get('/businesses/{business}/workflow', [\App\Http\Controllers\BusinessController::class, 'workflow']);
+	
+	// Public businesses list for voice call testing
+	Route::get('/businesses/public/list', [\App\Http\Controllers\BusinessController::class, 'publicList']);
 
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::get('/me', [AuthController::class, 'me']);

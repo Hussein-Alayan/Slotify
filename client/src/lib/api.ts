@@ -40,4 +40,45 @@ api.interceptors.response.use(
   }
 );
 
+// Helper to start a call and get a call_id from FastAPI
+export async function fetchCallId(
+  caller_phone = "test",
+  business_id = "",
+  client_id = ""
+): Promise<string> {
+  const body: {
+    caller_phone: string;
+    business_id: string;
+    client_id?: number;
+  } = {
+    caller_phone,
+    business_id,
+  };
+  
+  if (client_id) {
+    body.client_id = parseInt(client_id, 10);
+  }
+
+  const resp = await fetch("http://localhost:8001/incoming/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  
+  const data = await resp.json();
+  return data.call_id;
+}
+
+// Helper to fetch all businesses for dropdown
+export async function fetchBusinesses(): Promise<Array<{id: number, name: string}>> {
+  try {
+  const response = await api.get('/v1/businesses/public/list');
+    const responseData = response.data as { data: Array<{id: number, name: string}> };
+    return responseData.data; // ApiResponseTrait wraps data in 'data' property
+  } catch (error) {
+    console.error('Error fetching businesses:', error);
+    throw error;
+  }
+}
+
 export default api;
