@@ -65,7 +65,8 @@ async def handle_websocket_error(websocket, session_id: str, error: Exception):
         print(f"[ERROR] Could not send error message to WebSocket for session {session_id}")
 
 def validate_booking_data(business_id: Optional[str], date: Optional[str], 
-                         time: Optional[str], service_id: Optional[str]) -> tuple[bool, str]:
+                         time: Optional[str], service_id: Optional[str], 
+                         client_id: Optional[str] = None) -> tuple[bool, str]:
     """
     Validate booking data before making API calls.
     Returns (is_valid, error_message)
@@ -81,5 +82,8 @@ def validate_booking_data(business_id: Optional[str], date: Optional[str],
     
     if not service_id:
         return False, "Service must be specified for booking"
+    
+    if not client_id:
+        return False, "Client identification is required for booking"
     
     return True, ""

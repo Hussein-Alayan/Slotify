@@ -8,22 +8,39 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Gemini LLM intent detection and entity extraction
-async def detect_intent_llm(transcript, service_mapping=None):
+async def detect_intent_llm(transcript, service_mapping=None, conversation_history=None):
     service_mapping = service_mapping or {}
+    conversation_history = conversation_history or []
 
-    def build_prompt(transcript, service_mapping):
+    def build_prompt(transcript, service_mapping, conversation_history):
+        # Build conversation context
+        context = ""
+        if conversation_history:
+            context = "Previous conversation:\n"
+            for msg in conversation_history[-5:]:  # Last 5 messages for context
+                role = msg.get('role', 'unknown')
+                content = msg.get('content', '')
+                context += f"{role}: {content}\n"
+            context += f"\nCurrent user message: '{transcript}'\n\n"
+        
         return (
+            f"{context}"
             f"Classify the intent of this message: '{transcript}'. "
             "Return one of: booking, availability, cancel, reschedule, pricing, staff_info, business_info, unknown. "
             "Extract entities: date, time, service_id, staff, booking_id. "
             f"Here is the service mapping for this business (name → id): {json.dumps(service_mapping)}. "
             "When extracting entities, always use the numeric service_id from this mapping. "
-            "If the service is not found, set service_id to null. "
+            "For service matching: Look for the closest semantic match between what the user said and the available service names. "
+            "Consider partial matches, abbreviations, and common synonyms. "
+            "Examples: 'consultation' might match 'General Consultation', 'checkup' might match 'Dental Checkup', etc. "
+            "If you find a reasonable semantic match, use that service_id. If no clear match exists, set service_id to null. "
+            "IMPORTANT: If the user is confirming a previously suggested booking (like 'yes', 'confirm', 'book it'), "
+            "extract the date, time, and service details from the conversation history above. "
             "Respond ONLY with a valid JSON object containing 'intent' and 'entities'. "
             "If you cannot extract intent/entities, reply with: {\"intent\": \"unknown\", \"entities\": {}}"
         )
 
-    prompt = build_prompt(transcript, service_mapping)
+    prompt = build_prompt(transcript, service_mapping, conversation_history)
 
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
     GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")

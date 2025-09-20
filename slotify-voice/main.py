@@ -60,6 +60,10 @@ def start_call(data: StartCallRequest):
         init_dynamic_context(call_id)
         # Initialize conversation history for this session
         update_dynamic_context(call_id, "history", [])
+        # Store client information for booking
+        if data.client_id:
+            update_dynamic_context(call_id, "client_id", data.client_id)
+        update_dynamic_context(call_id, "business_id", data.business_id)
 
         return {"call_id": call_id, "reply": "Hi, thanks for calling Slotify!"}
     except Exception as e:
@@ -204,7 +208,26 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                 chunk = await websocket.receive_bytes()
                 stt_session.chunk_queue.put(chunk)
 
-                static_context = get_static_context(session_id) or {}
+                static_context = get_static_context(session_id)
+                if not static_context:
+                    # Try to extract business_id from session_id if it follows pattern business_id-session
+                    if "-" in session_id:
+                        try:
+                            business_id = int(session_id.split("-")[0])
+                            print(f"[INFO] Extracted business_id {business_id} from session_id {session_id}")
+                            static_context = fetch_static_context(business_id)
+                            if static_context:
+                                cache_static_context(session_id, static_context)
+                            else:
+                                print(f"[ERROR] Failed to fetch static context for business_id {business_id}")
+                                static_context = {}
+                        except (ValueError, IndexError) as e:
+                            print(f"[ERROR] Could not extract business_id from session_id {session_id}: {e}")
+                            static_context = {}
+                    else:
+                        print(f"[ERROR] No static context found for session {session_id} and cannot extract business_id")
+                        static_context = {}
+                
                 dynamic_context = get_dynamic_context(session_id) or {}
 
                 # Send greeting once
@@ -234,16 +257,24 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                             
                             print(f"[DEBUG] Transcript received: {transcript_clean}")
                             business_id = static_context.get("id") or static_context.get("business_id")
+                            print(f"[DEBUG] Static context keys: {list(static_context.keys())}")
+                            print(f"[DEBUG] Business ID found: {business_id}")
                             
                             # Safe service mapping with timeout
                             service_mapping = {}
                             if business_id:
                                 try:
                                     service_mapping = get_service_mapping(business_id)
+                                    print(f"[DEBUG] Service mapping retrieved: {service_mapping}")
                                 except Exception as e:
                                     print(f"[ERROR] Service mapping failed: {e}")
+                            else:
+                                print(f"[WARNING] No business_id found in static_context")
                             
-                            result = await detect_intent_llm(transcript_clean, service_mapping=service_mapping)
+                            # Get conversation history for context
+                            conversation_history = dynamic_context.get("history", []) if dynamic_context else []
+                            
+                            result = await detect_intent_llm(transcript_clean, service_mapping=service_mapping, conversation_history=conversation_history)
                             print(f"[DEBUG] LLM intent result: {result}")
                             intent = result.get("intent")
                             entities = result.get("entities", {})
@@ -258,11 +289,13 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                                     await websocket.send_text(f"Sorry, {reason}")
                                 else:
                                     # Validate booking data
+                                    client_id = dynamic_context.get("client_id") if dynamic_context else None
                                     is_valid, error_msg = validate_booking_data(
                                         business_id, 
                                         entities.get('date'), 
                                         entities.get('time'), 
-                                        entities.get('service_id')
+                                        entities.get('service_id'),
+                                        client_id
                                     )
                                     
                                     if not is_valid:
@@ -272,15 +305,15 @@ async def websocket_call(websocket: WebSocket, session_id: str):
                                     else:
                                         # Attempt booking with error handling
                                         try:
-                                            client_info = dynamic_context.get("client_info") if dynamic_context else None
-                                            print(f"[DEBUG] Calling create_booking with: business_id={business_id}, date={entities.get('date')}, time={entities.get('time')}, service_id={entities.get('service_id')}, client_info={client_info}")
+                                            client_id = dynamic_context.get("client_id") if dynamic_context else None
+                                            print(f"[DEBUG] Calling create_booking with: business_id={business_id}, date={entities.get('date')}, time={entities.get('time')}, service_id={entities.get('service_id')}, client_id={client_id}")
                                             
                                             booking_response = create_booking(
                                                 business_id,
                                                 entities.get("date"),
                                                 entities.get("time"),
                                                 entities.get("service_id"),
-                                                client_info
+                                                client_id=client_id
                                             )
                                             
                                             print(f"[DEBUG] Booking API response: {booking_response}")

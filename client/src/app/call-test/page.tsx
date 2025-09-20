@@ -2,11 +2,27 @@
 // pages/call-test.tsx
 import { useEffect, useRef, useState, useCallback } from "react";
 // Helper to start a call and get a call_id from FastAPI
-async function fetchCallId(caller_phone = "test", business_id = "") {
+async function fetchCallId(
+  caller_phone = "test",
+  business_id = "",
+  client_id = ""
+) {
+  const body: {
+    caller_phone: string;
+    business_id: string;
+    client_id?: number;
+  } = {
+    caller_phone,
+    business_id,
+  };
+  if (client_id) {
+    body.client_id = parseInt(client_id, 10);
+  }
+
   const resp = await fetch("http://localhost:8001/incoming/start", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ caller_phone, business_id }),
+    body: JSON.stringify(body),
   });
   const data = await resp.json();
   return data.call_id;
@@ -26,6 +42,7 @@ async function fetchCallId(caller_phone = "test", business_id = "") {
 export default function CallTest() {
   const [callId, setCallId] = useState<number | null>(null);
   const [businessId, setBusinessId] = useState("");
+  const [clientId, setClientId] = useState("");
   // ...existing code...
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -81,12 +98,12 @@ export default function CallTest() {
 
   // ---- Start recording + open websocket ----
   async function startCall() {
-    // Get a real call_id from FastAPI, passing businessId
+    // Get a real call_id from FastAPI, passing businessId and clientId
     if (!businessId) {
       alert("Please enter a business ID.");
       return;
     }
-    const newCallId = await fetchCallId("test", businessId);
+    const newCallId = await fetchCallId("test", businessId, clientId);
     setCallId(newCallId);
     // create websocket
     const wsUrl = `ws://localhost:8001/ws/call/${newCallId}`;
@@ -236,7 +253,18 @@ export default function CallTest() {
             value={businessId}
             onChange={(e) => setBusinessId(e.target.value)}
             style={{ marginLeft: 8, padding: "4px 8px", width: 120 }}
-            placeholder="e.g. 1"
+            placeholder="e.g. 3"
+            disabled={isRecording}
+          />
+        </label>
+        <label style={{ marginLeft: 16 }}>
+          <strong>Client ID:</strong>
+          <input
+            type="text"
+            value={clientId}
+            onChange={(e) => setClientId(e.target.value)}
+            style={{ marginLeft: 8, padding: "4px 8px", width: 120 }}
+            placeholder="e.g. 1 (optional)"
             disabled={isRecording}
           />
         </label>
