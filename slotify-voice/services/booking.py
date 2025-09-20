@@ -61,7 +61,7 @@ def parse_natural_datetime(date_str, time_str):
 	
 	# Parse date (e.g., "Monday" -> next Monday's date)
 	date_str = date_str.lower().strip()
-	today = datetime.now()
+	now = datetime.now()
 	
 	# Days of week mapping
 	days_map = {
@@ -72,19 +72,37 @@ def parse_natural_datetime(date_str, time_str):
 	if date_str in days_map:
 		# Find next occurrence of this day
 		target_weekday = days_map[date_str]
-		days_ahead = target_weekday - today.weekday()
-		if days_ahead <= 0:  # Target day already happened this week
+		days_ahead = target_weekday - now.weekday()
+		
+		# If it's the same day, check if the time has passed
+		if days_ahead == 0:
+			# Check if requested time already passed today
+			requested_datetime = datetime.combine(now.date(), datetime.strptime(parsed_time, "%H:%M").time())
+			if requested_datetime <= now:
+				days_ahead = 7  # Move to next week
+				
+		if days_ahead < 0:  # Target day already happened this week
 			days_ahead += 7
-		target_date = today + timedelta(days=days_ahead)
+			
+		target_date = now + timedelta(days=days_ahead)
 		parsed_date = target_date.strftime("%Y-%m-%d")
 	else:
 		# Try to parse as regular date, or default to tomorrow
 		try:
 			parsed_dt = datetime.strptime(date_str, "%Y-%m-%d")
+			# Ensure the date is in the future
+			if parsed_dt.date() <= now.date():
+				# If date is today, check if time has passed
+				if parsed_dt.date() == now.date():
+					requested_datetime = datetime.combine(parsed_dt.date(), datetime.strptime(parsed_time, "%H:%M").time())
+					if requested_datetime <= now:
+						parsed_dt = now + timedelta(days=1)  # Move to tomorrow
+				else:
+					parsed_dt = now + timedelta(days=1)  # Move to tomorrow
 			parsed_date = parsed_dt.strftime("%Y-%m-%d")
 		except:
 			# Default to tomorrow
-			tomorrow = today + timedelta(days=1)
+			tomorrow = now + timedelta(days=1)
 			parsed_date = tomorrow.strftime("%Y-%m-%d")
 	
 	return parsed_date, parsed_time
@@ -144,7 +162,15 @@ def create_booking(business_id, date, time, service_id, client_id=None, resource
 	
 	if resp.status_code not in [200, 201]:
 		print(f"[ERROR] Booking failed: {resp.status_code} - {resp.text}")
-		resp.raise_for_status()
+		try:
+			error_data = resp.json()
+			error_message = error_data.get('message', resp.text)
+			raise ValueError(f"Booking failed: {error_message}")
+		except ValueError:
+			raise  # Re-raise our custom error
+		except:
+			# If JSON parsing fails, use status text
+			resp.raise_for_status()
 	
 	return resp.json()
 

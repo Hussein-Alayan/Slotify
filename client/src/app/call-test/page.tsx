@@ -49,7 +49,7 @@ export default function CallTest() {
   const [businessId, setBusinessId] = useState("");
   const [clientId, setClientId] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState("");
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
@@ -107,95 +107,169 @@ export default function CallTest() {
       alert("Please enter a business ID.");
       return;
     }
-    const newCallId = await fetchCallId("test", businessId, clientId);
-    setCallId(newCallId);
-    // create websocket
-    const wsUrl = `ws://localhost:8001/ws/call/${newCallId}`;
-    const ws = new WebSocket(wsUrl);
-    ws.binaryType = "arraybuffer";
-    ws.onopen = () => console.log("WS open", wsUrl);
-    ws.onmessage = (ev) => {
-      // If message is ArrayBuffer, treat as TTS audio
-      if (ev.data instanceof ArrayBuffer) {
-        const audioContext = audioContextRef.current;
-        if (!audioContext) return;
-        // LINEAR16 PCM to Float32
-        const pcm16 = new Int16Array(ev.data);
-        const float32 = new Float32Array(pcm16.length);
-        for (let i = 0; i < pcm16.length; i++) {
-          float32[i] = pcm16[i] / 32768;
+
+    console.log(
+      "🔄 Starting call with businessId:",
+      businessId,
+      "clientId:",
+      clientId
+    );
+
+    try {
+      const newCallId = await fetchCallId("test", businessId, clientId);
+      console.log("✅ Got call ID:", newCallId);
+      setCallId(newCallId);
+
+      // create websocket
+      const wsUrl = `ws://localhost:8001/ws/call/${newCallId}`;
+      console.log("🔌 Connecting to WebSocket:", wsUrl);
+      const ws = new WebSocket(wsUrl);
+      ws.binaryType = "arraybuffer";
+
+      ws.onopen = () => {
+        console.log("✅ WebSocket connected:", wsUrl);
+      };
+
+      ws.onmessage = (ev) => {
+        // If message is ArrayBuffer, treat as TTS audio (AI speaking)
+        if (ev.data instanceof ArrayBuffer) {
+          console.log(
+            "🔊 Received audio data, size:",
+            ev.data.byteLength,
+            "bytes"
+          );
+          setIsAISpeaking(true);
+          const audioContext = audioContextRef.current;
+          if (!audioContext) {
+            console.error("❌ No audio context available");
+            return;
+          }
+          // LINEAR16 PCM to Float32
+          const pcm16 = new Int16Array(ev.data);
+          const float32 = new Float32Array(pcm16.length);
+          for (let i = 0; i < pcm16.length; i++) {
+            float32[i] = pcm16[i] / 32768;
+          }
+          // Create AudioBuffer and play
+          const buffer = audioContext.createBuffer(1, float32.length, 16000);
+          buffer.getChannelData(0).set(float32);
+          const source = audioContext.createBufferSource();
+          source.buffer = buffer;
+          source.connect(audioContext.destination);
+          source.start();
+          console.log(
+            "🎵 Playing audio buffer, duration:",
+            float32.length / 16000,
+            "seconds"
+          );
+          // Hide animation after playback (approximate)
+          setTimeout(() => {
+            setIsAISpeaking(false);
+            console.log("🔇 Audio playback finished");
+          }, Math.max(500, float32.length / 16));
+          return;
+        } else if (typeof ev.data === "string") {
+          console.log("💬 Received text message:", ev.data);
+        } else {
+          console.log(
+            "❓ Received unknown message type:",
+            typeof ev.data,
+            ev.data
+          );
         }
-        // Create AudioBuffer and play
-        const buffer = audioContext.createBuffer(1, float32.length, 16000);
-        buffer.getChannelData(0).set(float32);
-        const source = audioContext.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioContext.destination);
-        source.start();
-        // Optionally, show UI indicator for TTS playback
-        // ...
-        return;
-      }
-      // Otherwise, treat as transcript text
-      try {
-        const text = ev.data;
-        setTranscript((prev) => prev + (prev ? "\n" : "") + text);
-      } catch (err) {
-        console.error("WS message parse error", err);
-      }
-    };
-    ws.onclose = () => {
-      console.log("WS closed");
-    };
-    ws.onerror = (e) => {
-      console.error("WS error", e);
-    };
-    wsRef.current = ws;
+      };
 
-    // get mic
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const audioContext = new AudioContext();
-    audioContextRef.current = audioContext;
+      ws.onclose = (event) => {
+        console.log(
+          "🔌 WebSocket closed. Code:",
+          event.code,
+          "Reason:",
+          event.reason
+        );
+      };
 
-    // create source and processor
-    const source = audioContext.createMediaStreamSource(stream);
-    sourceRef.current = source;
+      ws.onerror = (e) => {
+        console.error("❌ WebSocket error:", e);
+      };
 
-    // ScriptProcessorNode buffer size 4096 is OK for most cases.
-    // You can tune this: 2048, 4096, 8192 etc.
-    const bufferSize = 4096;
-    const processor = audioContext.createScriptProcessor(bufferSize, 1, 1);
-    processorRef.current = processor;
+      wsRef.current = ws;
 
-    const inputSampleRate = audioContext.sampleRate; // often 48000
-    const targetSampleRate = 16000;
+      // get mic
+      console.log("🎤 Requesting microphone access...");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log("✅ Microphone access granted");
 
-    processor.onaudioprocess = (evt) => {
-      const inputData = evt.inputBuffer.getChannelData(0); // Float32Array
-      // downsample to 16kHz
-      const downsampled = downsampleBuffer(
-        inputData,
+      const audioContext = new AudioContext();
+      console.log(
+        "🎧 Audio context created, sample rate:",
+        audioContext.sampleRate
+      );
+      audioContextRef.current = audioContext;
+
+      // create source and processor
+      const source = audioContext.createMediaStreamSource(stream);
+      sourceRef.current = source;
+
+      // ScriptProcessorNode buffer size 4096 is OK for most cases.
+      // You can tune this: 2048, 4096, 8192 etc.
+      const bufferSize = 4096;
+      const processor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+      processorRef.current = processor;
+
+      const inputSampleRate = audioContext.sampleRate; // often 48000
+      const targetSampleRate = 16000;
+
+      console.log(
+        "🎵 Audio processing setup - Input rate:",
         inputSampleRate,
+        "Target rate:",
         targetSampleRate
       );
-      // convert float32 -> 16-bit PCM ArrayBuffer
-      const pcm16Buffer = floatTo16BitPCM(downsampled);
-      // send binary chunk over websocket
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        try {
-          wsRef.current.send(pcm16Buffer);
-        } catch (err) {
-          console.error("WS send error", err);
+
+      processor.onaudioprocess = (evt) => {
+        const inputData = evt.inputBuffer.getChannelData(0); // Float32Array
+        // downsample to 16kHz
+        const downsampled = downsampleBuffer(
+          inputData,
+          inputSampleRate,
+          targetSampleRate
+        );
+        // convert float32 -> 16-bit PCM ArrayBuffer
+        const pcm16Buffer = floatTo16BitPCM(downsampled);
+        // send binary chunk over websocket
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          try {
+            wsRef.current.send(pcm16Buffer);
+            // Log occasionally to avoid spam
+            if (Math.random() < 0.001) {
+              console.log(
+                "📤 Sending audio chunk, size:",
+                pcm16Buffer.byteLength,
+                "bytes"
+              );
+            }
+          } catch (err) {
+            console.error("❌ WebSocket send error:", err);
+          }
+        } else {
+          console.warn(
+            "⚠️ WebSocket not ready, state:",
+            wsRef.current?.readyState
+          );
         }
-      }
-    };
+      };
 
-    // connect nodes
-    source.connect(processor);
-    // we don't want to hear the input locally (feedback), but ScriptProcessor requires a destination in some browsers
-    processor.connect(audioContext.destination);
+      // connect nodes
+      source.connect(processor);
+      // we don't want to hear the input locally (feedback), but ScriptProcessor requires a destination in some browsers
+      processor.connect(audioContext.destination);
 
-    setIsRecording(true);
+      setIsRecording(true);
+      console.log("🟢 Call started successfully!");
+    } catch (error) {
+      console.error("❌ Error starting call:", error);
+      alert("Failed to start call: " + error.message);
+    }
   }
 
   // ---- Stop recording + close websocket ----
@@ -395,39 +469,53 @@ export default function CallTest() {
             </CardContent>
           </Card>
 
-          {/* Right Column - Live Transcript */}
+          {/* Right Column - AI Voice Animation */}
           <Card className="bg-white shadow-lg border-0 flex flex-col">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
+            <CardHeader className="pb-3 text-center">
+              <CardTitle className="flex items-center justify-center gap-2 text-lg">
                 <MessageSquare className="h-5 w-5 text-blue-600" />
-                Live Conversation
+                AI Assistant Voice
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 min-h-0">
-              <div className="h-full overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
-                {transcript ? (
-                  <div className="space-y-2">
-                    {transcript.split("\n").map((line, index) => (
+            <CardContent className="flex-1 flex items-center justify-center min-h-0">
+              <div className="flex flex-col items-center justify-center h-full w-full">
+                {isAISpeaking ? (
+                  <div className="flex gap-2 items-end h-20">
+                    {/* Simple animated bars */}
+                    {[1, 2, 3, 4, 5].map((i) => (
                       <div
-                        key={index}
-                        className="p-2 bg-white rounded-lg shadow-sm border-l-4 border-blue-500"
-                      >
-                        <p className="text-gray-800 leading-relaxed text-sm">
-                          {line}
-                        </p>
-                      </div>
+                        key={i}
+                        className="bg-blue-500 rounded-sm w-4 animate-wavebar"
+                        style={{
+                          height: `${12 + Math.random() * 32}px`,
+                          animationDelay: `${i * 0.1}s`,
+                        }}
+                      />
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                    <MessageSquare className="h-10 w-10 mb-2 text-gray-300" />
-                    <p className="text-center text-sm">
-                      No conversation yet — start a call and speak into your
-                      microphone
+                  <div className="flex flex-col items-center justify-center text-gray-500">
+                    <MessageSquare className="h-12 w-12 mb-3 text-gray-300" />
+                    <p className="text-center text-sm font-medium">
+                      Waiting for AI to speak...
                     </p>
                   </div>
                 )}
               </div>
+              <style jsx>{`
+                @keyframes wavebar {
+                  0%,
+                  100% {
+                    height: 16px;
+                  }
+                  50% {
+                    height: 56px;
+                  }
+                }
+                .animate-wavebar {
+                  animation: wavebar 1.2s infinite ease-in-out;
+                }
+              `}</style>
             </CardContent>
           </Card>
         </div>
