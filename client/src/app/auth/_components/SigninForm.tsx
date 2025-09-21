@@ -2,7 +2,6 @@ import React from "react";
 import Input from "@/components/shared/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/shared/Checkbox";
-import Divider from "@/components/shared/Divider";
 
 interface SigninFormProps {
   email: string;
@@ -48,8 +47,6 @@ const SigninForm: React.FC<SigninFormProps> = ({
     <Button type="submit" disabled={loading}>
       {loading ? "Signing In..." : "Sign In"}
     </Button>
-    <Divider>Or continue with</Divider>
-    {/* Google Button and other options can be added here if needed */}
     <div className="w-full max-w-md flex flex-col items-center gap-4 mb-4">
       <div className="w-full flex items-center justify-between">
         <Checkbox

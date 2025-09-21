@@ -1,32 +1,6 @@
  .slotifyText {
 	 font-weight: bold;
  }
- .googleBtn {
-	width: 100%;
-	max-width: 28rem;
-	border: 2px solid var(--color-primary);
-	border-radius: 0.5rem;
-	padding: 0.5rem 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: bold;
-	font-size: 1.125rem;
-	color: var(--color-primary);
-	background: var(--color-white);
-	margin-bottom: 0.5rem;
-	transition: background 0.2s, color 0.2s, border-color 0.2s;
-	cursor: pointer;
-}
- .googleBtn:hover {
-	background: var(--color-secondary);
-	border-color: var(--color-secondary);
-	color: var(--color-primary);
-}
- .googleIcon {
-	margin-right: 0.5rem;
-	font-size: 1.25rem;
-}
  .calendarIcon {
 	margin-bottom: 3.5rem;
 }

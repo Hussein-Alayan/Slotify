@@ -94,19 +94,6 @@ const SigninContainer: React.FC = () => {
             onRememberChange={(e) => setRemember(e.target.checked)}
             onSubmit={handleSubmit}
           />
-          {/* Divider and Google Button */}
-          <button
-            className={styles.googleBtn}
-            style={{ marginTop: "1.25rem", marginBottom: "1.5rem" }}
-            type="button"
-            onClick={() => {
-              window.location.href = `$
-                {process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"}
-              /api/v1/auth/google`;
-            }}
-          >
-            <span className={styles.googleIcon}>G</span>
-          </button>
           {/* Options Row */}
           <div className="w-full max-w-md flex flex-col items-center gap-4 mb-4">
             <div className="w-full flex items-center justify-between">

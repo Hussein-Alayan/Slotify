@@ -20,10 +20,6 @@ Route::prefix('v1')->group(function () {
 	Route::post('/register', [AuthController::class, 'register']);
 	Route::post('/login', [AuthController::class, 'login'])->name('login');
 	
-	// Google Auth routes
-	Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
-	Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
-	
 	// Services routes (no auth for testing)
 	Route::post('/businesses/{business}/services', [ServiceController::class, 'store']);
 	Route::get('/businesses/{business}/services', [ServiceController::class, 'index']);
@@ -75,7 +71,7 @@ Route::prefix('v1')->group(function () {
 	Route::post('/businesses/{business}/clients/find-or-create', [ClientController::class, 'findOrCreate']);
 	
 
-	
+
 	// ===== AUTHENTICATED ROUTES =====
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::get('/me', [AuthController::class, 'me']);
