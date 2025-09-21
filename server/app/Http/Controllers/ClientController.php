@@ -81,4 +81,23 @@ class ClientController extends Controller
         }
         return $this->successResponse(['message' => 'Client deleted successfully']);
     }
+
+    /**
+     * Find existing client by phone or create new one.
+     */
+    public function findOrCreate(Request $request, $business)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20'
+        ]);
+        
+        $client = \App\Models\Client::findOrCreateByPhone(
+            $business, 
+            $request->phone, 
+            $request->name
+        );
+        
+        return $this->successResponse($client);
+    }
 }

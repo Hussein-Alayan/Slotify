@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, User } from "lucide-react";
+import { Building2, User, Phone } from "lucide-react";
 import { fetchBusinesses } from "@/lib/api";
 
 interface Business {
@@ -18,17 +18,21 @@ interface Business {
 
 interface BusinessClientFormProps {
   businessId: string;
-  clientId: string;
+  clientName: string;
+  clientPhone: string;
   onBusinessIdChange: (value: string) => void;
-  onClientIdChange: (value: string) => void;
+  onClientNameChange: (value: string) => void;
+  onClientPhoneChange: (value: string) => void;
   disabled?: boolean;
 }
 
 export function BusinessClientForm({
   businessId,
-  clientId,
+  clientName,
+  clientPhone,
   onBusinessIdChange,
-  onClientIdChange,
+  onClientNameChange,
+  onClientPhoneChange,
   disabled = false,
 }: BusinessClientFormProps) {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -51,7 +55,8 @@ export function BusinessClientForm({
   }, []);
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-3">
+      {/* Business Selection */}
       <div className="space-y-1">
         <Label
           htmlFor="business-select"
@@ -83,23 +88,45 @@ export function BusinessClientForm({
           </SelectContent>
         </Select>
       </div>
-      <div className="space-y-1">
-        <Label
-          htmlFor="client-id"
-          className="flex items-center gap-1 text-xs font-medium"
-        >
-          <User className="h-3 w-3 text-blue-600" />
-          Client ID (Optional)
-        </Label>
-        <Input
-          id="client-id"
-          type="text"
-          value={clientId}
-          onChange={(e) => onClientIdChange(e.target.value)}
-          placeholder="e.g., 1"
-          disabled={disabled}
-          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 h-8 text-sm"
-        />
+
+      {/* Client Information */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <Label
+            htmlFor="client-name"
+            className="flex items-center gap-1 text-xs font-medium"
+          >
+            <User className="h-3 w-3 text-blue-600" />
+            Client Name *
+          </Label>
+          <Input
+            id="client-name"
+            type="text"
+            value={clientName}
+            onChange={(e) => onClientNameChange(e.target.value)}
+            placeholder="e.g., John Doe"
+            disabled={disabled}
+            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 h-8 text-sm"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label
+            htmlFor="client-phone"
+            className="flex items-center gap-1 text-xs font-medium"
+          >
+            <Phone className="h-3 w-3 text-blue-600" />
+            Client Phone *
+          </Label>
+          <Input
+            id="client-phone"
+            type="tel"
+            value={clientPhone}
+            onChange={(e) => onClientPhoneChange(e.target.value)}
+            placeholder="e.g., +1234567890"
+            disabled={disabled}
+            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 h-8 text-sm"
+          />
+        </div>
       </div>
     </div>
   );

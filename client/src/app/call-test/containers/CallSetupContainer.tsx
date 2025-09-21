@@ -9,10 +9,12 @@ import { TechnicalInfo } from "../components/TechnicalInfo";
 interface CallSetupContainerProps {
   callId: number | null;
   businessId: string;
-  clientId: string;
+  clientName: string;
+  clientPhone: string;
   isRecording: boolean;
   onBusinessIdChange: (value: string) => void;
-  onClientIdChange: (value: string) => void;
+  onClientNameChange: (value: string) => void;
+  onClientPhoneChange: (value: string) => void;
   onStartCall: () => void;
   onStopCall: () => void;
 }
@@ -20,10 +22,12 @@ interface CallSetupContainerProps {
 export function CallSetupContainer({
   callId,
   businessId,
-  clientId,
+  clientName,
+  clientPhone,
   isRecording,
   onBusinessIdChange,
-  onClientIdChange,
+  onClientNameChange,
+  onClientPhoneChange,
   onStartCall,
   onStopCall,
 }: CallSetupContainerProps) {
@@ -42,9 +46,11 @@ export function CallSetupContainer({
         {/* Business and Client Info */}
         <BusinessClientForm
           businessId={businessId}
-          clientId={clientId}
+          clientName={clientName}
+          clientPhone={clientPhone}
           onBusinessIdChange={onBusinessIdChange}
-          onClientIdChange={onClientIdChange}
+          onClientNameChange={onClientNameChange}
+          onClientPhoneChange={onClientPhoneChange}
           disabled={isRecording}
         />
 

@@ -56,6 +56,9 @@ Route::prefix('voice')->group(function () {
 	
 	// Public businesses list for voice call testing
 	Route::get('/businesses/public/list', [\App\Http\Controllers\BusinessController::class, 'publicList']);
+	
+	// Public client find-or-create for voice call testing
+	Route::post('/businesses/{business}/clients/find-or-create', [\App\Http\Controllers\ClientController::class, 'findOrCreate']);
 
 	Route::middleware('auth:sanctum')->group(function () {
 		Route::get('/me', [AuthController::class, 'me']);

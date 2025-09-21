@@ -11,7 +11,8 @@ import { VoiceAssistantContainer } from "./containers/VoiceAssistantContainer";
 export default function CallTest() {
   const [callId, setCallId] = useState<number | null>(null);
   const [businessId, setBusinessId] = useState("");
-  const [clientId, setClientId] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
 
@@ -24,15 +25,32 @@ export default function CallTest() {
       return;
     }
 
+    if (!clientName.trim()) {
+      alert("Please enter client name.");
+      return;
+    }
+
+    if (!clientPhone.trim()) {
+      alert("Please enter client phone number.");
+      return;
+    }
+
     console.log(
       "🔄 Starting call with businessId:",
       businessId,
-      "clientId:",
-      clientId
+      "clientName:",
+      clientName,
+      "clientPhone:",
+      clientPhone
     );
 
     try {
-      const newCallId = await fetchCallId("test", businessId, clientId);
+      const newCallId = await fetchCallId(
+        "test",
+        businessId,
+        clientName,
+        clientPhone
+      );
       console.log("✅ Got call ID:", newCallId);
       setCallId(parseInt(newCallId, 10));
 
@@ -142,10 +160,12 @@ export default function CallTest() {
           <CallSetupContainer
             callId={callId}
             businessId={businessId}
-            clientId={clientId}
+            clientName={clientName}
+            clientPhone={clientPhone}
             isRecording={isRecording}
             onBusinessIdChange={setBusinessId}
-            onClientIdChange={setClientId}
+            onClientNameChange={setClientName}
+            onClientPhoneChange={setClientPhone}
             onStartCall={startCall}
             onStopCall={stopCall}
           />

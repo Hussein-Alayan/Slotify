@@ -44,19 +44,22 @@ api.interceptors.response.use(
 export async function fetchCallId(
   caller_phone = "test",
   business_id = "",
-  client_id = ""
+  client_name = "",
+  client_phone = ""
 ): Promise<string> {
   const body: {
     caller_phone: string;
     business_id: string;
-    client_id?: number;
+    client_name?: string;
+    client_phone?: string;
   } = {
     caller_phone,
     business_id,
   };
   
-  if (client_id) {
-    body.client_id = parseInt(client_id, 10);
+  if (client_name && client_phone) {
+    body.client_name = client_name;
+    body.client_phone = client_phone;
   }
 
   const resp = await fetch("http://localhost:8001/incoming/start", {

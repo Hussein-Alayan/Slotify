@@ -40,12 +40,34 @@ app.add_middleware(
 @app.post("/incoming/start")
 def start_call(data: StartCallRequest):
     try:
+        # Resolve client_id using find-or-create if name and phone provided
+        resolved_client_id = data.client_id
+        
+        if data.client_name and data.client_phone and data.business_id:
+            # Call Laravel find-or-create endpoint
+            find_create_resp = requests.post(
+                f"http://localhost:8000/api/v1/businesses/{data.business_id}/clients/find-or-create",
+                json={
+                    "name": data.client_name,
+                    "phone": data.client_phone,
+                },
+            )
+            
+            if find_create_resp.status_code == 200:
+                client_data = find_create_resp.json()
+                resolved_client_id = client_data["data"]["id"]
+                print(f"✅ Resolved client_id: {resolved_client_id} for {data.client_name}")
+            else:
+                print(f"❌ Failed to resolve client: {find_create_resp.status_code}")
+                return {"error": "Failed to resolve client"}
+        
+        # Log the call with resolved client_id
         resp = requests.post(
             f"{LARAVEL_API}/log",
             json={
                 "caller_phone": data.caller_phone,
                 "business_id": data.business_id,
-                "client_id": data.client_id,
+                "client_id": resolved_client_id,
             },
         )
         resp.raise_for_status()
