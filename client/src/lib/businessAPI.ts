@@ -1,9 +1,5 @@
 import api from "@/lib/api";
-
-interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-}
+import { ApiResponse } from './types';
 
 export async function fetchUserBusinesses() {
   const response = await api.get<ApiResponse<unknown>>("/v1/businesses");

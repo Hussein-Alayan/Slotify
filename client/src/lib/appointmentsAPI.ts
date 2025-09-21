@@ -1,5 +1,6 @@
 
 import api from './api';
+import { ApiResponse } from './types';
 
 
 export interface Appointment {
@@ -30,11 +31,6 @@ export interface Appointment {
     name: string | null;
     type: string | null;
   };
-}
-
-interface ApiResponse<T> {
-  data: T;
-  success: boolean;
 }
 
 // Fetch appointments for a business by date (optionally pass date params)

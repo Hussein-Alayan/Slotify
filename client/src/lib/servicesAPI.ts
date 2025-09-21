@@ -1,9 +1,5 @@
 import api from './api';
-
-interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-}
+import { ApiResponse } from './types';
 
 export async function updateService(businessId: number, serviceId: number, data: {
   name?: string;
