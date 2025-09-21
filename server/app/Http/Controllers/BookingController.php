@@ -136,6 +136,24 @@ class BookingController extends Controller
     }
 
     /**
+     * Cancel next upcoming booking for a client
+     * @see App\Http\Docs\BookingDocs for API documentation
+     */
+    public function cancelClientNextBooking($clientId)
+    {
+        $cancelledBooking = $this->bookingService->cancelNextUpcomingBooking($clientId, 'Cancelled via voice request');
+        
+        if ($cancelledBooking) {
+            return $this->successResponse([
+                'message' => 'Next upcoming booking cancelled successfully',
+                'booking' => new BookingResource($cancelledBooking)
+            ]);
+        }
+        
+        return $this->errorResponse('No upcoming bookings found to cancel', 404);
+    }
+
+    /**
      * Get bookings for a business by date
      * @see App\Http\Docs\BookingDocs for API documentation
      */

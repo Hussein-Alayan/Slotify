@@ -101,4 +101,5 @@ Route::prefix('voice')->group(function () {
 		
 		// Client-specific booking routes
 	Route::get('/clients/{client}/bookings', [BookingController::class, 'getClientBookings']); // get client bookings
+	Route::delete('/clients/{client}/bookings/next', [BookingController::class, 'cancelClientNextBooking']); // cancel next upcoming booking
 });

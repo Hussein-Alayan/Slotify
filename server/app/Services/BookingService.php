@@ -105,6 +105,26 @@ class BookingService
         return $booking->update(['status' => 'cancelled']);
     }
 
+    // Get next upcoming booking for a client
+    public function getNextUpcomingBooking(int $clientId): ?Booking
+    {
+        return Booking::where('client_id', $clientId)
+            ->upcoming()
+            ->orderBy('start_time')
+            ->first();
+    }
+
+    // Cancel next upcoming booking for a client
+    public function cancelNextUpcomingBooking(int $clientId, ?string $reason = null): ?Booking
+    {
+        $booking = $this->getNextUpcomingBooking($clientId);
+        if ($booking && $booking->canBeCancelled()) {
+            $booking->cancelBooking($reason);
+            return $booking->fresh(['business', 'service', 'resource']);
+        }
+        return null;
+    }
+
     // Check availability for a specific date
     public function checkAvailability(int $businessId, string $date, ?int $serviceId = null): array
     {
