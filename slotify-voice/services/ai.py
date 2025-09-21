@@ -73,7 +73,7 @@ async def stream_gemini_response(static_context: dict, dynamic_context: dict, se
             "After listing services, always ask: 'Which service and time would you like to book?' "
         "If you are unsure about something not provided in the context, ask the caller for clarification or offer to connect them to a human. "
         "IMPORTANT: If there's a recent booking result in the context, respond based on that result. "
-        "For successful bookings, confirm with details (service, date, time, booking ID). "
+        "For successful bookings, confirm with details (service, date, time). "
         "For failed bookings, explain the issue and offer alternatives."
     )
 
@@ -88,7 +88,7 @@ async def stream_gemini_response(static_context: dict, dynamic_context: dict, se
         if "error" in booking_result:
             booking_context = f"BOOKING FAILED: {booking_result['error']}. Please help the customer understand what went wrong and offer alternatives."
         else:
-            booking_context = f"BOOKING SUCCESSFUL: {booking_result}. Please confirm the booking details to the customer including the booking ID and appointment details."
+            booking_context = f"BOOKING SUCCESSFUL: {booking_result}. Please confirm the booking details to the customer with appointment details (service, date, time)."
         
         contents.append({
             "role": "user", 
