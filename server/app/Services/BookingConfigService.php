@@ -5,18 +5,25 @@ namespace App\Services;
 use App\Models\Business;
 use App\Models\Service;
 use App\Traits\BusinessLookup;
+use App\Traits\ServiceLookup;
 
 class BookingConfigService
 {
-    use BusinessLookup;
+    use BusinessLookup, ServiceLookup;
 
     /**
      * Get default booking duration for a service
      */
-    public function getDefaultDuration(int $serviceId): int
+    public function getDefaultDuration(int $serviceId, int $businessId = null): int
     {
-        $service = Service::find($serviceId);
-        return $service ? $service->duration_minutes : 60;
+        if ($businessId) {
+            $service = $this->findServiceOrFail($serviceId, $businessId);
+            return $service->duration_minutes;
+        }
+        
+        // Fallback for backward compatibility when businessId is not provided
+        $service = $this->findServiceByIdOrFail($serviceId);
+        return $service->duration_minutes;
     }
 
     /**

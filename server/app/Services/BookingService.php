@@ -9,11 +9,12 @@ use App\Models\Service;
 use App\Models\BookingRule;
 use App\Traits\BusinessLookup;
 use App\Traits\ClientLookup;
+use App\Traits\ServiceLookup;
 use Carbon\Carbon;
 
 class BookingService
 {
-    use BusinessLookup, ClientLookup;
+    use BusinessLookup, ClientLookup, ServiceLookup;
     // Create a new booking
     public function createBooking(array $data): Booking
     {
@@ -21,9 +22,7 @@ class BookingService
         $client = $this->findClientOrFail($data['client_id'], $data['business_id']);
 
         // Validate that service belongs to business
-        $service = Service::where('id', $data['service_id'])
-            ->where('business_id', $data['business_id'])
-            ->firstOrFail();
+        $service = $this->findServiceOrFail($data['service_id'], $data['business_id']);
 
         // Auto-assign staff if resource_id is not provided
         if (empty($data['resource_id'])) {
