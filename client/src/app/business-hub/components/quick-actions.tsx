@@ -13,7 +13,7 @@ export function QuickActions() {
 
       <Card
         className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-        onClick={() => router.push("/Business-setup")}
+        onClick={() => router.push("/business-setup")}
       >
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center">

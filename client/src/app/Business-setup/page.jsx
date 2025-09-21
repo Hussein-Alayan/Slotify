@@ -1,4 +1,4 @@
-import BusinessSetupContainer from "@/app/Business-setup/containers/business-setup"
+import BusinessSetupContainer from "@/app/business-setup/containers/business-setup"
 
 export default function SetupPage() {
   return (
