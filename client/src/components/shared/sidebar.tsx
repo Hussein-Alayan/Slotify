@@ -11,6 +11,7 @@ import {
   UserCheck,
   Settings,
   Menu,
+  ArrowLeft,
 } from "lucide-react";
 import { useBusinessContext } from "@/contexts/BusinessContext";
 
@@ -75,6 +76,17 @@ export function Sidebar() {
       </div>
 
       <nav className="mt-8 px-2">
+        {/* Back to Business Hub Button */}
+        <div className="mb-6">
+          <Link
+            href="/business-hub"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-slate-300 hover:bg-slate-800 hover:text-white"
+          >
+            <ArrowLeft className="h-5 w-5 flex-shrink-0" />
+            {!isCollapsed && <span>Back to Hub</span>}
+          </Link>
+        </div>
+
         <ul className="space-y-2">
           {navigation.map((item) => {
             const isActive =

@@ -1,9 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar, MessageCircle, BarChart3, MapPin, Bot } from "lucide-react";
+import {
+  Calendar,
+  MessageCircle,
+  BarChart3,
+  MapPin,
+  Bot,
+  Phone,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function HeroSection() {
+  const router = useRouter();
   return (
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,8 +35,13 @@ export function HeroSection() {
                 <Calendar className="w-5 h-5 mr-2" />
                 Get Started
               </Button>
-              <Button size="lg" variant="outline">
-                Watch Demo
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => router.push("/call-test")}
+              >
+                <Phone className="w-5 h-5 mr-2" />
+                Try Voice Booking
               </Button>
             </div>
           </div>
