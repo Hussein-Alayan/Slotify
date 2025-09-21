@@ -13,19 +13,13 @@ class ClientService
 
     public function getClients($businessId)
     {
-        $business = $this->findBusiness($businessId);
-        if (!$business) {
-            return null;
-        }
+        $business = $this->findBusinessOrFail($businessId);
         return $business->clients()->with(['bookings'])->orderBy('created_at', 'desc')->get();
     }
 
     public function createClient($businessId, array $data)
     {
-        $business = $this->findBusiness($businessId);
-        if (!$business) {
-            return null;
-        }
+        $business = $this->findBusinessOrFail($businessId);
         $data['business_id'] = $businessId;
         $data['normalized_phone'] = Client::normalizePhone($data['phone']);
         $data['whatsapp_opted_in'] = $data['whatsapp_opted_in'] ?? false;
@@ -34,19 +28,13 @@ class ClientService
 
     public function getClient($businessId, $clientId)
     {
-        $business = $this->findBusiness($businessId);
-        if (!$business) {
-            return null;
-        }
+        $business = $this->findBusinessOrFail($businessId);
         return $business->clients()->with(['bookings', 'conversations'])->find($clientId);
     }
 
     public function updateClient($businessId, $clientId, array $data)
     {
-        $business = $this->findBusiness($businessId);
-        if (!$business) {
-            return null;
-        }
+        $business = $this->findBusinessOrFail($businessId);
         $client = $business->clients()->find($clientId);
         if (!$client) {
             return null;
@@ -60,10 +48,7 @@ class ClientService
 
     public function deleteClient($businessId, $clientId)
     {
-        $business = $this->findBusiness($businessId);
-        if (!$business) {
-            return null;
-        }
+        $business = $this->findBusinessOrFail($businessId);
         $client = $business->clients()->find($clientId);
         if (!$client) {
             return null;
