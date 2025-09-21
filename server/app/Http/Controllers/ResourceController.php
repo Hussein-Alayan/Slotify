@@ -79,9 +79,7 @@ class ResourceController extends Controller
         }
     }
 
-    /**
-     * Mark staff member as absent and handle booking reassignments
-     */
+    // Mark staff member as absent and handle booking reassignments
     public function markAbsent(Request $request, $businessId, $resourceId)
     {
         try {
@@ -113,9 +111,7 @@ class ResourceController extends Controller
         }
     }
 
-    /**
-     * Mark staff member as present/available
-     */
+    // Mark staff member as present/available
     public function markPresent(Request $request, $businessId, $resourceId)
     {
         try {
@@ -136,9 +132,7 @@ class ResourceController extends Controller
         }
     }
 
-    /**
-     * Get absence impact summary for a staff member
-     */
+    // Get absence impact summary for a staff member
     public function getAbsenceImpact(Request $request, $businessId, $resourceId)
     {
         try {
@@ -163,9 +157,7 @@ class ResourceController extends Controller
         }
     }
 
-    /**
-     * Get all absent staff for a business
-     */
+    // Get all absent staff for a business
     public function getAbsentStaff($businessId)
     {
         try {

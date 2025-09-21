@@ -17,9 +17,7 @@ class VoiceCallController extends Controller
         $this->voiceCallService = $voiceCallService;
     }
 
-    /**
-     * Log a new voice call
-     */
+    // Log a new voice call
     public function logCall(Request $request): JsonResponse
     {
         $call = $this->voiceCallService->logCall([
@@ -30,26 +28,21 @@ class VoiceCallController extends Controller
         return $this->successResponse(['call_id' => $call->id]);
     }
 
-    /**
-     * Update call transcript
-     */
+    // Update call transcript
     public function updateTranscript(Request $request, $id): JsonResponse
     {
         $this->voiceCallService->updateTranscript($id, $request->transcript);
         return $this->successResponse();
     }
 
-    /**
-     * End a voice call
-     */
+    // End a voice call
     public function endCall($id): JsonResponse
     {
         $this->voiceCallService->endCall($id);
         return $this->successResponse();
     }
-    /**
-     * Return static business context with current live data
-     */
+
+    // Return static business context with current live data
     public function getBusinessContext($businessId)
     {
         $business = \App\Models\Business::with([

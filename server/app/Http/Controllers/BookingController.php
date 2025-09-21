@@ -23,10 +23,7 @@ class BookingController extends Controller
         $this->bookingService = $bookingService;
     }
 
-    /**
-     * Create a new booking
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Create a new booking
     public function store(CreateBookingRequest $request)
     {
         try {
@@ -37,20 +34,14 @@ class BookingController extends Controller
         }
     }
 
-    /**
-     * Get booking details
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Get booking details
     public function show($bookingId)
     {
         $booking = $this->bookingService->getBooking($bookingId);
         return $this->successResponse(new BookingResource($booking));
     }
     
-    /**
-     * Check if a resource is available at a specific time
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Check if a resource is available at a specific time
     public function checkResourceAvailability(Request $request)
     {
         try {
@@ -74,10 +65,7 @@ class BookingController extends Controller
         }
     }
 
-    /**
-     * Update booking
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Update booking
     public function update(UpdateBookingRequest $request, $bookingId)
     {
         try {
@@ -88,20 +76,14 @@ class BookingController extends Controller
         }
     }
 
-    /**
-     * Cancel booking
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Cancel booking
     public function destroy($bookingId)
     {
         $this->bookingService->cancelBooking($bookingId);
         return $this->successResponse(['message' => 'Booking cancelled successfully']);
     }
 
-    /**
-     * Check availability for a business
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Check availability for a business
     public function checkAvailability(CheckAvailabilityRequest $request, $businessId)
     {
         try {
@@ -116,30 +98,21 @@ class BookingController extends Controller
         }
     }
 
-    /**
-     * Get bookings for a business
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Get bookings for a business
     public function getBusinessBookings($businessId)
     {
         $bookings = $this->bookingService->getBusinessBookings($businessId);
         return $this->successResponse(BookingResource::collection($bookings));
     }
 
-    /**
-     * Get bookings for a client
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Get bookings for a client
     public function getClientBookings($clientId)
     {
         $bookings = $this->bookingService->getClientBookings($clientId);
         return $this->successResponse(BookingResource::collection($bookings));
     }
 
-    /**
-     * Cancel next upcoming booking for a client
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Cancel next upcoming booking for a client
     public function cancelClientNextBooking($clientId)
     {
         $cancelledBooking = $this->bookingService->cancelNextUpcomingBooking($clientId, 'Cancelled via voice request');
@@ -154,10 +127,7 @@ class BookingController extends Controller
         return $this->errorResponse('No upcoming bookings found to cancel', 404);
     }
 
-    /**
-     * Get bookings for a business by date
-     * @see App\Http\Docs\BookingDocs for API documentation
-     */
+    // Get bookings for a business by date
     public function getBusinessBookingsByDate($businessId)
     {
         $date = request()->query('date');

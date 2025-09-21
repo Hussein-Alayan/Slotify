@@ -17,9 +17,7 @@ class ServiceController extends Controller
     {
         $this->serviceService = $serviceService;
     }
-    /**
-     * Get all services for a business
-     */
+    // Get all services for a business
     public function index($businessId): JsonResponse
     {
         try {
@@ -30,9 +28,7 @@ class ServiceController extends Controller
         }
     }
 
-    /**
-     * Create a new service for a business
-     */
+    // Create a new service for a business
     public function store(CreateServiceRequest $request, $businessId): JsonResponse
     {
         try {
@@ -43,9 +39,8 @@ class ServiceController extends Controller
         }
     }
 
-    /**
-     * Update an existing service
-     */    public function update(UpdateServiceRequest $request, $businessId, $serviceId)
+        // Update an existing service
+    public function update(UpdateServiceRequest $request, $businessId, $serviceId)
     {
         try {
             $service = $this->serviceService->updateService($serviceId, $request->validated());

@@ -20,9 +20,7 @@ class ClientController extends Controller
         $this->clientService = $clientService;
     }
 
-    /**
-     * Display a listing of clients for a business.
-     */
+    // Display a listing of clients for a business
     public function index(Request $request, $businessId)
     {
         $clients = $this->clientService->getClients($businessId);
@@ -32,9 +30,7 @@ class ClientController extends Controller
         return $this->successResponse($clients);
     }
 
-    /**
-     * Store a newly created client.
-     */
+        // Store a newly created client in storage
     public function store(StoreClientRequest $request, $businessId)
     {
         $client = $this->clientService->createClient($businessId, $request->validated());
@@ -44,9 +40,7 @@ class ClientController extends Controller
         return $this->successResponse($client, 201);
     }
 
-    /**
-     * Display the specified client.
-     */
+    // Display the specified client
     public function show(Request $request, $businessId, $clientId)
     {
         $client = $this->clientService->getClient($businessId, $clientId);
@@ -56,9 +50,7 @@ class ClientController extends Controller
         return $this->successResponse($client);
     }
 
-    /**
-     * Update the specified client.
-     */
+    // Update the specified client in storage
     public function update(UpdateClientRequest $request, $businessId, $clientId)
     {
         $client = $this->clientService->updateClient($businessId, $clientId, $request->validated());
@@ -68,9 +60,7 @@ class ClientController extends Controller
         return $this->successResponse($client);
     }
 
-    /**
-     * Remove the specified client.
-     */
+    // Remove the specified client
     public function destroy(Request $request, $businessId, $clientId)
     {
         $result = $this->clientService->deleteClient($businessId, $clientId);
@@ -83,9 +73,7 @@ class ClientController extends Controller
         return $this->successResponse(['message' => 'Client deleted successfully']);
     }
 
-    /**
-     * Find existing client by phone or create new one.
-     */
+        // Find existing client by phone or create new one
     public function findOrCreate(Request $request, $business)
     {
         $request->validate([
