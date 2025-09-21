@@ -21,15 +21,12 @@ export function SetupNavigation({
         <ChevronLeft className="h-4 w-4 mr-2" />
         Back
       </Button>
-      <Button
-        onClick={
-          currentStep === totalSteps ? () => alert("Setup Complete!") : nextStep
-        }
-        className="bg-slate-900 hover:bg-slate-800"
-      >
-        {currentStep === totalSteps ? "Complete Setup" : "Next"}
-        <ChevronRight className="h-4 w-4 ml-2" />
-      </Button>
+      {currentStep !== totalSteps && (
+        <Button onClick={nextStep} className="bg-slate-900 hover:bg-slate-800">
+          Next
+          <ChevronRight className="h-4 w-4 ml-2" />
+        </Button>
+      )}
     </div>
   );
 }

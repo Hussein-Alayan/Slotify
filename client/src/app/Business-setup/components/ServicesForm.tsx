@@ -31,19 +31,11 @@ export function ServicesForm({
     <div>
       <div className="flex items-center gap-3 mb-6">
         <span className="inline-block bg-slate-900 p-2 rounded-full">
-          <svg
-            className="h-6 w-6 text-slate-900"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 17v-2a4 4 0 014-4h3m0 0V7a4 4 0 00-4-4H7a4 4 0 00-4 4v10a4 4 0 004 4h3a4 4 0 004-4v-2a4 4 0 014-4h-3z"
-            />
-          </svg>
+          <img
+            src="/icons/calender.svg"
+            alt="Calendar Icon"
+            className="h-6 w-6"
+          />
         </span>
         <div>
           <h2 className="text-xl font-semibold">Services</h2>
