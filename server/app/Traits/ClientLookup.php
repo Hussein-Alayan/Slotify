@@ -7,9 +7,7 @@ use App\Exceptions\ClientNotFoundException;
 
 trait ClientLookup
 {
-    /**
-     * Find a client by ID and business, or throw exception if not found.
-     */
+    // Find a client by ID and business, or throw exception if not found.
     public function findClientOrFail($clientId, $businessId)
     {
         $client = Client::where('id', $clientId)
@@ -23,9 +21,7 @@ trait ClientLookup
         return $client;
     }
 
-    /**
-     * Find a client by ID and business, returns null if not found.
-     */
+    // Find a client by ID and business, returns null if not found.
     public function findClient($clientId, $businessId)
     {
         return Client::where('id', $clientId)
@@ -33,9 +29,7 @@ trait ClientLookup
             ->first();
     }
 
-    /**
-     * Check if a client exists for a business.
-     */
+    // Check if a client exists for a business.
     public function clientExists($clientId, $businessId): bool
     {
         return Client::where('id', $clientId)
@@ -43,9 +37,7 @@ trait ClientLookup
             ->exists();
     }
 
-    /**
-     * Validate that a client belongs to a business, throw exception if not.
-     */
+    // Validate that a client belongs to a business, throw exception if not.
     public function validateClientExists($clientId, $businessId)
     {
         if (!$this->clientExists($clientId, $businessId)) {
