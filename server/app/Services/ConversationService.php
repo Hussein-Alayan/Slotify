@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Models\Conversation;
 use App\Models\ConversationMessage;
+use App\Traits\ClientLookup;
 
 class ConversationService
 {
+    use ClientLookup;
     // Start a conversation
     public function startConversation(int $clientId, ?int $agentId = null, int $businessId = null): Conversation
     {
@@ -15,9 +17,7 @@ class ConversationService
         }
 
         // Validate that client belongs to the business
-        $client = \App\Models\Client::where('id', $clientId)
-            ->where('business_id', $businessId)
-            ->firstOrFail();
+        $client = $this->findClientOrFail($clientId, $businessId);
 
         return Conversation::create([
             'client_id' => $clientId,

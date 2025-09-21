@@ -8,18 +8,17 @@ use App\Models\Client;
 use App\Models\Service;
 use App\Models\BookingRule;
 use App\Traits\BusinessLookup;
+use App\Traits\ClientLookup;
 use Carbon\Carbon;
 
 class BookingService
 {
-    use BusinessLookup;
+    use BusinessLookup, ClientLookup;
     // Create a new booking
     public function createBooking(array $data): Booking
     {
         // Validate that client belongs to business
-        $client = Client::where('id', $data['client_id'])
-            ->where('business_id', $data['business_id'])
-            ->firstOrFail();
+        $client = $this->findClientOrFail($data['client_id'], $data['business_id']);
 
         // Validate that service belongs to business
         $service = Service::where('id', $data['service_id'])
