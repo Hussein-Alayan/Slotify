@@ -6,8 +6,6 @@ use App\Http\Requests\StoreConversationRequest;
 use App\Http\Requests\SendMessageRequest;
 use App\Http\Resources\ConversationResource;
 use App\Services\ConversationService;
-
-
 use App\Traits\ApiResponseTrait;
 
 class ConversationController extends Controller

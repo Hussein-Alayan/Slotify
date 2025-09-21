@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Services\VoiceCallService;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 
 class VoiceCallController extends Controller
 {
@@ -16,7 +17,10 @@ class VoiceCallController extends Controller
         $this->voiceCallService = $voiceCallService;
     }
 
-    public function logCall(Request $request)
+    /**
+     * Log a new voice call
+     */
+    public function logCall(Request $request): JsonResponse
     {
         $call = $this->voiceCallService->logCall([
             'business_id' => $request->business_id ?? null,
@@ -26,13 +30,19 @@ class VoiceCallController extends Controller
         return $this->successResponse(['call_id' => $call->id]);
     }
 
-    public function updateTranscript(Request $request, $id)
+    /**
+     * Update call transcript
+     */
+    public function updateTranscript(Request $request, $id): JsonResponse
     {
         $this->voiceCallService->updateTranscript($id, $request->transcript);
         return $this->successResponse();
     }
 
-    public function endCall($id)
+    /**
+     * End a voice call
+     */
+    public function endCall($id): JsonResponse
     {
         $this->voiceCallService->endCall($id);
         return $this->successResponse();

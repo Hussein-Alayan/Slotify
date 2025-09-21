@@ -10,9 +10,8 @@ use App\Models\Business;
 use App\Models\Resource;
 use Carbon\Carbon;
 
-class ResourceController extends Controller{
-
-
+class ResourceController extends Controller
+{
     use ApiResponseTrait;
     protected $resourceService;
     protected $staffReassignmentService;
@@ -70,13 +69,13 @@ class ResourceController extends Controller{
     {
         try {
             if ($resource->business_id !== $business->id) {
-                return response()->json(['error' => 'Resource does not belong to this business'], 403);
+                return $this->errorResponse('Resource does not belong to this business', 403);
             }
 
             $result = $this->resourceService->deleteStaff($resource->id);
-            return response()->json($result);
+            return $this->successResponse($result);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 

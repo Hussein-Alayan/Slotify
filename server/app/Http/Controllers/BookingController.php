@@ -10,6 +10,7 @@ use App\Services\BookingService;
 use App\Services\BusinessContextService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class BookingController extends Controller
 {

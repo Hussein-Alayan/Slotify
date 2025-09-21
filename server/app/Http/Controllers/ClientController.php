@@ -7,6 +7,7 @@ use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 
 class ClientController extends Controller
 {
