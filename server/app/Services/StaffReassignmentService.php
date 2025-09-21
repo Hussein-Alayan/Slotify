@@ -85,9 +85,8 @@ class StaffReassignmentService
                 $reassignmentResult = $this->reassignSingleBooking($booking);
                 
                 if ($reassignmentResult['success']) {
-                    // Update booking status to indicate it was reassigned
+                    // Update booking with new staff - keep status as 'confirmed' since it's still a valid booking
                     $booking->update([
-                        'status' => 'reassigned',
                         'cancellation_reason' => 'Reassigned due to staff absence'
                     ]);
                     
