@@ -9,7 +9,6 @@ interface BusinessCardProps {
   name: string;
   category: string;
   status: "Active" | "Inactive" | "Pending";
-  logoUrl?: string;
 }
 
 export function BusinessCard({
@@ -17,7 +16,6 @@ export function BusinessCard({
   name,
   category,
   status,
-  logoUrl,
 }: BusinessCardProps) {
   const router = useRouter();
   const getStatusColor = (status: string) => {
@@ -36,25 +34,14 @@ export function BusinessCard({
   return (
     <Card className="p-6 hover:shadow-md transition-shadow">
       <div className="space-y-4">
-        {/* Business Logo Placeholder */}
-        <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-          {logoUrl ? (
-            <img
-              src={logoUrl || "/placeholder.svg"}
-              alt={`${name} logo`}
-              className="w-full h-full object-cover rounded-lg"
-            />
-          ) : (
-            <span className="text-gray-500 text-sm">Business Logo</span>
-          )}
-        </div>
-
         {/* Business Info */}
-        <div className="space-y-2">
-          <h4 className="font-semibold text-gray-900">{name}</h4>
-          <p className="text-sm text-gray-600">{category}</p>
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <h4 className="text-lg font-semibold text-gray-900">{name}</h4>
+            <p className="text-sm text-gray-600">{category}</p>
+          </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pt-2">
             <Badge variant="secondary" className={getStatusColor(status)}>
               {status}
             </Badge>
