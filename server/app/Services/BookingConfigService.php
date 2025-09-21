@@ -11,9 +11,7 @@ class BookingConfigService
 {
     use BusinessLookup, ServiceLookup;
 
-    /**
-     * Get default booking duration for a service
-     */
+    // Get default booking duration for a service
     public function getDefaultDuration(int $serviceId, int $businessId = null): int
     {
         if ($businessId) {
@@ -26,9 +24,7 @@ class BookingConfigService
         return $service->duration_minutes;
     }
 
-    /**
-     * Get default booking time for a business
-     */
+    // Get default booking time for a business
     public function getDefaultBookingTime(int $businessId): string
     {
         $business = $this->findBusiness($businessId);
@@ -50,18 +46,14 @@ class BookingConfigService
         return '15:00'; // Final fallback
     }
 
-    /**
-     * Get default booking date preference for a business
-     */
+    // Get default booking date preference for a business
     public function getDefaultBookingDate(int $businessId): string
     {
         // For now, return 'tomorrow' but this could be business-configurable
         return 'tomorrow';
     }
 
-    /**
-     * Get AI confidence threshold for a business
-     */
+    // Get AI confidence threshold for a business
     public function getConfidenceThreshold(int $businessId): float
     {
         $business = $this->findBusiness($businessId);
@@ -75,9 +67,7 @@ class BookingConfigService
         return 0.7; // Higher than current 0.5 for better accuracy
     }
 
-    /**
-     * Get default appointment duration when service is not specified
-     */
+    // Get default appointment duration when service is not specified
     public function getDefaultAppointmentDuration(int $businessId): int
     {
         $business = $this->findBusinessOrFail($businessId);
@@ -92,9 +82,7 @@ class BookingConfigService
         return $commonDuration ? $commonDuration->duration_minutes : 60;
     }
 
-    /**
-     * Get business timezone for proper datetime handling
-     */
+    // Get business timezone for proper datetime handling
     public function getBusinessTimezone(int $businessId): string
     {
         $business = $this->findBusiness($businessId);

@@ -7,9 +7,7 @@ use App\Exceptions\ServiceNotFoundException;
 
 trait ServiceLookup
 {
-    /**
-     * Find a service by ID and business, or throw exception if not found.
-     */
+    // Find a service by ID and business, or throw exception if not found.
     public function findServiceOrFail($serviceId, $businessId)
     {
         $service = Service::where('id', $serviceId)
@@ -23,9 +21,7 @@ trait ServiceLookup
         return $service;
     }
 
-    /**
-     * Find a service by ID (without business constraint), or throw exception if not found.
-     */
+    // Find a service by ID (without business constraint), or throw exception if not found.
     public function findServiceByIdOrFail($serviceId)
     {
         $service = Service::find($serviceId);
@@ -37,9 +33,7 @@ trait ServiceLookup
         return $service;
     }
 
-    /**
-     * Find a service by ID and business, returns null if not found.
-     */
+    // Find a service by ID and business, returns null if not found.
     public function findService($serviceId, $businessId)
     {
         return Service::where('id', $serviceId)
@@ -47,9 +41,7 @@ trait ServiceLookup
             ->first();
     }
 
-    /**
-     * Check if a service exists for a business.
-     */
+    // Check if a service exists for a business.
     public function serviceExists($serviceId, $businessId): bool
     {
         return Service::where('id', $serviceId)
@@ -57,9 +49,7 @@ trait ServiceLookup
             ->exists();
     }
 
-    /**
-     * Validate that a service belongs to a business, throw exception if not.
-     */
+    // Validate that a service belongs to a business, throw exception if not.
     public function validateServiceExists($serviceId, $businessId)
     {
         if (!$this->serviceExists($serviceId, $businessId)) {

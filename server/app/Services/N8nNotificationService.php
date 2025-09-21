@@ -16,9 +16,7 @@ class N8nNotificationService
         $this->webhookUrl = config('services.n8n.webhook_url', 'http://localhost:5678/webhook');
     }
 
-    /**
-     * Send booking cancellation notification to n8n
-     */
+    // Send booking cancellation notification to n8n
     public function sendBookingCancellationNotification(Booking $booking, string $reason): bool
     {
         try {
@@ -49,9 +47,7 @@ class N8nNotificationService
         }
     }
 
-    /**
-     * Send booking reassignment notification to n8n
-     */
+    // Send booking reassignment notification to n8n
     public function sendBookingReassignmentNotification(Booking $booking, $newStaff): bool
     {
         try {
@@ -77,9 +73,7 @@ class N8nNotificationService
         }
     }
 
-    /**
-     * Build payload for booking cancellation
-     */
+    // Build payload for booking cancellation
     protected function buildCancellationPayload(Booking $booking, string $reason): array
     {
         return [
@@ -107,9 +101,7 @@ class N8nNotificationService
         ];
     }
 
-    /**
-     * Build payload for booking reassignment
-     */
+    // Build payload for booking reassignment
     protected function buildReassignmentPayload(Booking $booking, $newStaff): array
     {
         return [

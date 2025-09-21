@@ -95,9 +95,7 @@ JSON Response:";
         return $decoded;
     }
 
-    /**
-     * Generate a natural response for booking results
-     */
+    // Generate a natural response for booking results
     public function generateBookingResponse(bool $success, array $details = [], array $businessData = []): string
     {
         // Use BusinessContextService to get context if not provided
@@ -186,9 +184,7 @@ Generate the response:";
         return trim($response);
     }
 
-    /**
-     * Generate a cancellation confirmation response
-     */
+    // Generate a cancellation confirmation response
     public function generateCancellationResponse(array $businessData = [], array $bookingData = []): string
     {
         $businessName = $businessData['name'] ?? 'our business';
@@ -256,17 +252,13 @@ Generate the response:";
         return $response ?: "No problem! I've noted your cancellation request. If you'd like to reschedule in the future, just let us know. Thanks for letting us know! 👍";
     }
 
-    /**
-     * Generate a contextual response for non-booking messages
-     */
-    /**
-     * Generate a contextual response based on customer message
-     *
-     * @param string $message Customer message
-     * @param int $businessId Business ID
-     * @param array $businessData Optional business data
-     * @return string Response from AI
-     */
+    // Generate a contextual response for non-booking messages
+    // Generate a contextual response based on customer message
+    //
+    // @param string $message Customer message
+    // @param int $businessId Business ID
+    // @param array $businessData Optional business data
+    // @return string Response from AI
     public function generateContextualResponse(string $message, int $businessId, array $businessData = []): string
     {
         // Check if this is an availability question
@@ -342,17 +334,13 @@ Response:";
         return trim($response);
     }
 
-    /**
-     * Check if message indicates cancellation intent
-     */
+    // Check if message indicates cancellation intent
     public function isCancellationIntent(array $analysis): bool
     {
         return isset($analysis['intent']) && $analysis['intent'] === 'cancellation';
     }
 
-    /**
-     * Fallback intent analysis if JSON parsing fails
-     */
+    // Fallback intent analysis if JSON parsing fails
     private function fallbackIntentAnalysis(string $message, string $aiResponse): array
     {
         $message = strtolower($message);
@@ -392,9 +380,7 @@ Response:";
         ];
     }
 
-    /**
-     * Simple date extraction from message
-     */
+    // Simple date extraction from message
     private function extractDate(string $message): ?string
     {
         if (str_contains($message, 'tomorrow')) {
@@ -407,9 +393,7 @@ Response:";
         return null;
     }
 
-    /**
-     * Simple time extraction from message
-     */
+    // Simple time extraction from message
     private function extractTime(string $message): ?string
     {
         // Look for time patterns like "3pm", "3:00 pm", "15:00"
@@ -422,9 +406,7 @@ Response:";
         return null;
     }
 
-    /**
-     * Test connection to Ollama
-     */
+    // Test connection to Ollama
     public function testConnection(): array
     {
         $testPrompt = "Respond with 'OK' if you can hear me.";
@@ -438,12 +420,10 @@ Response:";
         ];
     }
     
-    /**
-     * Check if a message is asking about resource/staff availability
-     *
-     * @param string $message The customer message
-     * @return bool True if this is an availability question
-     */
+    // Check if a message is asking about resource/staff availability
+    //
+    // @param string $message The customer message
+    // @return bool True if this is an availability question
     private function isAvailabilityQuestion(string $message): bool
     {
         $message = strtolower($message);
@@ -489,13 +469,11 @@ Response:";
                (preg_match('/(is|are|will|can|could)\s+\w+\s+be\s+available/i', $message));
     }
     
-    /**
-     * Generate a response specifically for availability questions
-     * 
-     * @param string $message The customer message
-     * @param array $context The business context including resources and availability
-     * @return string The AI-generated response
-     */
+    // Generate a response specifically for availability questions
+    // 
+    // @param string $message The customer message
+    // @param array $context The business context including resources and availability
+    // @return string The AI-generated response
     private function generateAvailabilityResponse(string $message, array $context): string
     {
         // Extract time and date information from the message

@@ -18,9 +18,7 @@ class WhatsAppWebhookService
         $this->contextService = $contextService;
     }
 
-    /**
-     * Process incoming WhatsApp message from webhook
-     */
+    // Process incoming WhatsApp message from webhook
     public function processIncomingMessage(array $data): array
     {
         Log::info('Processing WhatsApp webhook message', $data);
@@ -59,9 +57,7 @@ class WhatsAppWebhookService
         ];
     }
 
-    /**
-     * Find business by incoming phone number
-     */
+    // Find business by incoming phone number
     private function findBusinessByPhone(string $phoneNumber): ?Business
     {
         $normalizedPhone = $this->normalizePhoneNumber($phoneNumber);
@@ -82,9 +78,7 @@ class WhatsAppWebhookService
         return $business;
     }
     
-    /**
-     * Ensure business has workflow data, generate if missing
-     */
+    // Ensure business has workflow data, generate if missing
     private function ensureBusinessWorkflow(Business $business): Business
     {
         // Check if workflow is missing
@@ -98,17 +92,13 @@ class WhatsAppWebhookService
         return $business;
     }
 
-    /**
-     * Find or create client by phone number
-     */
+    // Find or create client by phone number
     private function findOrCreateClient(int $businessId, string $phoneNumber, ?string $name): Client
     {
         return Client::findOrCreateByPhone($businessId, $phoneNumber, $name);
     }
 
-    /**
-     * Find or create conversation between business and client
-     */
+    // Find or create conversation between business and client
     private function findOrCreateConversation(int $businessId, int $clientId): Conversation
     {
         $conversation = Conversation::where('business_id', $businessId)
@@ -126,9 +116,7 @@ class WhatsAppWebhookService
         return $conversation;
     }
 
-    /**
-     * Store incoming WhatsApp message
-     */
+    // Store incoming WhatsApp message
     private function storeIncomingMessage(
         int $conversationId,
         int $clientId,
@@ -147,17 +135,13 @@ class WhatsAppWebhookService
         );
     }
 
-    /**
-     * Normalize phone number for consistent lookup
-     */
+    // Normalize phone number for consistent lookup
     private function normalizePhoneNumber(string $phoneNumber): string
     {
         return Client::normalizePhone($phoneNumber);
     }
 
-    /**
-     * Verify webhook signature (provider-specific)
-     */
+    // Verify webhook signature (provider-specific)
     public function verifyWebhookSignature(string $provider, array $headers, string $body): bool
     {
         switch ($provider) {
@@ -171,9 +155,7 @@ class WhatsAppWebhookService
         }
     }
 
-    /**
-     * Verify Twilio webhook signature
-     */
+    // Verify Twilio webhook signature
     private function verifyTwilioSignature(array $headers, string $body): bool
     {
         // Implement Twilio signature verification
@@ -181,9 +163,7 @@ class WhatsAppWebhookService
         return true;
     }
 
-    /**
-     * Verify Facebook webhook signature
-     */
+    // Verify Facebook webhook signature
     private function verifyFacebookSignature(array $headers, string $body): bool
     {
         // Implement Facebook signature verification

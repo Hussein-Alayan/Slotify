@@ -20,9 +20,7 @@ class StaffReassignmentService
         $this->n8nService = $n8nService;
     }
 
-    /**
-     * Mark a staff member as absent and reassign their bookings
-     */
+    // Mark a staff member as absent and reassign their bookings
     public function markStaffAbsent(Resource $staff, string $reason, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
         $startDate = $startDate ?? Carbon::now();
@@ -46,17 +44,13 @@ class StaffReassignmentService
         ];
     }
 
-    /**
-     * Mark a staff member as present and available again
-     */
+    // Mark a staff member as present and available again
     public function markStaffPresent(Resource $staff): void
     {
         $staff->markPresent();
     }
 
-    /**
-     * Get bookings affected by staff absence
-     */
+    // Get bookings affected by staff absence
     protected function getAffectedBookings(Resource $staff, Carbon $startDate, Carbon $endDate): Collection
     {
         return Booking::where('resource_id', $staff->id)
@@ -71,9 +65,7 @@ class StaffReassignmentService
             ->get();
     }
 
-    /**
-     * Attempt to reassign multiple bookings
-     */
+    // Attempt to reassign multiple bookings
     protected function reassignBookings(Collection $bookings): array
     {
         $successfulReassignments = [];
@@ -134,9 +126,7 @@ class StaffReassignmentService
         ];
     }
 
-    /**
-     * Attempt to reassign a single booking
-     */
+    // Attempt to reassign a single booking
     protected function reassignSingleBooking(Booking $booking): array
     {
         DB::beginTransaction();
@@ -181,9 +171,7 @@ class StaffReassignmentService
         }
     }
 
-    /**
-     * Get available staff for a service at a specific time
-     */
+    // Get available staff for a service at a specific time
     protected function getAvailableStaff($service, string $date, string $startTime, string $endTime, ?int $excludeStaffId = null): Collection
     {
         // Convert date and time strings to proper datetime strings
@@ -210,9 +198,7 @@ class StaffReassignmentService
         return $query->get();
     }
 
-    /**
-     * Get summary of staff absence impact
-     */
+    // Get summary of staff absence impact
     public function getAbsenceImpactSummary(Resource $staff, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
         $startDate = $startDate ?? Carbon::now();
@@ -237,9 +223,7 @@ class StaffReassignmentService
         return $summary;
     }
 
-    /**
-     * Check if a booking can be reassigned
-     */
+    // Check if a booking can be reassigned
     public function canBookingBeReassigned(Booking $booking): bool
     {
         $availableStaff = $this->getAvailableStaff(
