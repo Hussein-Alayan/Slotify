@@ -330,20 +330,38 @@ export default function AddServiceModal({
 
           {/* Service Status */}
           <div className="mb-6">
-            <label className="block font-semibold mb-1 text-gray-900">
+            <label className="block font-semibold mb-3 text-gray-900">
               Service Status
             </label>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-600">
-                Enable or disable this service for booking
-              </span>
-              <input
-                type="checkbox"
-                className="ml-2"
-                checked={status}
-                onChange={(e) => setStatus(e.target.checked)}
-                aria-label="Enable service"
-              />
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="text-gray-900 font-medium">
+                  {status ? "Active" : "Inactive"}
+                </span>
+                <span className="text-sm text-gray-600">
+                  {status
+                    ? "This service is available for booking"
+                    : "This service is disabled and unavailable for booking"}
+                </span>
+              </div>
+
+              {/* Toggle Switch */}
+              <button
+                type="button"
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 ${
+                  status ? "bg-green-600" : "bg-gray-300"
+                }`}
+                onClick={() => setStatus(!status)}
+                aria-label={`Toggle service status. Currently ${
+                  status ? "active" : "inactive"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    status ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
             </div>
           </div>
 

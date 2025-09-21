@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,13 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useBusinessContext } from "@/contexts/BusinessContext";
+import { fetchBusinessDetails } from "@/lib/businessAPI";
+
+interface BusinessData {
+  name: string;
+  id: number;
+  // Add other business properties as needed
+}
 
 function getNavigationLinks(businessId: number) {
   return [
@@ -48,8 +55,29 @@ function getNavigationLinks(businessId: number) {
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [businessName, setBusinessName] = useState<string>("Business Name");
   const { businessId } = useBusinessContext();
   const navigation = getNavigationLinks(businessId);
+
+  useEffect(() => {
+    const loadBusinessName = async () => {
+      try {
+        if (businessId) {
+          const businessData = (await fetchBusinessDetails(
+            businessId
+          )) as BusinessData;
+          if (businessData && businessData.name) {
+            setBusinessName(businessData.name);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch business details:", error);
+        // Keep default "Business Name" if fetch fails
+      }
+    };
+
+    loadBusinessName();
+  }, [businessId]);
 
   return (
     <div
@@ -61,10 +89,7 @@ export function Sidebar() {
       <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           {!isCollapsed && (
-            <span className="text-xl font-semibold">
-              {/* TODO: Replace with real business name from context/API */}
-              Business Name
-            </span>
+            <span className="text-xl font-semibold">{businessName}</span>
           )}
         </div>
         <button
