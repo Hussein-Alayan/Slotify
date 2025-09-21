@@ -4,12 +4,15 @@ namespace App\Services;
 
 use App\Models\Business;
 use App\Models\Service;
+use App\Traits\BusinessLookup;
 
 class ServiceService
 {
+    use BusinessLookup;
+
     public function createService($businessId, array $data)
     {
-        $business = Business::findOrFail($businessId);
+        $business = $this->findBusinessOrFail($businessId);
         $data['business_id'] = $business->id;
 
         // Handle base64 image upload
@@ -41,6 +44,12 @@ class ServiceService
         return $service;
     }
 
+    public function getServicesByBusiness($businessId)
+    {
+        $business = $this->findBusinessOrFail($businessId);
+        return $business->services;
+    }
+
     protected function saveBase64Image($base64)
     {
         // Extract file extension from base64 string
@@ -64,11 +73,5 @@ class ServiceService
         file_put_contents($filePath, $imageData);
         // Return public URL
         return asset('storage/services/' . $fileName);
-    }
-
-    public function getServicesByBusiness($businessId)
-    {
-        $business = Business::findOrFail($businessId);
-        return $business->services()->get();
     }
 }

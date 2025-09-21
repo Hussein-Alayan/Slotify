@@ -7,10 +7,12 @@ use App\Models\Business;
 use App\Models\Client;
 use App\Models\Service;
 use App\Models\BookingRule;
+use App\Traits\BusinessLookup;
 use Carbon\Carbon;
 
 class BookingService
 {
+    use BusinessLookup;
     // Create a new booking
     public function createBooking(array $data): Booking
     {
@@ -128,7 +130,7 @@ class BookingService
     // Check availability for a specific date
     public function checkAvailability(int $businessId, string $date, ?int $serviceId = null): array
     {
-        $business = Business::findOrFail($businessId);
+        $business = $this->findBusinessOrFail($businessId);
         $bookingRules = $business->bookingRules;
         
         if (!$bookingRules) {
@@ -225,7 +227,7 @@ class BookingService
         }
 
         // Check business hours
-        $business = Business::findOrFail($businessId);
+        $business = $this->findBusinessOrFail($businessId);
         $this->validateBusinessHours($business, $startTime, $endTime);
     }
 

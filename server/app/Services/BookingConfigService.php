@@ -4,9 +4,12 @@ namespace App\Services;
 
 use App\Models\Business;
 use App\Models\Service;
+use App\Traits\BusinessLookup;
 
 class BookingConfigService
 {
+    use BusinessLookup;
+
     /**
      * Get default booking duration for a service
      */
@@ -21,7 +24,7 @@ class BookingConfigService
      */
     public function getDefaultBookingTime(int $businessId): string
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         
         // Check if business has configured default booking time
         if ($business && isset($business->business_hours)) {
@@ -54,7 +57,7 @@ class BookingConfigService
      */
     public function getConfidenceThreshold(int $businessId): float
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         
         // Could be stored in business table or booking_rules
         if ($business && $business->bookingRules) {
@@ -70,7 +73,7 @@ class BookingConfigService
      */
     public function getDefaultAppointmentDuration(int $businessId): int
     {
-        $business = Business::findOrFail($businessId);
+        $business = $this->findBusinessOrFail($businessId);
         
         // Use the most common service duration
         $commonDuration = $business->services()
@@ -87,7 +90,7 @@ class BookingConfigService
      */
     public function getBusinessTimezone(int $businessId): string
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         return $business ? ($business->timezone ?? 'UTC') : 'UTC';
     }
 }

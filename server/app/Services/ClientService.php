@@ -4,13 +4,16 @@ namespace App\Services;
 
 use App\Models\Business;
 use App\Models\Client;
+use App\Traits\BusinessLookup;
 use Illuminate\Validation\Rule;
 
 class ClientService
 {
+    use BusinessLookup;
+
     public function getClients($businessId)
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         if (!$business) {
             return null;
         }
@@ -19,7 +22,7 @@ class ClientService
 
     public function createClient($businessId, array $data)
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         if (!$business) {
             return null;
         }
@@ -31,7 +34,7 @@ class ClientService
 
     public function getClient($businessId, $clientId)
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         if (!$business) {
             return null;
         }
@@ -40,7 +43,7 @@ class ClientService
 
     public function updateClient($businessId, $clientId, array $data)
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         if (!$business) {
             return null;
         }
@@ -57,7 +60,7 @@ class ClientService
 
     public function deleteClient($businessId, $clientId)
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         if (!$business) {
             return null;
         }
