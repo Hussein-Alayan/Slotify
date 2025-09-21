@@ -83,8 +83,8 @@ def start_call(data: StartCallRequest):
         # Initialize conversation history for this session
         update_dynamic_context(call_id, "history", [])
         # Store client information for booking
-        if data.client_id:
-            update_dynamic_context(call_id, "client_id", data.client_id)
+        if resolved_client_id:
+            update_dynamic_context(call_id, "client_id", resolved_client_id)
         update_dynamic_context(call_id, "business_id", data.business_id)
 
         return {"call_id": call_id, "reply": "Hi, thanks for calling Slotify!"}
