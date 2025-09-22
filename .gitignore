@@ -1,3 +1,5 @@
 businessmanagementapp1/
 .history
 .env
+slotify-voice/*.pyc
+slotify-voice/**/*.pyc
