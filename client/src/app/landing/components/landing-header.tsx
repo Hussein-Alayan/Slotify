@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function LandingHeader() {

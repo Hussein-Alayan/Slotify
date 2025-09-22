@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 import React from "react";
 
 export type Service = {
@@ -31,9 +32,11 @@ export function ServicesForm({
     <div>
       <div className="flex items-center gap-3 mb-6">
         <span className="inline-block bg-slate-900 p-2 rounded-full">
-          <img
+          <Image
             src="/icons/calender.svg"
             alt="Calendar Icon"
+            width={24}
+            height={24}
             className="h-6 w-6"
           />
         </span>

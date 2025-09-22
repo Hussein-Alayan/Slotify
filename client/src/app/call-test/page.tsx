@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone } from "lucide-react";
 import { fetchCallId } from "@/lib/api";
@@ -51,7 +51,7 @@ export default function CallTest() {
         clientName,
         clientPhone
       );
-      console.log("✅ Got call ID:", newCallId);
+      console.log(" Got call ID:", newCallId);
       setCallId(parseInt(newCallId, 10));
 
       // create websocket
@@ -78,7 +78,7 @@ export default function CallTest() {
           console.log("💬 Received text message:", ev.data);
         } else {
           console.log(
-            "❓ Received unknown message type:",
+            " Received unknown message type:",
             typeof ev.data,
             ev.data
           );
@@ -95,7 +95,7 @@ export default function CallTest() {
       };
 
       ws.onerror = (e) => {
-        console.error("❌ WebSocket error:", e);
+        console.error(" WebSocket error:", e);
       };
 
       wsRef.current = ws;
@@ -104,16 +104,16 @@ export default function CallTest() {
       const handleAudioData = await setupAudioProcessing(ws, setIsAISpeaking);
 
       setIsRecording(true);
-      console.log("🟢 Call started successfully!");
+      console.log("Call started successfully!");
     } catch (error) {
-      console.error("❌ Error starting call:", error);
+      console.error("Error starting call:", error);
       const message = error instanceof Error ? error.message : "Unknown error";
       alert("Failed to start call: " + message);
     }
   }
 
   // ---- Stop recording + close websocket ----
-  async function stopCall() {
+  const stopCall = useCallback(async () => {
     setIsRecording(false);
     await stopAudioProcessing();
 
@@ -127,14 +127,14 @@ export default function CallTest() {
       wsRef.current = null;
     }
     setCallId(null);
-  }
+  }, [stopAudioProcessing, wsRef]);
 
   // cleanup on unmount
   useEffect(() => {
     return () => {
       stopCall();
     };
-  }, []);
+  }, [stopCall]);
 
   return (
     <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 overflow-hidden">

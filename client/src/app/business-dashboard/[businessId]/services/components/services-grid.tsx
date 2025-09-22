@@ -5,8 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useAppSelector } from "@/hooks/useAppSelector";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { fetchServices } from "@/store/services/servicesSlice";
 import AddServiceModal from "./add-service-modal";
 

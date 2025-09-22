@@ -1,5 +1,6 @@
 import React from "react";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
+import Image from "next/image";
+import { useAppDispatch } from "@/store/hooks";
 import { addService, editService } from "@/store/services/servicesSlice";
 import type { Service } from "@/store/services/servicesSlice";
 
@@ -225,10 +226,12 @@ export default function AddServiceModal({
               }}
             >
               {photoPreview ? (
-                <img
+                <Image
                   src={photoPreview}
                   alt="Preview"
-                  className="max-h-32 mb-2 rounded"
+                  width={128}
+                  height={128}
+                  className="max-h-32 mb-2 rounded object-cover"
                 />
               ) : (
                 <>
