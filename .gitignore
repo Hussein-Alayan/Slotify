@@ -1,2 +1,6 @@
 .history
 node_modules/
+.env
+.github/copilot-instructions.md
+__pycache__/
+*.pyc
