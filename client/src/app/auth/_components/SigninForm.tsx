@@ -26,7 +26,12 @@ const SigninForm: React.FC<SigninFormProps> = ({
   onRememberChange,
   onSubmit,
 }) => (
-  <form className="w-full max-w-md flex flex-col gap-4" onSubmit={onSubmit}>
+  <form 
+    className="w-full max-w-md flex flex-col gap-4" 
+    onSubmit={onSubmit}
+    role="form"
+    data-testid="signin-form"
+  >
     <Input
       label="Email"
       placeholder="Enter your email"

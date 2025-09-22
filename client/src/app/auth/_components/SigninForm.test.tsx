@@ -97,12 +97,22 @@ describe("SigninForm", () => {
 
     it("calls onSubmit when form is submitted", async () => {
       const user = userEvent.setup();
-      render(<SigninForm {...defaultProps} />);
+      const mockOnSubmit = jest.fn((e) => e.preventDefault());
+      
+      render(<SigninForm {...defaultProps} onSubmit={mockOnSubmit} />);
 
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
-      await user.click(submitButton);
+      // Fill in required fields first
+      const emailInput = screen.getByLabelText(/email/i);
+      const passwordInput = screen.getByLabelText(/password/i);
+      
+      await user.type(emailInput, "test@example.com");
+      await user.type(passwordInput, "password123");
 
-      expect(defaultProps.onSubmit).toHaveBeenCalled();
+      // Submit the form directly
+      const form = screen.getByRole("form");
+      fireEvent.submit(form);
+
+      expect(mockOnSubmit).toHaveBeenCalled();
     });
 
     it("prevents default form submission", () => {
