@@ -5,6 +5,8 @@ module.exports = {
   moduleNameMapper: {
     // Support for @ alias
     '^@/(.*)$': '<rootDir>/src/$1',
+    // Mock CSS imports
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   globals: {
     'ts-jest': {
