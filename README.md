@@ -83,6 +83,10 @@
 
 <br><br>
 
+#### Automatic Staff Assignment & Client Notification Example
+
+![Auto-assign and Notify](./readme/Demo/ResourcesNotify-wp.jpg)
+
 
 <!-- Development & Testing -->
 <img src="./readme/title6.svg"/>
