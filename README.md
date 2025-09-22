@@ -7,16 +7,36 @@
 
 <!-- project overview -->
 <img src="./readme/title2.svg"/>
-Slotify is an AI-powered platform that makes scheduling appointments easier and smarter. It automates bookings, manages staff/resources, predicts no-shows, and handles client communication through chatbots and social media integration, all in one place.
+Slotify is a B2B SaaS platform designed to simplify and automate appointment and resource management for businesses.
+It leverages AI to:
+
+Automate client bookings and interactions through a WhatsApp AI assistant powered by a local LLM.
+
+Dynamically assign staff and resources to appointments, with smart handling of cancellations and conflicts, and instantly notify clients via WhatsApp with updates.
+
+Provide an AI-powered real-time call assistant for bookings, Q&A, and instant client support.
+
+With Slotify, businesses can reduce scheduling overhead, improve client communication, and ensure smooth operations even when staff availability changes unexpectedly.
 
 <br><br>
 
 <!-- System Design -->
 <img src="./readme/title3.svg"/>
 
-### Add Title Here
 
-- To be decided on later on.
+### Component Diagram
+
+<img src="./readme/daigrams/Component-daigram.png" alt="Component Diagram"/>
+
+This diagram illustrates the main components of Slotify and their interactions.
+
+<br><br>
+
+### ER Diagram
+
+<img src="./readme/daigrams/ER-daigram.svg" alt="ER Diagram"/>
+
+This diagram shows the entity relationships within Slotify's data model.
 
 <br><br>
 
