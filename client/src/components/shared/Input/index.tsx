@@ -5,13 +5,19 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
 };
 
-export default function Input({ label, ...props }: InputProps) {
+export default function Input({ label, id, ...props }: InputProps) {
+  // Generate a unique ID if not provided
+  const generatedId = React.useId();
+  const inputId = id || generatedId;
+
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium mb-2">{label}</label>
+        <label htmlFor={inputId} className="block text-sm font-medium mb-2">
+          {label}
+        </label>
       )}
-      <input className="slotify-input" {...props} />
+      <input id={inputId} className="slotify-input" {...props} />
     </div>
   );
 }

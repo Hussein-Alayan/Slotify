@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Services\AuthService;
-use Laravel\Socialite\Facades\Socialite;
 use App\Traits\ApiResponseTrait;
 
 class AuthController extends Controller
@@ -49,29 +48,5 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return $this->successResponse(new UserResource($this->authService->me($request->user())));
-    }
-
-    public function redirectToGoogle()
-    {
-        return Socialite::driver('google')->redirect();
-    }
-
-    public function handleGoogleCallback()
-    {
-        try {
-            $googleUser = Socialite::driver('google')->user();
-        } catch (\Exception $e) {
-            return redirect('http://localhost:3000/auth/signin?error=google_auth_failed');
-        }
-
-        if (! $googleUser || ! $googleUser->getEmail()) {
-            return redirect('http://localhost:3000/auth/signin?error=google_no_email');
-        }
-
-        $result = $this->authService->loginWithGoogle($googleUser);
-        // Log the user in using session/cookie
-        Auth::login($result['user']);
-        // Redirect to frontend dashboard
-        return redirect('http://localhost:3000/auth/google/callback');
     }
 }

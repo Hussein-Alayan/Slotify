@@ -188,7 +188,7 @@ class AIBookingController extends Controller
         $startDateTime = $this->parseDateTime($date, $time);
         
         // Get duration from service instead of hard-coding 1 hour
-        $duration = $this->configService->getDefaultDuration($serviceId);
+        $duration = $this->configService->getDefaultDuration($serviceId, $businessId);
         $endDateTime = $startDateTime->copy()->addMinutes($duration);
 
         return [

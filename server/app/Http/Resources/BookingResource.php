@@ -49,10 +49,11 @@ class BookingResource extends JsonResource
             }),
             
             'resource' => $this->whenLoaded('resource', function () {
+                $staffMember = $this->getRelation('resource');
                 return [
-                    'id' => $this->resource->id,
-                    'name' => $this->resource->name,
-                    'type' => $this->resource->type,
+                    'id' => $staffMember->id,
+                    'name' => $staffMember->name,
+                    'type' => $staffMember->type,
                 ];
             }),
         ];

@@ -6,9 +6,8 @@ use App\Http\Requests\StoreConversationRequest;
 use App\Http\Requests\SendMessageRequest;
 use App\Http\Resources\ConversationResource;
 use App\Services\ConversationService;
-
-
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\Request;
 
 class ConversationController extends Controller
 {
@@ -21,10 +20,7 @@ class ConversationController extends Controller
         $this->conversationService = $conversationService;
     }
 
-    /**
-     * Start a new conversation
-     * @see App\Http\Docs\ConversationDocs for API documentation
-     */
+    // Start a new conversation
     public function startConversation(StoreConversationRequest $request)
     {
         try {
@@ -39,20 +35,14 @@ class ConversationController extends Controller
         }
     }
 
-    /**
-     * Fetch conversation with messages
-     * @see App\Http\Docs\ConversationDocs for API documentation
-     */
+        // Get conversation details
     public function show($conversationId)
     {
         $conversation = $this->conversationService->getConversationWithMessages($conversationId);
         return $this->successResponse(new ConversationResource($conversation));
     }
 
-    /**
-     * Store a new message in a conversation
-     * @see App\Http\Docs\ConversationDocs for API documentation
-     */
+    // Send a message in a conversation
     public function sendMessage(SendMessageRequest $request, $conversationId)
     {
         try {
