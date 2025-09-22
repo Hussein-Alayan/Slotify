@@ -43,7 +43,7 @@ class ConversationController extends Controller
     }
 
     // Send a message in a conversation
-    public function sendMessage(Request $request, $conversationId)
+    public function sendMessage(SendMessageRequest $request, $conversationId)
     {
         try {
             // Fetch conversation to get client_id and business_id
