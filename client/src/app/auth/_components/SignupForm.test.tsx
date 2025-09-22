@@ -158,7 +158,7 @@ describe("SignupForm", () => {
     it("calls onSubmit when form is submitted", async () => {
       const user = userEvent.setup();
       const mockOnSubmit = jest.fn((e) => e.preventDefault());
-      
+
       render(<SignupForm {...defaultProps} onSubmit={mockOnSubmit} />);
 
       // Fill in required fields first
@@ -168,7 +168,7 @@ describe("SignupForm", () => {
       const passwordInput = screen.getByLabelText(/^password$/i);
       const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const agreeCheckbox = screen.getByLabelText(/terms of services/i);
-      
+
       await user.type(fullNameInput, "John Doe");
       await user.type(emailInput, "test@example.com");
       await user.type(businessNameInput, "Test Business");

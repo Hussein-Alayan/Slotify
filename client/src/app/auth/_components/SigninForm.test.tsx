@@ -98,13 +98,13 @@ describe("SigninForm", () => {
     it("calls onSubmit when form is submitted", async () => {
       const user = userEvent.setup();
       const mockOnSubmit = jest.fn((e) => e.preventDefault());
-      
+
       render(<SigninForm {...defaultProps} onSubmit={mockOnSubmit} />);
 
       // Fill in required fields first
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
-      
+
       await user.type(emailInput, "test@example.com");
       await user.type(passwordInput, "password123");
 

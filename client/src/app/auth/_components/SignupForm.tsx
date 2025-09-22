@@ -39,8 +39,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
   onAgreeChange,
   onSubmit,
 }) => (
-  <form 
-    className={styles.signupForm} 
+  <form
+    className={styles.signupForm}
     onSubmit={onSubmit}
     role="form"
     data-testid="signup-form"
