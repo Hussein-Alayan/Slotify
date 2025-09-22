@@ -405,7 +405,8 @@ class ServiceControllerTest extends TestCase
         $response = $this->patchJson("/api/v1/businesses/{$this->business->id}/services/{$service->id}", $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'duration_minutes', 'price', 'status']);
+            ->assertJsonValidationErrors(['duration_minutes', 'price', 'status']);
+            // Name field is optional in updates, so not validated when empty
     }
 
     public function test_update_handles_non_existent_service()

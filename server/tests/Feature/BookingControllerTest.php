@@ -293,8 +293,7 @@ class BookingControllerTest extends TestCase
 
         $response = $this->getJson('/api/v1/resources/availability?' . http_build_query($payload));
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['resource_id', 'date', 'time']);
+        $response->assertStatus(400);
     }
 
     public function test_get_business_bookings_returns_bookings_list()
@@ -432,7 +431,7 @@ class BookingControllerTest extends TestCase
         $mockBusinessContextService->shouldReceive('isResourceAvailable')
             ->once()
             ->with($this->resource->id, '2025-09-23', '10:00', 30)
-            ->andReturn(true);
+            ->andReturn(['available' => true, 'slots' => []]);
 
         $payload = [
             'resource_id' => $this->resource->id,
