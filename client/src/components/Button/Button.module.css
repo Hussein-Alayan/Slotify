@@ -1,0 +1,21 @@
+.slotify-btn {
+  width: 100%;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 0.75rem 0;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px 0 rgb(16 24 40 / 5%);
+  border: none;
+  cursor: pointer;
+}
+.slotify-btn:hover {
+  background: var(--color-secondary);
+  color: var(--color-primary);
+}
+.slotify-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-secondary);
+}

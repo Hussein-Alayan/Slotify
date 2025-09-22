@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+*.log
+.env
+vendor
+.DS_Store
+node_modules
+npm-debug.log
+vendor
+.env
+*.log
+.DS_Store
+.git
+.gitignore
+.vscode

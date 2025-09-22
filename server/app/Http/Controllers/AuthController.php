@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Http\Controllers;
+use App\Http\Requests\AuthRequests\RegisterRequest;
+use App\Http\Requests\AuthRequests\LoginRequest;
+use App\Http\Resources\UserResource;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Services\AuthService;
+use App\Traits\ApiResponseTrait;
+
+class AuthController extends Controller
+{
+    use ApiResponseTrait;
+
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
+    public function register(RegisterRequest $request)
+    {
+        $result = $this->authService->register($request->validated());
+        return $this->successResponse([
+            'user' => new UserResource($result['user']),
+            'token' => $result['token'],
+        ], 201);
+    }
+
+    public function login(LoginRequest $request)
+    {
+        $result = $this->authService->login($request->validated());
+        if (! $result) {
+            return $this->errorResponse('Invalid Credentials', 422);
+        }
+        Auth::login($result['user']);
+        return $this->successResponse([
+            'user' => new UserResource($result['user']),
+            'token' => $result['token'],
+        ]);
+    }
+
+
+    public function me(Request $request)
+    {
+        return $this->successResponse(new UserResource($this->authService->me($request->user())));
+    }
+}
