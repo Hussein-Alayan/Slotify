@@ -1,5 +1,7 @@
 businessmanagementapp1/
 .history
+node_modules/
 .env
-slotify-voice/*.pyc
-slotify-voice/**/*.pyc
+.github/copilot-instructions.md
+__pycache__/
+*.pyc
