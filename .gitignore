@@ -5,3 +5,4 @@ node_modules/
 .github/copilot-instructions.md
 __pycache__/
 *.pyc
+slotify-voice/config/google-stt-key.json
