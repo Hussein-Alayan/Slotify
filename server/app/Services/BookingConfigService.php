@@ -4,24 +4,30 @@ namespace App\Services;
 
 use App\Models\Business;
 use App\Models\Service;
+use App\Traits\BusinessLookup;
+use App\Traits\ServiceLookup;
 
 class BookingConfigService
 {
-    /**
-     * Get default booking duration for a service
-     */
-    public function getDefaultDuration(int $serviceId): int
+    use BusinessLookup, ServiceLookup;
+
+    // Get default booking duration for a service
+    public function getDefaultDuration(int $serviceId, int $businessId = null): int
     {
-        $service = Service::find($serviceId);
-        return $service ? $service->duration_minutes : 60;
+        if ($businessId) {
+            $service = $this->findServiceOrFail($serviceId, $businessId);
+            return $service->duration_minutes;
+        }
+        
+        // Fallback for backward compatibility when businessId is not provided
+        $service = $this->findServiceByIdOrFail($serviceId);
+        return $service->duration_minutes;
     }
 
-    /**
-     * Get default booking time for a business
-     */
+    // Get default booking time for a business
     public function getDefaultBookingTime(int $businessId): string
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         
         // Check if business has configured default booking time
         if ($business && isset($business->business_hours)) {
@@ -40,21 +46,17 @@ class BookingConfigService
         return '15:00'; // Final fallback
     }
 
-    /**
-     * Get default booking date preference for a business
-     */
+    // Get default booking date preference for a business
     public function getDefaultBookingDate(int $businessId): string
     {
         // For now, return 'tomorrow' but this could be business-configurable
         return 'tomorrow';
     }
 
-    /**
-     * Get AI confidence threshold for a business
-     */
+    // Get AI confidence threshold for a business
     public function getConfidenceThreshold(int $businessId): float
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         
         // Could be stored in business table or booking_rules
         if ($business && $business->bookingRules) {
@@ -65,12 +67,10 @@ class BookingConfigService
         return 0.7; // Higher than current 0.5 for better accuracy
     }
 
-    /**
-     * Get default appointment duration when service is not specified
-     */
+    // Get default appointment duration when service is not specified
     public function getDefaultAppointmentDuration(int $businessId): int
     {
-        $business = Business::findOrFail($businessId);
+        $business = $this->findBusinessOrFail($businessId);
         
         // Use the most common service duration
         $commonDuration = $business->services()
@@ -82,12 +82,10 @@ class BookingConfigService
         return $commonDuration ? $commonDuration->duration_minutes : 60;
     }
 
-    /**
-     * Get business timezone for proper datetime handling
-     */
+    // Get business timezone for proper datetime handling
     public function getBusinessTimezone(int $businessId): string
     {
-        $business = Business::find($businessId);
+        $business = $this->findBusiness($businessId);
         return $business ? ($business->timezone ?? 'UTC') : 'UTC';
     }
 }

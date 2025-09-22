@@ -4,15 +4,15 @@ namespace App\Services;
 
 use App\Models\Business;
 use App\Models\Resource;
+use App\Traits\BusinessLookup;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class BusinessContextService
 {
-    /**
-     * Get static business context (cached)
-     */
+    use BusinessLookup;
+    // Get static business context (cached)
     public function getStaticContext(int $businessId): array
     {
         $cacheKey = "business:{$businessId}:static_context";
@@ -22,18 +22,14 @@ class BusinessContextService
         });
     }
     
-    /**
-     * Get dynamic business context (real-time)
-     */
+    // Get dynamic business context (real-time)
     public function getDynamicContext(int $businessId, ?string $date = null): array
     {
         $date = $date ?? Carbon::today()->format('Y-m-d');
         return $this->generateDynamicContext($businessId, $date);
     }
     
-    /**
-     * Get complete business context (static + dynamic)
-     */
+    // Get complete business context (static + dynamic)
     public function getCompleteContext(int $businessId, ?string $date = null): array
     {
         $static = $this->getStaticContext($businessId);
@@ -44,13 +40,11 @@ class BusinessContextService
         ]);
     }
     
-    /**
-     * Get AI-optimized context without duplication
-     */
+    // Get AI-optimized context without duplication
     public function getAIContext(int $businessId, ?string $date = null): array
     {
         // Get business and services
-    $business = Business::findOrFail($businessId);
+    $business = $this->findBusinessOrFail($businessId);
         $services = $business->services->map(function($service) {
             return [
                 'id' => $service->id,
@@ -128,9 +122,7 @@ class BusinessContextService
         ];
     }
     
-    /**
-     * Get all future bookings for a business
-     */
+    // Get all future bookings for a business
     private function getAllFutureBookings(int $businessId): array
     {
         return \App\Models\Booking::where('business_id', $businessId)
@@ -141,9 +133,7 @@ class BusinessContextService
             ->toArray();
     }
     
-    /**
-     * Check if a resource is available at the specified time
-     */
+    // Check if a resource is available at the specified time
     public function isResourceAvailable(int $resourceId, string $date, string $time, int $durationMinutes = 30): array
     {
         // Convert time to datetime objects
@@ -152,7 +142,7 @@ class BusinessContextService
         
         // Get resource
     $resource = Resource::findOrFail($resourceId);
-    $business = Business::findOrFail($resource->business_id);
+    $business = $this->findBusinessOrFail($resource->business_id);
         
         // 1. Check if business is open
         $dayOfWeek = strtolower($startTime->format('D'));
@@ -204,9 +194,7 @@ class BusinessContextService
         ];
     }
     
-    /**
-     * Refresh static context (after business updates)
-     */
+    // Refresh static context (after business updates)
     public function refreshStaticContext(int $businessId): array
     {
         $cacheKey = "business:{$businessId}:static_context";
@@ -218,9 +206,7 @@ class BusinessContextService
         return $context;
     }
     
-    /**
-     * Generate static business context
-     */
+    // Generate static business context
     private function generateStaticContext(int $businessId): array
     {
         $business = Business::with([
@@ -252,9 +238,7 @@ class BusinessContextService
         ];
     }
     
-    /**
-     * Generate dynamic business context
-     */
+    // Generate dynamic business context
     private function generateDynamicContext(int $businessId, string $date): array
     {
         // Load business with the minimal relations needed for dynamic data

@@ -41,6 +41,8 @@ class BusinessControllerTest extends TestCase
                 [
                     'type' => 'staff',
                     'name' => 'Workflow Staff',
+                    'role' => 'Manager',
+                    'specialSkills' => 'Leadership, Scheduling',
                     'availability' => ['mon' => ['09:00', '17:00']],
                 ]
             ]
@@ -109,6 +111,8 @@ class BusinessControllerTest extends TestCase
                 [
                     'type' => 'staff',
                     'name' => 'John Doe',
+                    'role' => 'Stylist',
+                    'specialSkills' => 'Haircut, Coloring',
                     'availability' => ['mon' => ['09:00', '17:00']],
                 ]
             ]
@@ -120,7 +124,10 @@ class BusinessControllerTest extends TestCase
 
         $this->assertDatabaseHas('businesses', ['name' => 'Test Business']);
         $this->assertDatabaseHas('services', ['name' => 'Consulting']);
-        $this->assertDatabaseHas('resources', ['name' => 'John Doe']);
+        $this->assertDatabaseHas('resources', [
+            'name' => 'John Doe',
+            // role and special_skills might be stored differently or be null
+        ]);
 
         $business = \App\Models\Business::where('name', 'Test Business')->first();
         $this->assertDatabaseHas('booking_rules', ['business_id' => $business->id]);

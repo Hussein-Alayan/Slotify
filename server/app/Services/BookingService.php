@@ -7,22 +7,22 @@ use App\Models\Business;
 use App\Models\Client;
 use App\Models\Service;
 use App\Models\BookingRule;
+use App\Traits\BusinessLookup;
+use App\Traits\ClientLookup;
+use App\Traits\ServiceLookup;
 use Carbon\Carbon;
 
 class BookingService
 {
+    use BusinessLookup, ClientLookup, ServiceLookup;
     // Create a new booking
     public function createBooking(array $data): Booking
     {
         // Validate that client belongs to business
-        $client = Client::where('id', $data['client_id'])
-            ->where('business_id', $data['business_id'])
-            ->firstOrFail();
+        $client = $this->findClientOrFail($data['client_id'], $data['business_id']);
 
         // Validate that service belongs to business
-        $service = Service::where('id', $data['service_id'])
-            ->where('business_id', $data['business_id'])
-            ->firstOrFail();
+        $service = $this->findServiceOrFail($data['service_id'], $data['business_id']);
 
         // Auto-assign staff if resource_id is not provided
         if (empty($data['resource_id'])) {
@@ -105,10 +105,30 @@ class BookingService
         return $booking->update(['status' => 'cancelled']);
     }
 
+    // Get next upcoming booking for a client
+    public function getNextUpcomingBooking(int $clientId): ?Booking
+    {
+        return Booking::where('client_id', $clientId)
+            ->upcoming()
+            ->orderBy('start_time')
+            ->first();
+    }
+
+    // Cancel next upcoming booking for a client
+    public function cancelNextUpcomingBooking(int $clientId, ?string $reason = null): ?Booking
+    {
+        $booking = $this->getNextUpcomingBooking($clientId);
+        if ($booking && $booking->canBeCancelled()) {
+            $booking->cancelBooking($reason);
+            return $booking->fresh(['business', 'service', 'resource']);
+        }
+        return null;
+    }
+
     // Check availability for a specific date
     public function checkAvailability(int $businessId, string $date, ?int $serviceId = null): array
     {
-        $business = Business::findOrFail($businessId);
+        $business = $this->findBusinessOrFail($businessId);
         $bookingRules = $business->bookingRules;
         
         if (!$bookingRules) {
@@ -157,6 +177,16 @@ class BookingService
             ->get();
     }
 
+    // Get bookings for a business by date
+    public function getBusinessBookingsByDate(int $businessId, $date)
+    {
+        return Booking::where('business_id', $businessId)
+            ->whereDate('start_time', $date)
+            ->with(['client', 'service', 'resource'])
+            ->orderBy('start_time')
+            ->get();
+    }
+
     // Private method to validate availability
     private function validateAvailability(
         int $businessId,
@@ -195,7 +225,7 @@ class BookingService
         }
 
         // Check business hours
-        $business = Business::findOrFail($businessId);
+        $business = $this->findBusinessOrFail($businessId);
         $this->validateBusinessHours($business, $startTime, $endTime);
     }
 
