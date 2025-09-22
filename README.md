@@ -63,15 +63,23 @@
 
 ### Admin Screens (Web)
 
-| Business Hub                            | Dashboard Overview                    | Clients Management                    | Resources Management                 |
-| --------------------------------------- | ------------------------------------- | ------------------------------------- | ------------------------------------- |
-| ![Business Hub](./readme/Demo/business-hub.png) | ![Dashboard](./readme/Demo/Dashboard.png) | ![Clients](./readme/Demo/Clients.png) | ![Resources](./readme/Demo/Resources.png) |
+| Business Hub                            | Dashboard Overview                    |
+| --------------------------------------- | ------------------------------------- |
+| ![Business Hub](./readme/Demo/business-hub.png) | ![Dashboard](./readme/Demo/Dashboard.png) |
+
+| Clients Management                    | Resources Management                 |
+| ------------------------------------- | ------------------------------------- |
+| ![Clients](./readme/Demo/Clients.png) | ![Resources](./readme/Demo/Resources.png) |
 
 ### Client Screens
 
-| Real-time Voice Call | Booking via WhatsApp (Video) | Services via WhatsApp (Video) |
-| -------------------- | ---------------------------- | ----------------------------- |
-| ![Real-time Call](./readme/Demo/Real-time-call.png) | ![Booking via WhatsApp](./readme/Demo/booking-wp.gif) | ![Services via WhatsApp](./readme/Demo/service-wp.gif) |
+| Real-time Voice Call |
+| -------------------- |
+| ![Real-time Call](./readme/Demo/Real-time-call.png) |
+
+| Booking via WhatsApp (Video) | Services via WhatsApp (Video) |
+| ---------------------------- | ----------------------------- |
+| ![Booking via WhatsApp](./readme/Demo/booking-wp.gif) | ![Services via WhatsApp](./readme/Demo/service-wp.gif) |
 
 <br><br>
 
