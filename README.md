@@ -56,6 +56,10 @@
 
  ![Dynamic Staff Assignment Flow](./readme/daigrams/dynamic-assign.svg) 
 
+### N8N Workflow Integration
+
+ ![N8N Workflow](./readme/Demo/N8N.png) 
+
 <br><br>
 
 <!-- Demo -->
