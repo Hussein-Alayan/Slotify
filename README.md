@@ -38,7 +38,7 @@
 
 ### Component Diagram
 
- ![Component Diagram](./readme/daigrams/Component-daigram.png) 
+<img src="./readme/daigrams/Component-daigram.png" alt="Component Diagram" width="600"/> 
 
 ### ER Diagram
 
@@ -124,78 +124,10 @@ php artisan test
 
 The AI Agent is like a smart digital assistant that understands what customers want when they send messages or make voice calls to book appointments. It acts like a knowledgeable employee who can instantly help customers 24/7.
 
-### How It Works: Step by Step
-
-**1. Customer Input (What Goes In)**
-	- Text Messages: "I want a haircut tomorrow at 3pm"
-	- Voice Calls: Customer speaks their request over the phone
-	- Questions: "What services do you offer?" or "What are your hours?"
-
-**2. Understanding Phase (What the AI Thinks About)**
-	- What does this customer want?
-		- Are they trying to book an appointment?
-		- Are they asking a question about services?
-		- Do they want to cancel or reschedule?
-	- What specific details did they mention?
-		- Which service? (haircut, facial, massage)
-		- What date? (tomorrow, Monday, next week)
-		- What time? (3pm, morning, afternoon)
-
-**3. Decision Making (What the AI Decides)**
-	- If it's a booking request:
-		- Check if the requested service exists
-		- See if the time slot is available
-		- Find the right staff member
-		- Create the appointment
-	- If it's a question:
-		- Look up business information (hours, services, prices)
-		- Provide helpful answers using the business details
-	- If something is unclear:
-		- Ask follow-up questions to get missing information
-
-**4. Taking Action (What the AI Does)**
-	- For Bookings:
-		- Creates the appointment in the system
-		- Assigns the right staff member
-		- Blocks the time slot so no one else can book it
-	- For Questions:
-		- Gathers the relevant business information
-		- Prepares a helpful response
-
-**5. Response Generation (What the AI Says Back)**
-	- The AI creates personalized responses that match the business's style:
-		- **Booking Confirmation:**
-			> "Great! I've booked your haircut with Sarah for tomorrow at 3:00 PM. We're excited to see you! 💇‍♂️"
-		- **Information Response:**
-			> "We offer haircuts ($25), beard trims ($15), and styling ($35). Our hours are 9 AM - 6 PM, Monday through Saturday. What would you like to book?"
-		- **Problem Response:**
-			> "I'm sorry, 3 PM tomorrow is already taken. How about 2:30 PM or 4:00 PM instead?"
-
----
-
-### Real Example: Customer Journey
-
-**Customer sends:**
-> "Book me for a facial next Tuesday at 11am"
-
-**AI Understands:** This is a booking request for facial service, Tuesday, 11:00 AM
-**AI Checks:** Is facial service available? Is Tuesday 11 AM free? Who can do facials?
-**AI Finds:** Facial service exists, time is available, Sarah can do it
-**AI Books:** Creates appointment: Tuesday 11 AM, Facial with Sarah
-**AI Responds:**
-> "Perfect! Your facial is booked with Sarah for Tuesday at 11:00 AM. Can't wait to help you relax and rejuvenate! ✨"
-
----
+![How It Works](./readme/Demo/how-it-works.png) 
 
 ### Why This Matters for Businesses
-
-- **24/7 Availability:** Customers can book anytime, even when the business is closed
-- **Instant Responses:** No waiting on hold or for callbacks
-- **Fewer Mistakes:** AI doesn't forget details or double-book appointments
-- **Better Customer Experience:** Friendly, consistent service every time
-- **Time Savings:** Staff can focus on providing services instead of answering phones
-
-The AI Agent essentially acts like having a perfect receptionist who never sleeps, never gets confused, and always knows exactly what services are available and when.
+ ![Why This Matters](./readme/Demo/why-matters.png) 
 
 <!-- Deployment -->
 <img src="./readme/title7.svg"/>
