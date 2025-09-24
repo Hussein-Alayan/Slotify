@@ -42,7 +42,7 @@
 
 ### ER Diagram
 
-![ER Diagram](./readme/daigrams/ER-daigram.svg) 
+<img src="./readme/daigrams/ER-daigram.svg" alt="ER Diagram" width="600"/> 
 
 ### WhatsApp Booking Flow Diagram 
 
