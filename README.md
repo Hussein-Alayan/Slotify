@@ -128,7 +128,8 @@ php artisan test
 
 The AI Agent is like a smart digital assistant that understands what customers want when they send messages or make voice calls to book appointments. It acts like a knowledgeable employee who can instantly help customers 24/7.
 
-![How It Works](./readme/Demo/how-it-works.png) 
+![How It Works](./readme/Demo/how-it-works.png)
+<img src="./readme/Demo/how-it-works.png" width="600" /> 
 
 ### Why This Matters for Businesses
  ![Why This Matters](./readme/Demo/why-matters.png) 
